@@ -1,0 +1,18 @@
+onlyBuiltDependencies:
+  - /
+  - '@'
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - a
+  - c
+  - d
+  - e
+  - esbuild
+  - i
+  - l
+  - n
+  - o
+  - s
+  - t
+  - w
+  - x
