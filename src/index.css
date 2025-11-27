@@ -51,13 +51,13 @@
 	--popover: oklch(0.22 0.03 255);
 	--popover-foreground: oklch(0.96 0.01 95);
 	--primary: oklch(0.78 0.17 85); /* harvest gold */
-	--primary-foreground: oklch(0.18 0.02 255);
+	--primary-foreground: oklch(0.96 0.01 95); /* luminescent wheat */
 	--secondary: oklch(0.68 0.12 240); /* cornflower night sky */
-	--secondary-foreground: oklch(0.18 0.02 255);
+	--secondary-foreground: oklch(0.96 0.01 95);
 	--muted: oklch(0.24 0.02 255); /* deep slate */
 	--muted-foreground: oklch(0.7 0.04 255);
 	--accent: oklch(0.7 0.18 50); /* pumpkin */
-	--accent-foreground: oklch(0.18 0.02 255);
+	--accent-foreground: oklch(0.96 0.01 95);
 	--destructive: oklch(0.62 0.2 25); /* brick red */
 	--border: oklch(1 0 0 / 10%);
 	--input: oklch(1 0 0 / 15%);
@@ -91,13 +91,13 @@
 	--popover: oklch(0.22 0.03 255);
 	--popover-foreground: oklch(0.96 0.01 95);
 	--primary: oklch(0.78 0.17 85);
-	--primary-foreground: oklch(0.18 0.02 255);
+	--primary-foreground: oklch(0.96 0.01 95);
 	--secondary: oklch(0.68 0.12 240);
-	--secondary-foreground: oklch(0.18 0.02 255);
+	--secondary-foreground: oklch(0.96 0.01 95);
 	--muted: oklch(0.24 0.02 255);
 	--muted-foreground: oklch(0.7 0.04 255);
 	--accent: oklch(0.7 0.18 50);
-	--accent-foreground: oklch(0.18 0.02 255);
+	--accent-foreground: oklch(0.96 0.01 95);
 	--destructive: oklch(0.62 0.2 25);
 	--border: oklch(1 0 0 / 10%);
 	--input: oklch(1 0 0 / 15%);

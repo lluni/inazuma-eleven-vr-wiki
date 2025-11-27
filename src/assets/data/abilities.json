@@ -305,7 +305,7 @@
     "Name": "Atomic Flare",
     "Type": "Shot",
     "Element": "Fire",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 255,
     "Tension": 70
   },
@@ -325,7 +325,7 @@
     "Name": "White Hurricane",
     "Type": "Shot",
     "Element": "Air",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
@@ -1311,7 +1311,7 @@
   },
   {
     "N": 132,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Holy Roller",
     "Type": "Shot",
     "Element": "Void",
@@ -1321,7 +1321,7 @@
   },
   {
     "N": 133,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Sidewinder",
     "Type": "Shot",
     "Element": "Void",
@@ -1331,7 +1331,7 @@
   },
   {
     "N": 134,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Bouncing Bunny",
     "Type": "Shot",
     "Element": "Void",
@@ -1341,7 +1341,7 @@
   },
   {
     "N": 135,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Patriot Shot",
     "Type": "Shot",
     "Element": "Void",
@@ -1351,7 +1351,7 @@
   },
   {
     "N": 136,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Flying Marlin",
     "Type": "Shot",
     "Element": "Void",
@@ -1361,7 +1361,7 @@
   },
   {
     "N": 137,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Grenade Shot",
     "Type": "Shot",
     "Element": "Forest",
@@ -1371,7 +1371,7 @@
   },
   {
     "N": 138,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Shell Burst",
     "Type": "Shot",
     "Element": "Fire",
@@ -1381,7 +1381,7 @@
   },
   {
     "N": 139,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spin Meister",
     "Type": "Shot",
     "Element": "Air",
@@ -1391,7 +1391,7 @@
   },
   {
     "N": 140,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Splitting Hares",
     "Type": "Shot",
     "Element": "Forest",
@@ -1401,7 +1401,7 @@
   },
   {
     "N": 141,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spiral Shot",
     "Type": "Shot",
     "Element": "Air",
@@ -1411,7 +1411,7 @@
   },
   {
     "N": 142,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Reflect Buster",
     "Type": "Shot",
     "Element": "Mountain",
@@ -1421,7 +1421,7 @@
   },
   {
     "N": 143,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Kung Fu Header",
     "Type": "Shot",
     "Element": "Forest",
@@ -1431,7 +1431,7 @@
   },
   {
     "N": 144,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Divine Arrows",
     "Type": "Shot",
     "Element": "Air",
@@ -1441,27 +1441,27 @@
   },
   {
     "N": 145,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Back Tornado",
     "Type": "Shot",
     "Element": "Air",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
   {
     "N": 146,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Dark Tornado",
     "Type": "Shot",
     "Element": "Forest",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
   {
     "N": 147,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Rainbow Arc",
     "Type": "Shot",
     "Element": "Mountain",
@@ -1471,7 +1471,7 @@
   },
   {
     "N": 148,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Acrobat Bomber",
     "Type": "Shot",
     "Element": "Forest",
@@ -1481,7 +1481,7 @@
   },
   {
     "N": 149,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Fire Blizzard",
     "Type": "Shot",
     "Element": "Air",
@@ -1491,7 +1491,7 @@
   },
   {
     "N": 150,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Triple Boost",
     "Type": "Shot",
     "Element": "Fire",
@@ -1501,7 +1501,7 @@
   },
   {
     "N": 151,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Cross Fire",
     "Type": "Shot",
     "Element": "Fire",
@@ -1511,7 +1511,7 @@
   },
   {
     "N": 152,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Whirlwind Drop",
     "Type": "Shot",
     "Element": "Air",
@@ -1521,7 +1521,7 @@
   },
   {
     "N": 153,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Mirage Shot",
     "Type": "Shot",
     "Element": "Forest",
@@ -1531,7 +1531,7 @@
   },
   {
     "N": 154,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Double Jaw",
     "Type": "Shot",
     "Element": "Fire",
@@ -1541,17 +1541,17 @@
   },
   {
     "N": 155,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Negative Feedback",
     "Type": "Shot",
     "Element": "Forest",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
   {
     "N": 156,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Brimstone Rain",
     "Type": "Shot",
     "Element": "Forest",
@@ -1561,7 +1561,7 @@
   },
   {
     "N": 157,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Snowstorm Leopard",
     "Type": "Shot",
     "Element": "Air",
@@ -1571,7 +1571,7 @@
   },
   {
     "N": 158,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spinning Shot",
     "Type": "Shot",
     "Element": "Air",
@@ -1581,7 +1581,7 @@
   },
   {
     "N": 159,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Accelerator Gears",
     "Type": "Shot",
     "Element": "Mountain",
@@ -1591,17 +1591,17 @@
   },
   {
     "N": 160,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Twin Sun Smash",
     "Type": "Shot",
     "Element": "Mountain",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 255,
     "Tension": 70
   },
   {
     "N": 161,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spring Thunderclap",
     "Type": "Shot",
     "Element": "Air",
@@ -1611,7 +1611,7 @@
   },
   {
     "N": 162,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Sunshine Splitter",
     "Type": "Shot",
     "Element": "Fire",
@@ -1621,7 +1621,7 @@
   },
   {
     "N": 163,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Force Flash",
     "Type": "Shot",
     "Element": "Mountain",
@@ -1631,7 +1631,7 @@
   },
   {
     "N": 164,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Swirly Shot",
     "Type": "Shot",
     "Element": "Air",
@@ -1641,7 +1641,7 @@
   },
   {
     "N": 165,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Cheat Blaster",
     "Type": "Shot",
     "Element": "Fire",
@@ -1651,7 +1651,7 @@
   },
   {
     "N": 166,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Sniper Shot",
     "Type": "Shot",
     "Element": "Air",
@@ -1661,7 +1661,7 @@
   },
   {
     "N": 167,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Royal Penguin Parade",
     "Type": "Shot",
     "Element": "Forest",
@@ -1671,7 +1671,7 @@
   },
   {
     "N": 168,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Doom Dive Drive",
     "Type": "Shot",
     "Element": "Fire",
@@ -1681,7 +1681,7 @@
   },
   {
     "N": 169,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Fangtasmagoria",
     "Type": "Shot",
     "Element": "Forest",
@@ -1691,7 +1691,7 @@
   },
   {
     "N": 170,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Heavenly Thunder",
     "Type": "Shot",
     "Element": "Air",
@@ -1701,7 +1701,7 @@
   },
   {
     "N": 171,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Dash Accelerator",
     "Type": "Dribble",
     "Element": "Void",
@@ -1711,7 +1711,7 @@
   },
   {
     "N": 172,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Deceptor Dribble",
     "Type": "Dribble",
     "Element": "Void",
@@ -1721,7 +1721,7 @@
   },
   {
     "N": 173,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Double Touch",
     "Type": "Dribble",
     "Element": "Void",
@@ -1731,7 +1731,7 @@
   },
   {
     "N": 174,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Gunshot",
     "Type": "Dribble",
     "Element": "Void",
@@ -1741,7 +1741,7 @@
   },
   {
     "N": 175,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Dash Storm",
     "Type": "Dribble",
     "Element": "Void",
@@ -1751,7 +1751,7 @@
   },
   {
     "N": 176,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Bewildered",
     "Type": "Dribble",
     "Element": "Void",
@@ -1761,7 +1761,7 @@
   },
   {
     "N": 177,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Zigzag Spark",
     "Type": "Dribble",
     "Element": "Air",
@@ -1771,7 +1771,7 @@
   },
   {
     "N": 178,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Super Armadillo",
     "Type": "Dribble",
     "Element": "Mountain",
@@ -1781,7 +1781,7 @@
   },
   {
     "N": 179,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Afterimage",
     "Type": "Dribble",
     "Element": "Forest",
@@ -1791,7 +1791,7 @@
   },
   {
     "N": 180,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Mole Fake",
     "Type": "Dribble",
     "Element": "Mountain",
@@ -1801,7 +1801,7 @@
   },
   {
     "N": 181,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Phantasm Dribble",
     "Type": "Dribble",
     "Element": "Forest",
@@ -1811,7 +1811,7 @@
   },
   {
     "N": 182,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Heart Beat",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1821,7 +1821,7 @@
   },
   {
     "N": 183,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Aikido",
     "Type": "Dribble",
     "Element": "Air",
@@ -1831,7 +1831,7 @@
   },
   {
     "N": 184,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Meteor Shower",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1841,7 +1841,7 @@
   },
   {
     "N": 185,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "The Ikaros",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1851,7 +1851,7 @@
   },
   {
     "N": 186,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Super Elastico",
     "Type": "Dribble",
     "Element": "Mountain",
@@ -1861,7 +1861,7 @@
   },
   {
     "N": 187,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Ultra Moon",
     "Type": "Dribble",
     "Element": "Forest",
@@ -1871,7 +1871,7 @@
   },
   {
     "N": 188,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Frosticle",
     "Type": "Dribble",
     "Element": "Air",
@@ -1881,7 +1881,7 @@
   },
   {
     "N": 189,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Tornado Tunnel",
     "Type": "Dribble",
     "Element": "Air",
@@ -1891,7 +1891,7 @@
   },
   {
     "N": 190,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Ball Lightning",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1901,7 +1901,7 @@
   },
   {
     "N": 191,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Flurry Dash",
     "Type": "Dribble",
     "Element": "Air",
@@ -1911,7 +1911,7 @@
   },
   {
     "N": 192,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Grand Glow",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1921,7 +1921,7 @@
   },
   {
     "N": 193,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Niagara Falls",
     "Type": "Dribble",
     "Element": "Air",
@@ -1931,7 +1931,7 @@
   },
   {
     "N": 194,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Ghoulish Glare",
     "Type": "Dribble",
     "Element": "Fire",
@@ -1941,7 +1941,7 @@
   },
   {
     "N": 195,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Marshal's Light",
     "Type": "Dribble",
     "Element": "Mountain",
@@ -1951,7 +1951,7 @@
   },
   {
     "N": 196,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Deceptor Dribble",
     "Type": "Wall",
     "Element": "Void",
@@ -1961,7 +1961,7 @@
   },
   {
     "N": 197,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Jumbo Sandwich",
     "Type": "Wall",
     "Element": "Void",
@@ -1971,7 +1971,7 @@
   },
   {
     "N": 198,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Somersault Stamp",
     "Type": "Wall",
     "Element": "Void",
@@ -1981,7 +1981,7 @@
   },
   {
     "N": 199,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Hey Presto",
     "Type": "Wall",
     "Element": "Void",
@@ -1991,7 +1991,7 @@
   },
   {
     "N": 200,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Quick Draw",
     "Type": "Wall",
     "Element": "Void",
@@ -2001,7 +2001,7 @@
   },
   {
     "N": 201,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Side Swipe",
     "Type": "Wall",
     "Element": "Forest",
@@ -2011,7 +2011,7 @@
   },
   {
     "N": 202,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Coil Turn",
     "Type": "Wall",
     "Element": "Air",
@@ -2021,7 +2021,7 @@
   },
   {
     "N": 203,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Earthquake",
     "Type": "Wall",
     "Element": "Mountain",
@@ -2031,7 +2031,7 @@
   },
   {
     "N": 204,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Hurricane Arrows",
     "Type": "Wall",
     "Element": "Air",
@@ -2041,7 +2041,7 @@
   },
   {
     "N": 205,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spinning Cut",
     "Type": "Wall",
     "Element": "Air",
@@ -2051,7 +2051,7 @@
   },
   {
     "N": 206,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Mega Quake",
     "Type": "Wall",
     "Element": "Mountain",
@@ -2061,7 +2061,7 @@
   },
   {
     "N": 207,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Volcano Cut",
     "Type": "Wall",
     "Element": "Fire",
@@ -2071,7 +2071,7 @@
   },
   {
     "N": 208,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Double Cyclone",
     "Type": "Wall",
     "Element": "Air",
@@ -2081,7 +2081,7 @@
   },
   {
     "N": 209,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Whirlwind Force",
     "Type": "Wall",
     "Element": "Air",
@@ -2091,7 +2091,7 @@
   },
   {
     "N": 210,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Snow Angel",
     "Type": "Wall",
     "Element": "Air",
@@ -2101,7 +2101,7 @@
   },
   {
     "N": 211,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Stone Prison",
     "Type": "Wall",
     "Element": "Mountain",
@@ -2111,7 +2111,7 @@
   },
   {
     "N": 212,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Zigzag Flame",
     "Type": "Wall",
     "Element": "Fire",
@@ -2121,7 +2121,7 @@
   },
   {
     "N": 213,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Cyclone Sprint",
     "Type": "Wall",
     "Element": "Air",
@@ -2131,7 +2131,7 @@
   },
   {
     "N": 214,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Spin Out",
     "Type": "Wall",
     "Element": "Air",
@@ -2141,7 +2141,7 @@
   },
   {
     "N": 215,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Warp Space",
     "Type": "Wall",
     "Element": "Void",
@@ -2151,7 +2151,7 @@
   },
   {
     "N": 216,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Acrobotics",
     "Type": "Wall",
     "Element": "Mountain",
@@ -2161,7 +2161,7 @@
   },
   {
     "N": 217,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Twirling Turtle",
     "Type": "Wall",
     "Element": "Air",
@@ -2171,7 +2171,7 @@
   },
   {
     "N": 218,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Foil Formula",
     "Type": "Wall",
     "Element": "Forest",
@@ -2181,7 +2181,7 @@
   },
   {
     "N": 219,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Deep Diver",
     "Type": "Wall",
     "Element": "Air",
@@ -2191,7 +2191,7 @@
   },
   {
     "N": 220,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "The Stronghold",
     "Type": "Wall",
     "Element": "Mountain",
@@ -2201,7 +2201,7 @@
   },
   {
     "N": 221,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Kraken Seaquake",
     "Type": "Wall",
     "Element": "Air",
@@ -2211,7 +2211,7 @@
   },
   {
     "N": 222,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Rocket Kobushi",
     "Type": "Catch",
     "Element": "Void",
@@ -2221,7 +2221,7 @@
   },
   {
     "N": 223,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Power Spike",
     "Type": "Catch",
     "Element": "Void",
@@ -2231,7 +2231,7 @@
   },
   {
     "N": 224,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Stomper Stopper",
     "Type": "Catch",
     "Element": "Void",
@@ -2241,7 +2241,7 @@
   },
   {
     "N": 225,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Full Power Shield",
     "Type": "Catch",
     "Element": "Fire",
@@ -2251,7 +2251,7 @@
   },
   {
     "N": 226,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Procyon Net",
     "Type": "Catch",
     "Element": "Forest",
@@ -2261,7 +2261,7 @@
   },
   {
     "N": 227,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Toughness Block",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2271,7 +2271,7 @@
   },
   {
     "N": 228,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Flash Upper",
     "Type": "Catch",
     "Element": "Fire",
@@ -2281,7 +2281,7 @@
   },
   {
     "N": 229,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Burnout",
     "Type": "Catch",
     "Element": "Fire",
@@ -2291,7 +2291,7 @@
   },
   {
     "N": 230,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Ice Block",
     "Type": "Catch",
     "Element": "Air",
@@ -2301,7 +2301,7 @@
   },
   {
     "N": 231,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Fist of Justice",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2311,7 +2311,7 @@
   },
   {
     "N": 232,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Fireball Knuckle",
     "Type": "Catch",
     "Element": "Fire",
@@ -2321,7 +2321,7 @@
   },
   {
     "N": 233,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Colosseum Guard",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2331,7 +2331,7 @@
   },
   {
     "N": 234,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Electric Trap",
     "Type": "Catch",
     "Element": "Air",
@@ -2341,7 +2341,7 @@
   },
   {
     "N": 235,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Table-Turner",
     "Type": "Catch",
     "Element": "Fire",
@@ -2351,7 +2351,7 @@
   },
   {
     "N": 236,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Snakebite",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2361,7 +2361,7 @@
   },
   {
     "N": 237,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Gyro-Blocker",
     "Type": "Catch",
     "Element": "Forest",
@@ -2371,7 +2371,7 @@
   },
   {
     "N": 238,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Icy Grace",
     "Type": "Catch",
     "Element": "Air",
@@ -2381,7 +2381,7 @@
   },
   {
     "N": 239,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Cyber Realm",
     "Type": "Catch",
     "Element": "Forest",
@@ -2391,7 +2391,7 @@
   },
   {
     "N": 240,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Stillness Drip",
     "Type": "Catch",
     "Element": "Fire",
@@ -2401,7 +2401,7 @@
   },
   {
     "N": 241,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Gravity Dune",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2411,7 +2411,7 @@
   },
   {
     "N": 242,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Silent Inkstroke",
     "Type": "Catch",
     "Element": "Air",
@@ -2421,7 +2421,7 @@
   },
   {
     "N": 243,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Royal Shield",
     "Type": "Catch",
     "Element": "Fire",
@@ -2431,7 +2431,7 @@
   },
   {
     "N": 244,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Song of the Three Kingdoms",
     "Type": "Catch",
     "Element": "Mountain",
@@ -2441,7 +2441,7 @@
   },
   {
     "N": 245,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Galatyn",
     "Type": "Catch",
     "Element": "Forest",
@@ -2451,7 +2451,7 @@
   },
   {
     "N": 246,
-    "Shop": "Training",
+    "Shop": "Story Training",
     "Name": "Divine Deflectors",
     "Type": "Catch",
     "Element": "Air",
@@ -2465,7 +2465,7 @@
     "Name": "Ephemeral Boost",
     "Type": "Shot",
     "Element": "Air",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 255,
     "Tension": 70
   },
@@ -2495,7 +2495,7 @@
     "Name": "Inazuma Break",
     "Type": "Shot",
     "Element": "Air",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 255,
     "Tension": 70
   },
@@ -2535,7 +2535,7 @@
     "Name": "Utter Gutsiness Bat",
     "Type": "Shot",
     "Element": "Fire",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
@@ -2695,7 +2695,7 @@
     "Name": "Butterfly Trance",
     "Type": "Shot",
     "Element": "Mountain",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
@@ -2755,7 +2755,7 @@
     "Name": "Megaton Head",
     "Type": "Shot",
     "Element": "Mountain",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 255,
     "Tension": 70
   },
@@ -2885,7 +2885,7 @@
     "Name": "Jumping Jack",
     "Type": "Shot",
     "Element": "Mountain",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 175,
     "Tension": 50
   },
@@ -3605,7 +3605,7 @@
     "Name": "Kung Fu Fighting",
     "Type": "Shot",
     "Element": "Mountain",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 175,
     "Tension": 50
   },
@@ -3625,7 +3625,7 @@
     "Name": "Ganymede Ray",
     "Type": "Shot",
     "Element": "Forest",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 210,
     "Tension": 60
   },
@@ -4345,7 +4345,7 @@
     "Name": "Zero Magnum",
     "Type": "Shot",
     "Element": "Void",
-    "Extra": "Counterattack",
+    "Extra": "Counter",
     "Power": 312,
     "Tension": 80
   },

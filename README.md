@@ -1,40 +1,43 @@
-# Digimon Time Stranger Guide & Team Builder
+# Inazuma Eleven Guide & Team Builder
 
-A responsive companion app for **Digimon Time Stranger** that helps players research Digimon data, plan evolution paths, and assemble squads on any device. All game info is fetched on demand from [Grindosaur](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon/), parsed with Cheerio, and rendered with modern React tooling.
-
-<img width="1200" alt="image" src="https://github.com/user-attachments/assets/a0c180c9-c426-48ab-a5e0-3549c94fb721" />
+A responsive companion app for **Inazuma Eleven** that helps managers browse every canon player, compare stats, track elemental matchups, and (soon) assemble their dream squads. The experience is tuned for touch navigation, fast filtering, and looks great in the Harvest Moon–inspired dark palette.
 
 ---
 
 ## Highlights
 
-- 🔍 **Global search** across every Digimon via the Lucene-like navbar search.
-- 📋 **Reference sheets**: evolution requirements, attribute stats, personalities, and skills in a clean shadcn/ui layout.
-- 🧩 **Team Builder** with drag-and-drop ordering, inline personality/skill selection, evolution path previews, and local-storage persistence.
-- 🔁 **Import/Export** your squads as JSON to share or restore later.
-- 🌗 **Fully responsive** design tuned for touch navigation and dark theme aesthetics.
+- 🔎 **Players encyclopedia** – ~6,000 athletes from the franchise rendered with portraits, elements, roles, and calculated power metrics (Focus AT/DF, KP, etc.).
+- ⚖️ **Advanced ordering** – stack multiple stat or power metrics (e.g., Kick + Control) to surface specific archetypes instantly.
+- ⭐ **Favorites & persistence** – star must-have characters and filter the table to your shortlist with settings saved in localStorage.
+- 🧮 **Dual views** – toggle between raw stats and derived “Power” formulas that follow the official mechanics documented in the repo.
+- 📱 **Mobile-first UI** – shadcn/ui + Tailwind v4 delivers snappy cards, sticky headers, and sidebar navigation optimized for handheld play.
+- 🛠️ **Team Builder (WIP)** – reserved route and atoms are ready for drag-and-drop roster planning in upcoming releases.
 
 ---
 
 ## Tech Stack
 
-- **React + Vite** (TypeScript)
-- **Tailwind CSS v4** with custom shadcn/ui theme tokens
-- **shadcn/ui** component primitives
-- **Jotai** for state management with localStorage persistence
-- **dnd-kit** for drag-and-drop interactions
-- **Cheerio** + custom fetchers for Grindosaur scraping
+- **React 19 + Vite** (TypeScript, strict mode)
+- **Tailwind CSS v4** with a custom Harvest Moon theme
+- **shadcn/ui** primitives (Sidebar, Table, Select, etc.)
+- **Jotai** with `atomWithStorage` for local persistence
+- **lucide-react** iconography
 
 ---
 
 ## Getting Started
 
 ```bash
-pnpm install       # install dependencies
-pnpm start           # start Vite dev server
+pnpm install   # install dependencies
+pnpm start     # start Vite dev server (http://localhost:5173 by default)
 ```
 
-The dev server prints a local URL (default http://localhost:5173). The app is a single-page application; routing lives in `App.tsx`.
+Production build:
+
+```bash
+pnpm build
+pnpm preview   # optional – serve the dist bundle locally
+```
 
 ---
 
@@ -42,46 +45,41 @@ The dev server prints a local URL (default http://localhost:5173). The app is a 
 
 ```
 src/
-  assets/                 # static assets (icons, personalities data)
+  assets/data/           # large JSON datasets (players, abilities, gear)
   components/
-    layout/AppLayout.tsx  # shell + sidebar navigation
-    navigation/           # navbar search, sidebar controls
-    digimon/              # shared Digimon presentation components
-    team-builder/         # cards, selectors, DnD board
-    ui/                   # local shadcn/ui primitives
-  hooks/                  # data fetching and UI hooks
-  lib/                    # API clients, helpers, type guards
-  pages/                  # routed pages (team builder, overview)
-  store/                  # jotai atoms for global state
-  App.tsx                 # top-level routes inside AppLayout
-  main.tsx                # application bootstrap
-  index.css               # Tailwind config + theme tokens
+    layout/AppLayout.tsx # shell, sidebar, and page outlet
+    ui/                  # shadcn-based primitives
+  hooks/                 # shared hooks (e.g., mobile detection)
+  lib/                   # utilities, icon mapping helpers
+  pages/                 # routed pages (PlayersPage, Team Builder placeholder)
+  store/
+    players.ts           # sorting/filter preferences
+    favorites.ts         # starred player atom
+  App.tsx                # routes wired into AppLayout
+  main.tsx               # Vite entry point
+  index.css              # Tailwind + theme tokens
 ```
 
-Key atoms in `src/store/team-builder-atoms.ts` handle persistence using `atomWithStorage`, keeping the current team across sessions.
+Players are loaded from `src/assets/data/players.json` at build time and memoized so filtering stays instant even with thousands of rows.
 
 ---
 
-## Data Flow
+## Development Notes
 
-1. Pages call `useDigimonDetails` or list hooks, which fetch from Grindosaur and transform the HTML payload with Cheerio.
-2. Parsed data is cached in-memory, then rendered by shadcn/ui components.
-3. Team Builder changes are mirrored into localStorage so refreshes retain your squad.
-
----
-
-## Import / Export
-
-- **Export:** Open the floating controls, choose the download icon, and copy the JSON blob.
-- **Import:** Open the upload icon, paste a previously exported JSON payload, and confirm. Sanitisation guards against malformed data while preserving existing IDs when possible.
+- **State** – keep new persistent UI state in Jotai atoms (prefer `atomWithStorage` when reloading should retain the value). Co-locate atoms under `src/store/`.
+- **Styling** – rely on existing shadcn components and Tailwind utilities. Favor small gaps/paddings (`gap-2`, `p-2`) per the project brief.
+- **Accessibility** – interactive pills, toggles, and buttons already ship with focus/aria styles. Mirror those patterns for new controls.
+- **Performance** – large tables use lazy rendering + `IntersectionObserver`. When adding new bulk lists, follow the same pattern.
 
 ---
 
-## Testing & Quality
+## Roadmap
 
-- TypeScript strictness (`tsconfig.*`) keeps data contracts honest.
-- UI polish leans on Tailwind utility classes; prefer extending shared components before duplicating layouts.
-- When adding new features, co-locate state atoms or hooks to stay DRY, and reuse existing cards/pills where possible.
+- 🛠️ Team Builder drag-and-drop interface with gear/technique slots
+- 📚 Additional reference sheets (equipment, abilities, hissatsu lookup)
+- 🔁 Import/export for sharing squads
+
+Open an issue or PR if you want to contribute!
 
 ---
 

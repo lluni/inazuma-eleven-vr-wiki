@@ -1,4 +1,4 @@
-import { Github, Swords, Users } from "lucide-react";
+import { Github, Shirt, Sparkles, Swords, Users } from "lucide-react";
 import { Suspense } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
@@ -23,6 +23,12 @@ function getPageTitle(pathname: string): string {
 	if (pathname === "/" || pathname.startsWith("/players")) {
 		return "Players";
 	}
+	if (pathname.startsWith("/equipments")) {
+		return "Equipments";
+	}
+	if (pathname.startsWith("/hissatsu")) {
+		return "Hissatsu";
+	}
 	if (pathname.startsWith("/team-builder")) {
 		return "Team Builder";
 	}
@@ -34,6 +40,8 @@ export default function AppLayout() {
 	const faviconUrl = `${import.meta.env.BASE_URL}favicon/favicon.svg`;
 	const playersActive =
 		location.pathname === "/" || location.pathname.startsWith("/players");
+	const equipmentsActive = location.pathname.startsWith("/equipments");
+	const hissatsuActive = location.pathname.startsWith("/hissatsu");
 	const teamBuilderActive = location.pathname.startsWith("/team-builder");
 	return (
 		<SidebarProvider>
@@ -65,6 +73,22 @@ export default function AppLayout() {
 										<NavLink to="/">
 											<Users />
 											<span>Players</span>
+										</NavLink>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+								<SidebarMenuItem>
+									<SidebarMenuButton asChild isActive={equipmentsActive}>
+										<NavLink to="/equipments">
+											<Shirt />
+											<span>Equipments</span>
+										</NavLink>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+								<SidebarMenuItem>
+									<SidebarMenuButton asChild isActive={hissatsuActive}>
+										<NavLink to="/hissatsu">
+											<Sparkles />
+											<span>Hissatsu</span>
 										</NavLink>
 									</SidebarMenuButton>
 								</SidebarMenuItem>

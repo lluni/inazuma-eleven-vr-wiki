@@ -3,6 +3,7 @@ import {
 	BrickWall,
 	Dribbble,
 	Flame,
+	Hand,
 	Mountain,
 	Tornado,
 	TreePine,
@@ -11,7 +12,7 @@ import {
 import { withBase } from "@/lib/utils";
 
 export type ElementType = "Forest" | "Wind" | "Fire" | "Mountain";
-export type MoveType = "Shot" | "Dribble" | "Wall";
+export type MoveType = "Shot" | "Dribble" | "Wall" | "Catch";
 export type TeamPosition = "FW" | "MD" | "DF" | "GK";
 
 type IconDefinition = {
@@ -63,6 +64,10 @@ const MOVE_ICON_MAP: Record<MoveType, IconDefinition> = {
 		icon: BrickWall,
 		color: "#0ea5e9",
 	},
+	Catch: {
+		icon: Hand,
+		color: "#ffd700",
+	}
 };
 
 const POSITION_COLOR_MAP: Record<TeamPosition, PositionColor> = {

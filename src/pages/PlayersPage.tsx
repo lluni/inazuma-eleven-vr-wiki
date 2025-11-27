@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { useAtom } from "jotai";
-import { RotateCcw } from "lucide-react";
-
-import playersJson from "@/assets/data/players.json?raw";
+import { RotateCcw, Search, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,83 +21,34 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
 import {
-	getElementIcon,
-	getPositionColor,
-	type ElementType,
-	type TeamPosition,
-} from "@/lib/icon-picker";
+	createSortedUniqueOptions,
+	formatNumber,
+	titleCase,
+} from "@/lib/data-helpers";
 import {
 	DEFAULT_PLAYERS_PREFERENCES,
 	playersPreferencesAtom,
 	type PlayersPreferences,
 	type PlayersSortKey,
 } from "@/store/players";
+import { favoritePlayersAtom } from "@/store/favorites";
+import { type BaseStats, type PowerStats } from "@/lib/inazuma-math";
+import {
+	mapToElementType,
+	mapToTeamPosition,
+	playersDataset,
+	type PlayerRecord,
+} from "@/lib/players-data";
 
-type RawPlayerRecord = {
-	"Nº": number;
-	Image: string;
-	Name: string;
-	Nickname: string;
-	Game: string;
-	Position: string;
-	Element: string;
-	Kick: number;
-	Control: number;
-	Technique: number;
-	Pressure: number;
-	Physical: number;
-	Agility: number;
-	Intelligence: number;
-	Total: number;
-	"Age group": string;
-	Year: string;
-	Gender: string;
-	Role: string;
-};
-
-type BaseStats = {
-	kick: number;
-	control: number;
-	technique: number;
-	pressure: number;
-	physical: number;
-	agility: number;
-	intelligence: number;
-	total: number;
-};
-
-type PowerStats = {
-	shootAT: number;
-	focusAT: number;
-	focusDF: number;
-	wallDF: number;
-	scrambleAT: number;
-	scrambleDF: number;
-	kp: number;
-};
-
-type Player = {
-	id: number;
-	image: string;
-	name: string;
-	nickname: string;
-	game: string;
-	position: string;
-	element: string;
-	role: string;
-	ageGroup: string;
-	year: string;
-	gender: string;
-	stats: BaseStats;
-	power: PowerStats;
-};
+type Player = PlayerRecord;
 
 type TableColumn = {
 	key: string;
 	header: string;
 	className?: string;
-	align?: "left" | "right";
+	align?: "left" | "right" | "center";
 	render: (player: Player) => React.ReactNode;
 };
 
@@ -111,37 +60,6 @@ type SortMetric = {
 
 const INITIAL_VISIBLE_COUNT = 50;
 const LOAD_MORE_BATCH_SIZE = 50;
-
-const rawPlayers = JSON.parse(playersJson).filter((x: RawPlayerRecord) => x.Name !== "???") as RawPlayerRecord[];
-
-const playersDataset: Player[] = rawPlayers.map((player) => {
-	const stats: BaseStats = {
-		kick: normalizeStat(player.Kick),
-		control: normalizeStat(player.Control),
-		technique: normalizeStat(player.Technique),
-		pressure: normalizeStat(player.Pressure),
-		physical: normalizeStat(player.Physical),
-		agility: normalizeStat(player.Agility),
-		intelligence: normalizeStat(player.Intelligence),
-		total: normalizeStat(player.Total),
-	};
-
-	return {
-		id: player["Nº"],
-		image: player.Image,
-		name: sanitizeAttribute(player.Name),
-		nickname: sanitizeAttribute(player.Nickname),
-		game: sanitizeAttribute(player.Game),
-		position: sanitizeAttribute(player.Position),
-		element: sanitizeAttribute(player.Element),
-		role: sanitizeAttribute(player.Role),
-		ageGroup: sanitizeAttribute(player["Age group"]),
-		year: sanitizeAttribute(player.Year),
-		gender: sanitizeAttribute(player.Gender),
-		stats,
-		power: computePower(stats),
-	};
-});
 
 const metricDefinitions: SortMetric[] = [
 	{ key: "total", label: "Total", category: "Base stats" },
@@ -185,13 +103,7 @@ const elementOptions = createSortedUniqueOptions(playersDataset.map((player) => 
 const positionOptions = createSortedUniqueOptions(playersDataset.map((player) => player.position));
 const roleOptions = createSortedUniqueOptions(playersDataset.map((player) => player.role));
 
-const statsColumns: TableColumn[] = [
-	{
-		key: "identity",
-		header: "Player",
-		className: "min-w-[220px]",
-		render: (player) => <PlayerIdentity player={player} />,
-	},
+const statsMetricColumns: TableColumn[] = [
 	...["kick", "control", "technique", "pressure", "physical", "agility", "intelligence", "total"].map(
 		(key) => ({
 			key,
@@ -202,13 +114,7 @@ const statsColumns: TableColumn[] = [
 	),
 ];
 
-const powerColumns: TableColumn[] = [
-	{
-		key: "identity",
-		header: "Player",
-		className: "min-w-[220px]",
-		render: (player) => <PlayerIdentity player={player} />,
-	},
+const powerMetricColumns: TableColumn[] = [
 	...[
 		["shootAT", "Shoot AT"],
 		["focusAT", "Focus AT"],
@@ -227,6 +133,8 @@ const powerColumns: TableColumn[] = [
 
 export default function PlayersPage() {
 	const [preferences, setPreferences] = useAtom(playersPreferencesAtom);
+	const [favoritePlayers, setFavoritePlayers] = useAtom(favoritePlayersAtom);
+	const favoriteSet = useMemo(() => new Set(favoritePlayers), [favoritePlayers]);
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const activeSortKeys =
@@ -255,13 +163,23 @@ export default function PlayersPage() {
 			if (preferences.role !== "all" && player.role !== preferences.role) {
 				return false;
 			}
+			if (preferences.favoritesOnly && !favoriteSet.has(player.id)) {
+				return false;
+			}
 			if (!query) return true;
 			return (
 				player.name.toLowerCase().includes(query) ||
 				player.nickname.toLowerCase().includes(query)
 			);
 		});
-	}, [preferences.element, preferences.position, preferences.role, preferences.search]);
+	}, [
+		favoriteSet,
+		preferences.element,
+		preferences.favoritesOnly,
+		preferences.position,
+		preferences.role,
+		preferences.search,
+	]);
 
 	const sortedPlayers = useMemo(() => {
 		const { sortDirection } = preferences;
@@ -275,7 +193,42 @@ export default function PlayersPage() {
 		});
 	}, [activeSortKeys, filteredPlayers, preferences.sortDirection]);
 
-	const tableColumns = preferences.viewMode === "stats" ? statsColumns : powerColumns;
+	const handleToggleFavorite = useCallback(
+		(playerId: number) => {
+			setFavoritePlayers((prev) => {
+				const exists = prev.includes(playerId);
+				if (exists) {
+					return prev.filter((id) => id !== playerId);
+				}
+				return [...prev, playerId];
+			});
+		},
+		[setFavoritePlayers],
+	);
+
+	const tableColumns = useMemo(() => {
+		const metricColumns =
+			preferences.viewMode === "stats" ? statsMetricColumns : powerMetricColumns;
+		const favoriteColumn: TableColumn = {
+			key: "favorite",
+			header: "",
+			className: "w-12",
+			align: "center",
+			render: (player: Player) => (
+				<FavoriteToggle
+					isFavorite={favoriteSet.has(player.id)}
+					onToggle={() => handleToggleFavorite(player.id)}
+				/>
+			),
+		};
+		const identityColumn: TableColumn = {
+			key: "identity",
+			header: "Player",
+			className: "min-w-[240px]",
+			render: (player: Player) => <PlayerIdentity player={player} />,
+		};
+		return [favoriteColumn, identityColumn, ...metricColumns];
+	}, [favoriteSet, handleToggleFavorite, preferences.viewMode]);
 
 	const visiblePlayers = sortedPlayers.slice(0, visibleCount);
 	const hasMore = visibleCount < sortedPlayers.length;
@@ -284,7 +237,8 @@ export default function PlayersPage() {
 		preferences.search !== DEFAULT_PLAYERS_PREFERENCES.search ||
 		preferences.element !== DEFAULT_PLAYERS_PREFERENCES.element ||
 		preferences.position !== DEFAULT_PLAYERS_PREFERENCES.position ||
-		preferences.role !== DEFAULT_PLAYERS_PREFERENCES.role;
+		preferences.role !== DEFAULT_PLAYERS_PREFERENCES.role ||
+		preferences.favoritesOnly !== DEFAULT_PLAYERS_PREFERENCES.favoritesOnly;
 
 	const sortIsDirty =
 		preferences.sortDirection !== DEFAULT_PLAYERS_PREFERENCES.sortDirection ||
@@ -318,6 +272,7 @@ export default function PlayersPage() {
 			element: DEFAULT_PLAYERS_PREFERENCES.element,
 			position: DEFAULT_PLAYERS_PREFERENCES.position,
 			role: DEFAULT_PLAYERS_PREFERENCES.role,
+			favoritesOnly: DEFAULT_PLAYERS_PREFERENCES.favoritesOnly,
 		});
 	};
 
@@ -328,6 +283,33 @@ export default function PlayersPage() {
 		});
 	};
 
+	const traitFilters = [
+		{
+			key: "element",
+			label: "Element",
+			value: preferences.element,
+			defaultLabel: "All elements",
+			options: elementOptions,
+			onValueChange: (value: string) => handleUpdate({ element: value }),
+		},
+		{
+			key: "position",
+			label: "Position",
+			value: preferences.position,
+			defaultLabel: "All positions",
+			options: positionOptions,
+			onValueChange: (value: string) => handleUpdate({ position: value }),
+		},
+		{
+			key: "role",
+			label: "Role",
+			value: preferences.role,
+			defaultLabel: "All roles",
+			options: roleOptions,
+			onValueChange: (value: string) => handleUpdate({ role: value }),
+		},
+	] as const;
+
 	useEffect(() => {
 		setVisibleCount(INITIAL_VISIBLE_COUNT);
 	}, [
@@ -335,9 +317,11 @@ export default function PlayersPage() {
 		preferences.element,
 		preferences.position,
 		preferences.role,
+		preferences.favoritesOnly,
 		preferences.viewMode,
 		preferences.sortDirection,
 		activeSortKeys.join(","),
+		favoritePlayers.join(","),
 	]);
 
 	useEffect(() => {
@@ -362,126 +346,113 @@ export default function PlayersPage() {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<section className="flex flex-col gap-3 lg:flex-row lg:items-center">
-				<div className="flex flex-1 items-center gap-2 rounded-lg border bg-card/50 px-3">
-					<Input
-						value={preferences.search}
-						onChange={(event) => handleUpdate({ search: event.currentTarget.value })}
-						placeholder="Search by name or nickname..."
-						className="border-0 bg-transparent px-0 focus-visible:ring-0"
-						aria-label="Filter players by name"
-					/>
-				</div>
-				<div className="flex items-center gap-2">
+			<section className="rounded-lg border bg-card/50 p-3">
+				<div className="flex flex-wrap items-center gap-2">
+					<div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5">
+						<Search className="size-4 text-muted-foreground" aria-hidden="true" />
+						<Input
+							value={preferences.search}
+							onChange={(event) => handleUpdate({ search: event.currentTarget.value })}
+							placeholder="Search players"
+							className="flex-1 border-0 bg-transparent px-0 focus-visible:ring-0"
+							aria-label="Filter players by name"
+						/>
+					</div>
+					<div className="flex rounded-md border bg-background/30 p-1 text-xs font-semibold uppercase text-muted-foreground">
+						<Button
+							size="sm"
+							className="h-8 rounded-[6px] px-3"
+							variant={preferences.viewMode === "stats" ? "default" : "ghost"}
+							onClick={() => handleUpdate({ viewMode: "stats" })}
+						>
+							Stats
+						</Button>
+						<Button
+							size="sm"
+							className="h-8 rounded-[6px] px-3"
+							variant={preferences.viewMode === "power" ? "default" : "ghost"}
+							onClick={() => handleUpdate({ viewMode: "power" })}
+						>
+							Power
+						</Button>
+					</div>
 					<Button
 						size="sm"
-						variant={preferences.viewMode === "stats" ? "default" : "outline"}
-						onClick={() => handleUpdate({ viewMode: "stats" })}
+						variant={preferences.favoritesOnly ? "default" : "outline"}
+						onClick={() => handleUpdate({ favoritesOnly: !preferences.favoritesOnly })}
+						aria-pressed={preferences.favoritesOnly}
+						className="h-8"
 					>
-						Show stats
-					</Button>
-					<Button
-						size="sm"
-						variant={preferences.viewMode === "power" ? "default" : "outline"}
-						onClick={() => handleUpdate({ viewMode: "power" })}
-					>
-						Show power
+						<Star
+							className={cn(
+								"size-4",
+								preferences.favoritesOnly ? "fill-current" : "fill-transparent",
+							)}
+						/>
+						Favorites
 					</Button>
 					<Button
 						size="sm"
 						variant="ghost"
-						className="text-muted-foreground"
+						className="h-8 text-muted-foreground"
 						onClick={handleResetFilters}
 						disabled={!filtersAreDirty}
 					>
 						<RotateCcw className="size-4" />
-						Reset filters
+						Reset
 					</Button>
 				</div>
-			</section>
-
-			<section className="rounded-lg border bg-card/40 p-3">
-				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-					<Select
-						value={preferences.element}
-						onValueChange={(value) => handleUpdate({ element: value })}
-					>
-						<SelectTrigger size="sm" className="w-full justify-between">
-							<SelectValue placeholder="Element" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All elements</SelectItem>
-							{elementOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<Select
-						value={preferences.position}
-						onValueChange={(value) => handleUpdate({ position: value })}
-					>
-						<SelectTrigger size="sm" className="w-full justify-between">
-							<SelectValue placeholder="Position" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All positions</SelectItem>
-							{positionOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<Select
-						value={preferences.role}
-						onValueChange={(value) => handleUpdate({ role: value })}
-					>
-						<SelectTrigger size="sm" className="w-full justify-between">
-							<SelectValue placeholder="Role" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All roles</SelectItem>
-							{roleOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<div className="hidden lg:block" />
+				<div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+					{traitFilters.map((filter) => (
+						<Select
+							key={filter.key}
+							value={filter.value}
+							onValueChange={filter.onValueChange}
+						>
+							<SelectTrigger
+								size="sm"
+								className="h-10 w-full justify-between rounded-md border bg-background/30"
+								aria-label={filter.label}
+							>
+								<SelectValue placeholder={filter.defaultLabel} />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">{filter.defaultLabel}</SelectItem>
+								{filter.options.map((option) => (
+									<SelectItem key={option} value={option}>
+										{option}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					))}
 				</div>
 			</section>
 
 			<section className="rounded-lg border bg-card/40 p-3">
-				<header className="flex flex-wrap items-center justify-between gap-2">
-					<div>
-						<p className="text-sm font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-							Ordering
-						</p>
-						<p className="text-xs text-muted-foreground">
-							Combine stats to surface specific profiles.
-						</p>
-					</div>
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+						Ordering
+					</p>
 					<Button
 						size="sm"
 						variant="ghost"
-						className="text-muted-foreground"
+						className="h-8 text-muted-foreground"
 						onClick={handleResetSorting}
 						disabled={!sortIsDirty}
 					>
 						<RotateCcw className="size-4" />
-						Reset ordering
+						Reset
 					</Button>
-				</header>
+				</div>
 
 				<div className="mt-3 flex flex-wrap items-center gap-2">
-					<span className="text-xs font-semibold uppercase text-muted-foreground">
+					<span className="text-[11px] font-semibold uppercase text-muted-foreground">
 						Direction
 					</span>
 					<Button
 						size="sm"
+						className="h-8"
 						variant={preferences.sortDirection === "desc" ? "default" : "outline"}
 						onClick={() => handleUpdate({ sortDirection: "desc" })}
 					>
@@ -489,6 +460,7 @@ export default function PlayersPage() {
 					</Button>
 					<Button
 						size="sm"
+						className="h-8"
 						variant={preferences.sortDirection === "asc" ? "default" : "outline"}
 						onClick={() => handleUpdate({ sortDirection: "asc" })}
 					>
@@ -496,12 +468,17 @@ export default function PlayersPage() {
 					</Button>
 				</div>
 
-				<div className="mt-3 space-y-3">
+				<div className="mt-3 grid gap-2 lg:grid-cols-2">
 					{["Base stats", "Power values"].map((category) => (
-						<div key={category} className="space-y-2">
-							<p className="text-xs font-semibold uppercase text-muted-foreground">
-								{category}
-							</p>
+						<div key={category} className="rounded-lg border bg-background/10 p-2">
+							<div className="mb-2 flex items-center justify-between">
+								<p className="text-[11px] font-semibold uppercase text-muted-foreground">
+									{category}
+								</p>
+								<span className="text-[10px] uppercase text-muted-foreground">
+									Multi-select
+								</span>
+							</div>
 							<div className="flex flex-wrap gap-2">
 								{metricDefinitions
 									.filter((metric) => metric.category === category)
@@ -511,6 +488,7 @@ export default function PlayersPage() {
 											<Button
 												key={metric.key}
 												size="sm"
+												className="h-8"
 												variant={isActive ? "default" : "outline"}
 												onClick={() => handleToggleSortKey(metric.key)}
 											>
@@ -551,7 +529,11 @@ export default function PlayersPage() {
 									key={column.key}
 									className={cn(
 										column.className,
-										column.align === "right" ? "text-right" : undefined,
+										column.align === "right"
+											? "text-right"
+											: column.align === "center"
+												? "text-center"
+												: undefined,
 									)}
 								>
 									{column.header}
@@ -567,7 +549,11 @@ export default function PlayersPage() {
 										key={column.key}
 										className={cn(
 											column.className,
-											column.align === "right" ? "text-right font-mono" : undefined,
+											column.align === "right"
+												? "text-right font-mono"
+												: column.align === "center"
+													? "text-center"
+													: undefined,
 										)}
 									>
 										{column.render(player)}
@@ -595,9 +581,13 @@ export default function PlayersPage() {
 	);
 }
 
-function PlayerIdentity({ player }: { player: Player }) {
+type PlayerIdentityProps = {
+	player: Player;
+};
+
+function PlayerIdentity({ player }: PlayerIdentityProps) {
 	return (
-		<div className="flex items-center gap-2">
+		<div className="flex items-center gap-3">
 			<img
 				src={player.image}
 				alt={player.name}
@@ -605,7 +595,7 @@ function PlayerIdentity({ player }: { player: Player }) {
 				loading="lazy"
 				referrerPolicy="no-referrer"
 			/>
-			<div className="flex flex-col">
+			<div className="flex flex-1 flex-col">
 				<span className="font-semibold leading-tight">{player.name}</span>
 				<span className="text-xs text-muted-foreground">“{player.nickname}”</span>
 				<div className="mt-1 flex flex-wrap gap-1 text-xs">
@@ -617,6 +607,38 @@ function PlayerIdentity({ player }: { player: Player }) {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+type FavoriteToggleProps = {
+	isFavorite: boolean;
+	onToggle: () => void;
+};
+
+function FavoriteToggle({ isFavorite, onToggle }: FavoriteToggleProps) {
+	const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+		onToggle();
+	};
+
+	return (
+		<button
+			type="button"
+			onClick={handleClick}
+			aria-pressed={isFavorite}
+			aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+			className={cn(
+				"rounded-full border p-1 transition-colors",
+				isFavorite
+					? "border-amber-400 bg-amber-50 text-amber-500"
+					: "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
+			)}
+		>
+			<Star
+				className={cn("size-4", isFavorite ? "fill-current" : "fill-transparent")}
+				aria-hidden="true"
+			/>
+		</button>
 	);
 }
 
@@ -670,80 +692,6 @@ function ElementBadge({ element }: { element: string }) {
 			{element}
 		</Badge>
 	);
-}
-
-function computePower(stats: BaseStats): PowerStats {
-	return {
-		shootAT: Math.round(stats.kick + stats.control),
-		focusAT: Math.round(stats.technique + stats.control + stats.kick * 0.5),
-		focusDF: Math.round(stats.technique + stats.intelligence + stats.agility * 0.5),
-		wallDF: Math.round(stats.pressure + stats.physical),
-		scrambleAT: Math.round(stats.intelligence + stats.physical),
-		scrambleDF: Math.round(stats.intelligence + stats.pressure),
-		kp: Math.round(stats.pressure * 2 + stats.physical * 3 + stats.agility * 4),
-	};
-}
-
-function createSortedUniqueOptions(values: string[]): string[] {
-	return Array.from(
-		new Set(
-			values
-				.map((value) => sanitizeAttribute(value))
-				.filter((value) => value !== ""),
-		),
-	).sort((a, b) => a.localeCompare(b));
-}
-
-function formatNumber(value: number): string {
-	const numericValue = Number(value);
-	if (!Number.isFinite(numericValue)) {
-		return "—";
-	}
-	return Number.isInteger(numericValue)
-		? numericValue.toString()
-		: numericValue.toFixed(1).replace(/\.0$/, "");
-}
-
-function titleCase(value: string): string {
-	return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function normalizeStat(value: unknown): number {
-	const numeric = typeof value === "number" ? value : Number(value);
-	return Number.isFinite(numeric) ? numeric : 0;
-}
-
-function sanitizeAttribute(value: string | null | undefined): string {
-	if (typeof value !== "string") return "Unknown";
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : "Unknown";
-}
-
-function mapToElementType(element: string): ElementType {
-	const normalized = element.trim().toLowerCase();
-	switch (normalized) {
-		case "fire":
-			return "Fire";
-		case "wind":
-			return "Wind";
-		case "mountain":
-			return "Mountain";
-		case "forest":
-		default:
-			return "Forest";
-	}
-}
-
-function mapToTeamPosition(position: string): TeamPosition {
-	const normalized = position.trim().toUpperCase();
-	const map: Record<string, TeamPosition> = {
-		GK: "GK",
-		DF: "DF",
-		FW: "FW",
-		MF: "MD",
-		MD: "MD",
-	};
-	return map[normalized] ?? "MD";
 }
 
 function addAlpha(hex: string, alpha: string): string {

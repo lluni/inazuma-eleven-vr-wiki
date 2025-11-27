@@ -24,6 +24,7 @@ export type PlayersPreferences = {
 	element: string;
 	position: string;
 	role: string;
+	favoritesOnly: boolean;
 	viewMode: PlayersViewMode;
 	sortKeys: PlayersSortKey[];
 	sortDirection: PlayersSortDirection;
@@ -36,6 +37,7 @@ export const DEFAULT_PLAYERS_PREFERENCES: PlayersPreferences = {
 	element: "all",
 	position: "all",
 	role: "all",
+	favoritesOnly: false,
 	viewMode: "stats",
 	sortKeys: ["total"],
 	sortDirection: "desc",
