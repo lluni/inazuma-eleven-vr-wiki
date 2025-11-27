@@ -5,9 +5,20 @@ import type { FormationId } from "@/data/formations";
 
 export type TeamBuilderAssignments = Record<string, number | null>;
 
+export type DisplayMode = 
+	| "nickname"
+	| "shootAT"
+	| "focusAT"
+	| "focusDF"
+	| "wallDF"
+	| "scrambleAT"
+	| "scrambleDF"
+	| "kp";
+
 export type TeamBuilderState = {
 	formationId: FormationId;
 	assignments: TeamBuilderAssignments;
+	displayMode: DisplayMode;
 };
 
 const TEAM_BUILDER_STORAGE_KEY = "inazuma-guide.team-builder.v1";
@@ -16,6 +27,7 @@ const DEFAULT_FORMATION_ID = FORMATIONS[0]?.id ?? "433-delta";
 const defaultState: TeamBuilderState = {
 	formationId: DEFAULT_FORMATION_ID,
 	assignments: {},
+	displayMode: "nickname",
 };
 
 const storage =

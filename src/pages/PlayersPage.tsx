@@ -108,7 +108,7 @@ const statsMetricColumns: TableColumn[] = [
 		(key) => ({
 			key,
 			header: titleCase(key),
-			align: "right" as const,
+			align: "center" as const,
 			render: (player: Player) => formatNumber(player.stats[key as keyof BaseStats]),
 		}),
 	),
@@ -126,7 +126,7 @@ const powerMetricColumns: TableColumn[] = [
 	].map(([key, label]) => ({
 		key,
 		header: label,
-		align: "right" as const,
+		align: "center" as const,
 		render: (player: Player) => formatNumber(player.power[key as keyof PowerStats]),
 	})),
 ];
@@ -552,7 +552,9 @@ export default function PlayersPage() {
 											column.align === "right"
 												? "text-right font-mono"
 												: column.align === "center"
-													? "text-center"
+													? column.key === "favorite"
+														? "text-center"
+														: "text-center font-mono"
 													: undefined,
 										)}
 									>

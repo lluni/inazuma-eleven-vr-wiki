@@ -71,7 +71,6 @@ export function PlayerAssignmentModal({
 	onFiltersChange,
 	onResetFilters,
 	onSelectPlayer,
-	onClearSlot,
 	onOpenChange,
 }: PlayerAssignmentModalProps) {
 	const header = (
@@ -258,11 +257,6 @@ export function PlayerAssignmentModal({
 					<div className="flex flex-col gap-3 px-4 pb-6">
 						{header}
 						{filtersSection}
-						{activeSlot && (
-							<Button variant="outline" size="sm" onClick={onClearSlot}>
-								Remove player from this slot
-							</Button>
-						)}
 						{playerList}
 					</div>
 				</DrawerContent>
@@ -281,16 +275,6 @@ export function PlayerAssignmentModal({
 				<div className="flex flex-col gap-4">
 					{header}
 					{filtersSection}
-					{activeSlot && (
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={onClearSlot}
-							className="self-start"
-						>
-							Remove player from this slot
-						</Button>
-					)}
 					{playerList}
 				</div>
 			</DialogContent>
@@ -346,9 +330,12 @@ function PlayerOptionCard({
 				</div>
 			</div>
 			<div className="mt-2 flex flex-wrap gap-1 text-[11px] text-muted-foreground">
+				<StatChip label="Shoot AT" value={player.power.shootAT} />
 				<StatChip label="Focus AT" value={player.power.focusAT} />
 				<StatChip label="Focus DF" value={player.power.focusDF} />
 				<StatChip label="Wall DF" value={player.power.wallDF} />
+				<StatChip label="Scramble AT" value={player.power.scrambleAT} />
+				<StatChip label="Scramble DF" value={player.power.scrambleDF} />
 				<StatChip label="KP" value={player.power.kp} />
 			</div>
 		</button>
