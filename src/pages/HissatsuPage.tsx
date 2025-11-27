@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ReactNode } from "react";
-import { Flame, Gauge, Layers, RotateCcw, Search, Sparkles } from "lucide-react";
+import { RotateCcw, Search } from "lucide-react";
 import { useAtom } from "jotai";
 
 import abilitiesJson from "@/assets/data/abilities.json?raw";
@@ -72,14 +72,6 @@ type TableColumn = {
 	className?: string;
 	headerClassName?: string;
 	render: (item: HissatsuMove) => ReactNode;
-};
-
-type SummaryMetric = {
-	key: string;
-	label: string;
-	value: string;
-	subLabel: string;
-	icon: ReactNode;
 };
 
 const rawRecords = JSON.parse(abilitiesJson) as RawHissatsuRecord[];
@@ -561,24 +553,6 @@ function compareValues(
 	const textA = String(valueA).toLowerCase();
 	const textB = String(valueB).toLowerCase();
 	return direction === "desc" ? textB.localeCompare(textA) : textA.localeCompare(textB);
-}
-
-
-function SummaryCard({ metric }: { metric: SummaryMetric }) {
-	return (
-		<div className="flex items-center gap-3 rounded-lg border bg-card/40 p-3">
-			<div className="flex size-10 items-center justify-center rounded-md border bg-background/50">
-				{metric.icon}
-			</div>
-			<div className="flex flex-col">
-				<span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-					{metric.label}
-				</span>
-				<span className="text-lg font-semibold leading-tight">{metric.value}</span>
-				<span className="text-xs text-muted-foreground">{metric.subLabel}</span>
-			</div>
-		</div>
-	);
 }
 
 function HissatsuIdentity({ move }: { move: HissatsuMove }) {
