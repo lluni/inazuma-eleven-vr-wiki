@@ -519,7 +519,7 @@ export default function PlayersPage() {
 						Showing {visiblePlayers.length.toLocaleString()} of{" "}
 						{sortedPlayers.length.toLocaleString()} players
 					</span>
-					{hasMore && <span>Scroll to load more results</span>}
+					<span>Player data is shown at level 50 and Normal rarity</span>
 				</div>
 				<Table>
 					<TableHeader>

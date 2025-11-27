@@ -102,7 +102,6 @@ const sortOptions: Array<{ key: HissatsuSortKey; label: string }> = [
 	{ key: "shop", label: "Shop" },
 	{ key: "power", label: "Power" },
 	{ key: "tension", label: "Tension" },
-	{ key: "order", label: "# Catalog" },
 	{ key: "name", label: "Name" },
 	{ key: "type", label: "Type" },
 	{ key: "element", label: "Element" },

@@ -1,8 +1,17 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
-
+import {
+	ElementChip,
+	PositionChip,
+	StatChip,
+} from "@/components/team-builder/Chips";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	Drawer,
 	DrawerContent,
@@ -18,16 +27,21 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { PositionChip, ElementChip, StatChip } from "@/components/team-builder/Chips";
-import { createSortedUniqueOptions } from "@/lib/data-helpers";
-import { cn } from "@/lib/utils";
-import { type PlayerRecord, playersDataset } from "@/lib/players-data";
 import type { FormationSlot } from "@/data/formations";
+import { createSortedUniqueOptions } from "@/lib/data-helpers";
+import { type PlayerRecord, playersDataset } from "@/lib/players-data";
+import { cn } from "@/lib/utils";
 import type { FiltersState } from "@/types/team-builder";
 
-const elementOptions = createSortedUniqueOptions(playersDataset.map((player) => player.element));
-const positionOptions = createSortedUniqueOptions(playersDataset.map((player) => player.position));
-const roleOptions = createSortedUniqueOptions(playersDataset.map((player) => player.role));
+const elementOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.element),
+);
+const positionOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.position),
+);
+const roleOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.role),
+);
 
 type PlayerAssignmentModalProps = {
 	isMobile: boolean;
@@ -62,11 +76,9 @@ export function PlayerAssignmentModal({
 }: PlayerAssignmentModalProps) {
 	const header = (
 		<div className="space-y-1">
-			<p className="text-sm font-semibold">
-				{activeSlot ? `Pick a ${activeSlot.label}` : "Select a slot"}
-			</p>
 			<p className="text-xs text-muted-foreground">
-				Search or filter players. Assigning someone already on the pitch will move them here.
+				Search or filter players. Assigning someone already on the pitch will
+				move them here.
 			</p>
 		</div>
 	);
@@ -77,7 +89,9 @@ export function PlayerAssignmentModal({
 				<Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
 				<Input
 					value={filters.search}
-					onChange={(event) => onFiltersChange({ ...filters, search: event.target.value })}
+					onChange={(event) =>
+						onFiltersChange({ ...filters, search: event.target.value })
+					}
 					placeholder="Search by name or nickname"
 					className="pl-9"
 					type="search"
@@ -87,7 +101,9 @@ export function PlayerAssignmentModal({
 			<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
 				<Select
 					value={filters.element}
-					onValueChange={(value) => onFiltersChange({ ...filters, element: value })}
+					onValueChange={(value) =>
+						onFiltersChange({ ...filters, element: value })
+					}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Element" />
@@ -103,7 +119,9 @@ export function PlayerAssignmentModal({
 				</Select>
 				<Select
 					value={filters.position}
-					onValueChange={(value) => onFiltersChange({ ...filters, position: value })}
+					onValueChange={(value) =>
+						onFiltersChange({ ...filters, position: value })
+					}
 				>
 					<SelectTrigger>
 						<SelectValue placeholder="Position" />
@@ -117,7 +135,12 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={filters.role} onValueChange={(value) => onFiltersChange({ ...filters, role: value })}>
+				<Select
+					value={filters.role}
+					onValueChange={(value) =>
+						onFiltersChange({ ...filters, role: value })
+					}
+				>
 					<SelectTrigger>
 						<SelectValue placeholder="Role" />
 					</SelectTrigger>
@@ -145,7 +168,9 @@ export function PlayerAssignmentModal({
 
 	const limitedFilteredPlayers =
 		activeSlot && filteredPlayers.length > 0
-			? filteredPlayers.filter((player) => !favoriteSet.has(player.id)).slice(0, 20)
+			? filteredPlayers
+					.filter((player) => !favoriteSet.has(player.id))
+					.slice(0, 20)
 			: [];
 
 	const playerList = (
@@ -186,7 +211,8 @@ export function PlayerAssignmentModal({
 							<span>Filtered results</span>
 							{activeSlot && (
 								<span>
-									{limitedFilteredPlayers.length}/{Math.min(filteredPlayers.length, 20)}
+									{limitedFilteredPlayers.length}/
+									{Math.min(filteredPlayers.length, 20)}
 								</span>
 							)}
 						</div>
@@ -222,9 +248,12 @@ export function PlayerAssignmentModal({
 			<Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
 				<DrawerContent>
 					<DrawerHeader>
-						<DrawerTitle>{activeSlot ? activeSlot.label : "Pick a slot"}</DrawerTitle>
+						<DrawerTitle>
+							{activeSlot ? activeSlot.label : "Pick a slot"}
+						</DrawerTitle>
 						<DrawerDescription>
-							Assign players to complete your team. Use filters to narrow the list.
+							Assign players to complete your team. Use filters to narrow the
+							list.
 						</DrawerDescription>
 					</DrawerHeader>
 					<div className="flex flex-col gap-3 px-4 pb-6">
@@ -246,13 +275,20 @@ export function PlayerAssignmentModal({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="!max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>{activeSlot ? `Assign ${activeSlot.label}` : "Pick a slot"}</DialogTitle>
+					<DialogTitle>
+						{activeSlot ? `Pick a ${activeSlot.label}` : "Pick a slot"}
+					</DialogTitle>
 				</DialogHeader>
 				<div className="flex flex-col gap-4">
 					{header}
 					{filtersSection}
 					{activeSlot && (
-						<Button variant="outline" size="sm" onClick={onClearSlot} className="self-start">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={onClearSlot}
+							className="self-start"
+						>
 							Remove player from this slot
 						</Button>
 					)}
@@ -282,7 +318,7 @@ function PlayerOptionCard({
 			onClick={onSelect}
 			className={cn(
 				"w-full rounded-lg border bg-background/80 p-3 text-left text-sm shadow-sm transition hover:border-primary",
-				isFavorite ? "border-amber-200" : alreadyAssigned ? "border-emerald-200" : "border-muted",
+				alreadyAssigned ? "border-emerald-200" : "border-muted",
 			)}
 		>
 			<div className="flex items-center gap-3">
@@ -302,13 +338,11 @@ function PlayerOptionCard({
 				</div>
 				<div className="flex flex-col items-end gap-1">
 					{alreadyAssigned && (
-						<Badge variant="outline" className="border-emerald-200 text-emerald-600">
+						<Badge
+							variant="outline"
+							className="border-emerald-200 text-emerald-600"
+						>
 							In team
-						</Badge>
-					)}
-					{isFavorite && (
-						<Badge variant="secondary" className="bg-amber-100 text-amber-800">
-							Favorite
 						</Badge>
 					)}
 				</div>
@@ -322,5 +356,3 @@ function PlayerOptionCard({
 		</button>
 	);
 }
-
-

@@ -45,7 +45,8 @@ type SlotAssignment = {
 
 const FIELD_COLUMNS = 5;
 const FIELD_ROWS = 6;
-const FIELD_ROW_TEMPLATE = ["0.5fr", "0.5fr", "0.5fr", "0.4fr", "0.3fr", "0.2fr"].join(" ");
+const COLUMN_STOPS = [8, 27, 50, 73, 92];
+const ROW_STOPS = [6, 22, 42, 60, 78, 94];
 const DEFAULT_FILTERS: FiltersState = {
 	search: "",
 	element: "all",
@@ -412,56 +413,26 @@ function FormationPitch({
 	onSlotSelect,
 	onEmptySlotSelect,
 }: FormationPitchProps) {
-	const gridCells = useMemo(() => {
-		const cells: Record<string, SlotAssignment[]> = {};
-		for (let row = 1; row <= FIELD_ROWS; row += 1) {
-			for (let column = 1; column <= FIELD_COLUMNS; column += 1) {
-				cells[`${row}-${column}`] = [];
-			}
-		}
-		assignments.forEach((entry) => {
-			const key = `${entry.slot.row}-${entry.slot.column}`;
-			if (!cells[key]) cells[key] = [];
-			cells[key].push(entry);
-		});
-		return cells;
-	}, [assignments]);
-
 	return (
-		<div className="rounded-[32px] border border-emerald-800 bg-gradient-to-b from-emerald-700/80 to-emerald-900/90 shadow-inner">
-			<div className="relative mx-auto w-full aspect-[6/5] sm:aspect-[6/5] md:aspect-[4/5] lg:aspect-[6/5]">
-				<div className="absolute inset-3 rounded-[28px] border border-white/25 sm:inset-4" />
-				<div className="absolute left-1/2 top-4 h-30 w-64 -translate-x-1/2 rounded-md border-2 border-white/10" />
-				<div className="absolute left-1/2 bottom-4 h-30 w-64 -translate-x-1/2 rounded-md border border-white/10" />
-				<div className="absolute inset-x-4 top-1/2 h-px -translate-y-1/2 bg-white/15" />
-				<div className="absolute left-1/2 top-1/2 h-42 w-42 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
-				<div className="absolute inset-3 flex flex-col sm:inset-4">
-					<div
-						className="grid flex-1 grid-cols-5 gap-2 sm:gap-2.5"
-						style={{ gridTemplateRows: FIELD_ROW_TEMPLATE }}
-					>
-						{Array.from({ length: FIELD_ROWS }).map((_, rowIndex) =>
-							Array.from({ length: FIELD_COLUMNS }).map((__, columnIndex) => {
-								const key = `${rowIndex + 1}-${columnIndex + 1}`;
-								const slots = gridCells[key] ?? [];
-								return (
-									<div
-										key={key}
-										className="flex flex-col items-center justify-center gap-1"
-									>
-										{slots.map((entry) => (
-											<PlayerSlotCard
-												key={entry.slot.id}
-												entry={entry}
-												isActive={entry.slot.id === activeSlotId}
-												onSelect={() => onSlotSelect(entry.slot)}
-												onEmptySelect={() => onEmptySlotSelect(entry.slot)}
-											/>
-										))}
-									</div>
-								);
-							}),
-						)}
+		<div className="mx-auto w-full">
+			<div className="relative mx-auto w-full max-w-5xl">
+				<div className="relative aspect-[3/4] w-full rounded-[36px] border border-emerald-800 bg-gradient-to-b from-emerald-700/70 via-emerald-800/80 to-emerald-900/95 p-4 shadow-[inset_0_0_50px_rgba(0,0,0,0.35)] sm:aspect-[5/6] lg:aspect-[6/5]">
+					<div className="absolute inset-4 rounded-[30px] border border-white/25" />
+					<div className="absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-white/15" />
+					<div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/15 sm:h-56 sm:w-56" />
+					<div className="absolute left-1/2 top-8 h-28 w-[55%] -translate-x-1/2 rounded-xl border-2 border-white/20 sm:h-32" />
+					<div className="absolute left-1/2 bottom-8 h-28 w-[55%] -translate-x-1/2 rounded-xl border-2 border-white/20 sm:h-32" />
+					<div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
+					<div className="relative h-full w-full">
+						{assignments.map((entry) => (
+							<PlayerSlotMarker
+								key={entry.slot.id}
+								entry={entry}
+								isActive={entry.slot.id === activeSlotId}
+								onSelect={() => onSlotSelect(entry.slot)}
+								onEmptySelect={() => onEmptySlotSelect(entry.slot)}
+							/>
+						))}
 					</div>
 				</div>
 			</div>
@@ -469,74 +440,85 @@ function FormationPitch({
 	);
 }
 
-type PlayerSlotCardProps = {
+type PlayerSlotMarkerProps = {
 	entry: SlotAssignment;
 	isActive: boolean;
 	onSelect: () => void;
 	onEmptySelect: () => void;
 };
 
-function PlayerSlotCard({ entry, isActive, onSelect, onEmptySelect }: PlayerSlotCardProps) {
+function PlayerSlotMarker({ entry, isActive, onSelect, onEmptySelect }: PlayerSlotMarkerProps) {
 	const { slot, player } = entry;
 	const positionColor = getPositionColor(mapToTeamPosition(slot.label));
-
-	if (!player) {
-		return (
-			<button
-				type="button"
-				onClick={onEmptySelect}
-				className={cn(
-					"w-full rounded-2xl border border-dashed border-white/30 bg-white/5 px-3 py-4 text-center text-white/80 transition hover:border-white/60",
-					isActive && "border-emerald-300 bg-white/10 text-white",
-				)}
-			>
-				<div className="flex flex-col items-center gap-1.5">
-					<div className="flex size-20 items-center justify-center rounded-2xl border-white/40 text-lg font-semibold uppercase tracking-wide">
-						{slot.label}
-					</div>
-				</div>
-			</button>
-		);
-	}
+	const positionStyle = getSlotPositionStyle(slot);
+	const handleClick = player ? onSelect : onEmptySelect;
 
 	return (
-		<div className="relative w-full">
-			<button
-				type="button"
-				onClick={onSelect}
+		<button
+			type="button"
+			onClick={handleClick}
+			style={positionStyle}
+			className={cn(
+				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-white outline-none transition",
+				isActive ? "scale-105 drop-shadow-[0_12px_20px_rgba(0,0,0,0.35)]" : "hover:scale-105",
+			)}
+		>
+			<div
 				className={cn(
-					"flex w-full flex-col items-center gap-1.5 rounded-2xl border px-3 py-2.5 text-center text-white transition",
-					isActive
-						? "border-emerald-300 bg-white/15 shadow-lg"
-						: "border-white/25 bg-white/5 hover:border-white/60",
+					"relative flex items-center justify-center rounded-2xl border-2 bg-black/30 p-2 backdrop-blur-sm transition",
+					player ? "border-white/60 shadow-xl" : "border-dashed border-white/40 px-4 py-5",
+					isActive && "ring-2 ring-emerald-200",
 				)}
 			>
-				<div className="relative w-full">
-					<img
-						src={player.image}
-						alt={player.name}
-						className="mx-auto size-20 rounded-2xl object-cover shadow-lg"
-						loading="lazy"
-					/>
-					<div className="absolute left-2 right-2 top-2 flex items-center justify-between text-[10px] font-semibold uppercase">
-						<ElementIcon element={player.element} />
-						<span
-							className="rounded-full px-2 py-[2px]"
-							style={{
-								background: positionColor.gradient ?? positionColor.primary,
-								color: positionColor.gradient ? "#fff" : positionColor.primary,
-							}}
-						>
-							{slot.label}
+				{player ? (
+					<>
+						<img
+							src={player.image}
+							alt={player.name}
+							className="size-[clamp(64px,10vw,92px)] rounded-2xl object-cover shadow-inner"
+							loading="lazy"
+						/>
+						<span className="absolute -top-3 -right-3">
+							<ElementIcon element={player.element} />
 						</span>
-					</div>
-				</div>
-				<p className="text-[9px] font-semibold uppercase tracking-[0.35em] text-white/90">
-					{player.nickname || player.name}
-				</p>
-			</button>
-		</div>
+					</>
+				) : (
+					<span className="text-sm font-semibold uppercase tracking-[0.4em] text-white/80 sm:text-base">
+						{slot.label}
+					</span>
+				)}
+			</div>
+			<div className="flex flex-col items-center text-center">
+				<span
+					className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.35em]"
+					style={{
+						background: positionColor.gradient ?? `${positionColor.primary}22`,
+						color: positionColor.gradient ? "#fff" : positionColor.primary,
+					}}
+				>
+					{slot.label}
+				</span>
+				<span className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+					{player ? player.nickname || player.name : "Assign player"}
+				</span>
+			</div>
+		</button>
 	);
+}
+
+function getSlotPositionStyle(slot: FormationSlot) {
+	const columnIndex = slot.column - 1;
+	const rowIndex = slot.row - 1;
+	const left =
+		COLUMN_STOPS[columnIndex] ??
+		((columnIndex / Math.max(FIELD_COLUMNS - 1, 1)) * 100);
+	const top =
+		ROW_STOPS[rowIndex] ??
+		((rowIndex / Math.max(FIELD_ROWS - 1, 1)) * 100);
+	return {
+		left: `${left}%`,
+		top: `${top}%`,
+	};
 }
 
 type SlotDetailsDrawerProps = {
@@ -616,7 +598,7 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot }: SlotDetai
 							/>
 							<div className="flex flex-wrap items-center justify-center gap-2 text-xs">
 								<ElementChip element={player.element} />
-								<PositionChip label={slot.label} />
+								<PositionChip label={player.position} />
 							</div>
 							<div className="text-center">
 								<p className="text-lg font-semibold">{player.name}</p>
