@@ -109,7 +109,7 @@ export default function AppLayout() {
 						<SidebarMenuItem>
 							<SidebarMenuButton asChild>
 								<a
-									href="https://github.com/vitorfdl/inazuma-eleven-guide"
+									href="https://github.com/vitorfdl/game-inazuma-eleven"
 									target="_blank"
 									rel="noopener noreferrer"
 								>
