@@ -1,12 +1,8 @@
-import { useMemo } from "react";
-import type { ReactNode } from "react";
-import { RotateCcw, Search } from "lucide-react";
 import { useAtom } from "jotai";
+import { RotateCcw, Search } from "lucide-react";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 
-import braceletsJson from "@/assets/data/equipments/bracelets.json?raw";
-import bootsJson from "@/assets/data/equipments/boots.json?raw";
-import miscJson from "@/assets/data/equipments/misc.json?raw";
-import pendantsJson from "@/assets/data/equipments/pendants.json?raw";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,44 +21,29 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { computePower, type BaseStats, type PowerStats } from "@/lib/inazuma-math";
 import {
 	createSortedUniqueOptions,
 	formatNumber,
-	normalizeStat,
-	sanitizeAttribute,
 	titleCase,
 } from "@/lib/data-helpers";
 import {
+	EQUIPMENT_CATEGORIES,
+	EQUIPMENT_CATEGORY_LABELS,
+	type EquipmentRecord,
+	equipmentsDataset,
+} from "@/lib/equipments-data";
+import type { BaseStats, PowerStats } from "@/lib/inazuma-math";
+import { cn } from "@/lib/utils";
+import {
 	DEFAULT_EQUIPMENTS_PREFERENCES,
-	equipmentsPreferencesAtom,
 	type EquipmentSortKey,
 	type EquipmentsPreferences,
+	equipmentsPreferencesAtom,
 } from "@/store/equipments";
+import type { EquipmentCategory } from "@/types/team-builder";
 
-type EquipmentType = "boots" | "bracelets" | "pendants" | "misc";
-
-type RawEquipmentRecord = {
-	Name: string;
-	Kick: number | "";
-	Control: number | "";
-	Technique: number | "";
-	Pressure: number | "";
-	Physical: number | "";
-	Intelligence: number | "";
-	Agility: number | "";
-	Shop: string;
-};
-
-type Equipment = {
-	id: string;
-	name: string;
-	type: EquipmentType;
-	shop: string;
-	stats: BaseStats;
-	power: PowerStats;
-};
+type EquipmentType = EquipmentCategory;
+type Equipment = EquipmentRecord;
 
 type TableColumn = {
 	key: string;
@@ -74,13 +55,6 @@ type TableColumn = {
 };
 
 type EquipmentBaseStatKey = Exclude<keyof BaseStats, "total">;
-
-const equipmentSources: Record<EquipmentType, string> = {
-	boots: bootsJson,
-	bracelets: braceletsJson,
-	pendants: pendantsJson,
-	misc: miscJson,
-};
 
 const baseStatKeys: EquipmentBaseStatKey[] = [
 	"kick",
@@ -114,45 +88,24 @@ const powerMetricLabels: Record<keyof PowerStats, string> = {
 
 const getPowerLabel = (key: keyof PowerStats): string => powerMetricLabels[key];
 
-const equipmentDataset: Equipment[] = (Object.entries(equipmentSources) as Array<
-	[EquipmentType, string]
->).flatMap(([type, json]) => {
-	const records = JSON.parse(json) as RawEquipmentRecord[];
-	return records.map((record, index) => {
-		const stats: BaseStats = {
-			kick: normalizeStat(record.Kick),
-			control: normalizeStat(record.Control),
-			technique: normalizeStat(record.Technique),
-			pressure: normalizeStat(record.Pressure),
-			physical: normalizeStat(record.Physical),
-			agility: normalizeStat(record.Agility),
-			intelligence: normalizeStat(record.Intelligence),
-			total: 0,
-		};
-		stats.total = baseStatKeys.reduce((sum, key) => sum + stats[key], 0);
+const equipmentDataset: Equipment[] = equipmentsDataset;
 
-		return {
-			id: `${type}-${index}-${record.Name}`,
-			name: sanitizeAttribute(record.Name),
-			type,
-			shop: sanitizeAttribute(record.Shop),
-			stats,
-			power: computePower(stats),
-		};
-	});
-});
-
-const shopOptions = createSortedUniqueOptions(equipmentDataset.map((item) => item.shop));
+const shopOptions = createSortedUniqueOptions(
+	equipmentDataset.map((item) => item.shop),
+);
 
 const typeOptions: Array<{ value: EquipmentType | "all"; label: string }> = [
 	{ value: "all", label: "All types" },
-	{ value: "boots", label: "Boots" },
-	{ value: "bracelets", label: "Bracelets" },
-	{ value: "pendants", label: "Pendants" },
-	{ value: "misc", label: "Misc" },
+	...EQUIPMENT_CATEGORIES.map((category) => ({
+		value: category,
+		label: EQUIPMENT_CATEGORY_LABELS[category],
+	})),
 ];
 
-const attributeOptions: Array<{ value: EquipmentsPreferences["attribute"]; label: string }> = [
+const attributeOptions: Array<{
+	value: EquipmentsPreferences["attribute"];
+	label: string;
+}> = [
 	{ value: "any", label: "Any attribute" },
 	...baseStatKeys.map((key) => ({ value: key, label: titleCase(key) })),
 ];
@@ -273,7 +226,8 @@ export default function EquipmentsPage() {
 			}
 			if (
 				preferences.attribute !== "any" &&
-				(!item.stats[preferences.attribute] || item.stats[preferences.attribute] <= 0)
+				(!item.stats[preferences.attribute] ||
+					item.stats[preferences.attribute] <= 0)
 			) {
 				return false;
 			}
@@ -282,18 +236,26 @@ export default function EquipmentsPage() {
 			}
 			return true;
 		});
-	}, [preferences.attribute, preferences.search, preferences.shop, preferences.type]);
+	}, [
+		preferences.attribute,
+		preferences.search,
+		preferences.shop,
+		preferences.type,
+	]);
 
 	const sortedEquipments = useMemo(() => {
 		const accessor = metricAccessors[preferences.sortKey];
 		return [...filteredEquipments].sort((a, b) => {
 			const valueA = accessor(a);
 			const valueB = accessor(b);
-			return preferences.sortDirection === "desc" ? valueB - valueA : valueA - valueB;
+			return preferences.sortDirection === "desc"
+				? valueB - valueA
+				: valueA - valueB;
 		});
 	}, [filteredEquipments, preferences.sortDirection, preferences.sortKey]);
 
-	const tableColumns = preferences.viewMode === "stats" ? statsColumns : powerColumns;
+	const tableColumns =
+		preferences.viewMode === "stats" ? statsColumns : powerColumns;
 
 	const filtersAreDirty =
 		preferences.search !== DEFAULT_EQUIPMENTS_PREFERENCES.search ||
@@ -332,10 +294,15 @@ export default function EquipmentsPage() {
 			<section className="rounded-lg border bg-card/50 p-3">
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5">
-						<Search className="size-4 text-muted-foreground" aria-hidden="true" />
+						<Search
+							className="size-4 text-muted-foreground"
+							aria-hidden="true"
+						/>
 						<Input
 							value={preferences.search}
-							onChange={(event) => handleUpdate({ search: event.currentTarget.value })}
+							onChange={(event) =>
+								handleUpdate({ search: event.currentTarget.value })
+							}
 							placeholder="Search equipments"
 							className="flex-1 border-0 bg-transparent px-0 focus-visible:ring-0"
 							aria-label="Filter equipments by name"
@@ -476,7 +443,9 @@ export default function EquipmentsPage() {
 						<Button
 							size="sm"
 							className="h-10"
-							variant={preferences.sortDirection === "desc" ? "default" : "outline"}
+							variant={
+								preferences.sortDirection === "desc" ? "default" : "outline"
+							}
 							onClick={() => handleUpdate({ sortDirection: "desc" })}
 						>
 							High → Low
@@ -484,7 +453,9 @@ export default function EquipmentsPage() {
 						<Button
 							size="sm"
 							className="h-10"
-							variant={preferences.sortDirection === "asc" ? "default" : "outline"}
+							variant={
+								preferences.sortDirection === "asc" ? "default" : "outline"
+							}
 							onClick={() => handleUpdate({ sortDirection: "asc" })}
 						>
 							Low → High
@@ -498,7 +469,9 @@ export default function EquipmentsPage() {
 					<span>
 						Showing {sortedEquipments.length.toLocaleString()} equipments
 					</span>
-					<span>View: {preferences.viewMode === "stats" ? "Stats" : "Power"}</span>
+					<span>
+						View: {preferences.viewMode === "stats" ? "Stats" : "Power"}
+					</span>
 				</div>
 				<Table>
 					<TableHeader>
@@ -559,4 +532,3 @@ function EquipmentIdentity({ equipment }: { equipment: Equipment }) {
 		</div>
 	);
 }
-
