@@ -1,26 +1,22 @@
 name: Bug report
-description: Submit a bug report
+description: Report a problem you found in the Inazuma Guide Wiki
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        **New to NarratrixAI?**
-        For help or advice on using NarratrixAI, try one of the following options instead of opening a GitHub issue:
-        - Asking on our [Discord server](https://discord.gg/Q69R4aWCFR)
-        - Creating a post on [Discussions](https://github.com/vitorfdl/Narratrix/discussions)
+        Thanks for helping us keep the Inazuma Guide stable. Please use this form for UI issues, broken data views, or any feature that stops working.
 
-        This template is for reporting bugs experienced within the NarratrixAI app.
-        If your issue is regarding AI model integration or customization, please provide complete details about the model and configuration.
-
-        Make sure to also search the [existing issues](https://github.com/vitorfdl/Narratrix/issues) to see if your issue has already been reported.
+        Before opening a new report:
+        1. Reload the page to confirm it is not a caching problem.
+        2. Search existing issues to avoid duplicates.
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
-      description: Give a clear and concise description of what happened. Provide screenshots or videos of UI if necessary. Also tell us, what did you expect to happen?
+      description: Describe the bug and what you expected instead. Screenshots or short clips help a lot.
       placeholder: |
-        When using the character management feature, I expected to see...
+        When opening the Players page I expected the stat filters to show...
 
         Instead, I saw...
     validations:
@@ -29,12 +25,12 @@ body:
     id: how-to-reproduce
     attributes:
       label: Steps to reproduce
-      description: Include a minimal step-by-step guide to reproduce the issue if possible.
+      description: Include clear steps so we can reproduce quickly.
       placeholder: |
-        1. Open NarratrixAI
-        2. Go to the Characters page
-        3. Click on the Create button
-        4. Expected to see character creation form, but instead ...
+        1. Open the guide
+        2. Go to Equipments
+        3. Toggle sorting by Pressure
+        4. Sorting gets stuck on loading...
   - type: textarea
     id: app-logs
     attributes:
@@ -45,8 +41,8 @@ body:
     id: version
     attributes:
       label: Version
-      description: What version of NarratrixAI are you running?
-      placeholder: ex. v1.0.0
+      description: Which app build or commit hash are you using? (Shown in the footer or browser dev tools.)
+      placeholder: e.g. v0.5.1 or commit 4fd2a3b
     validations:
       required: true
   - type: dropdown
@@ -65,14 +61,13 @@ body:
     attributes:
       label: Which feature area does this bug affect?
       options:
-        - Profile Management
-        - Inference Queue
-        - Models Management
-        - Chat Management
-        - Characters Management
-        - Templates Management
-        - Chapter Creation
-        - AI Integration
+        - Players database
+        - Equipments database
+        - Hissatsu catalog
+        - Team builder / formations
+        - Changelog & wiki
+        - UI & navigation
+        - Local storage / state
         - Other
     validations:
       required: true
