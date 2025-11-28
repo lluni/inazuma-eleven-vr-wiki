@@ -58,7 +58,7 @@ const playerBaseStatKeys: PlayerBaseStatKey[] = [
 ];
 
 const rawPlayers = JSON.parse(playersJson).filter(
-	(record: RawPlayerRecord) => record.Name !== "???",
+	(record: RawPlayerRecord) => record.Name !== "???" && record.Position !== "?",
 ) as RawPlayerRecord[];
 
 export const playersDataset: PlayerRecord[] = rawPlayers.map((player) => {

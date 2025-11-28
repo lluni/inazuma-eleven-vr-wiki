@@ -1,7 +1,13 @@
-import { useMemo } from "react";
-import type { ReactNode } from "react";
-import { RotateCcw, Search } from "lucide-react";
 import { useAtom } from "jotai";
+import {
+	ArrowDown,
+	ArrowUp,
+	ArrowUpDown,
+	RotateCcw,
+	Search,
+} from "lucide-react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import abilitiesJson from "@/assets/data/abilities.json?raw";
 import { Badge } from "@/components/ui/badge";
@@ -29,17 +35,17 @@ import {
 	sanitizeAttribute,
 } from "@/lib/data-helpers";
 import {
+	type ElementType,
 	getElementIcon,
 	getMoveIcon,
-	type ElementType,
 	type MoveType,
 } from "@/lib/icon-picker";
 import { cn } from "@/lib/utils";
 import {
 	DEFAULT_HISSATSU_PREFERENCES,
-	hissatsuPreferencesAtom,
 	type HissatsuPreferences,
 	type HissatsuSortKey,
+	hissatsuPreferencesAtom,
 } from "@/store/hissatsu";
 
 type RawHissatsuRecord = {
@@ -71,6 +77,7 @@ type TableColumn = {
 	align?: "left" | "center" | "right";
 	className?: string;
 	headerClassName?: string;
+	sortKey?: HissatsuSortKey;
 	render: (item: HissatsuMove) => ReactNode;
 };
 
@@ -91,23 +98,23 @@ const hissatsuDataset: HissatsuMove[] = rawRecords.map((record, index) => {
 	};
 });
 
-const typeOptions = createSortedUniqueOptions(hissatsuDataset.map((item) => item.type));
-const elementOptions = createSortedUniqueOptions(hissatsuDataset.map((item) => item.element));
-const shopOptions = createSortedUniqueOptions(hissatsuDataset.map((item) => item.shop));
+const typeOptions = createSortedUniqueOptions(
+	hissatsuDataset.map((item) => item.type),
+);
+const elementOptions = createSortedUniqueOptions(
+	hissatsuDataset.map((item) => item.element),
+);
+const shopOptions = createSortedUniqueOptions(
+	hissatsuDataset.map((item) => item.shop),
+);
 const extraOptions = Array.from(
 	new Set(hissatsuDataset.flatMap((item) => item.extras)),
 ).sort((a, b) => a.localeCompare(b));
 
-const sortOptions: Array<{ key: HissatsuSortKey; label: string }> = [
-	{ key: "shop", label: "Shop" },
-	{ key: "power", label: "Power" },
-	{ key: "tension", label: "Tension" },
-	{ key: "name", label: "Name" },
-	{ key: "type", label: "Type" },
-	{ key: "element", label: "Element" },
-];
-
-const metricAccessors: Record<HissatsuSortKey, (item: HissatsuMove) => string | number> = {
+const metricAccessors: Record<
+	HissatsuSortKey,
+	(item: HissatsuMove) => string | number
+> = {
 	order: (item) => item.order,
 	name: (item) => item.name,
 	type: (item) => item.type,
@@ -121,7 +128,8 @@ const typeBadgeClasses: Record<string, string> = {
 	Shot: "border-orange-500/40 bg-orange-500/10 text-orange-500",
 	Dribble: "border-emerald-500/40 bg-emerald-500/10 text-emerald-500",
 	Wall: "border-sky-500/40 bg-sky-500/10 text-sky-500",
-	Catch: "border-amber-400/60 bg-amber-200/10 text-amber-500 dark:text-yellow-300",
+	Catch:
+		"border-amber-400/60 bg-amber-200/10 text-amber-500 dark:text-yellow-300",
 };
 
 const elementBadgeClasses: Record<string, string> = {
@@ -144,6 +152,7 @@ const tableColumns: TableColumn[] = [
 		header: "Shop",
 		align: "center",
 		className: "w-[140px]",
+		sortKey: "shop",
 		render: (item) => (
 			<Badge className="w-full justify-center bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
 				{item.shop}
@@ -155,6 +164,7 @@ const tableColumns: TableColumn[] = [
 		header: "Type",
 		align: "center",
 		className: "w-[100px]",
+		sortKey: "type",
 		render: (item) => {
 			const iconDefinition = getMoveIconForType(item.type);
 			return (
@@ -175,6 +185,7 @@ const tableColumns: TableColumn[] = [
 		header: "Element",
 		align: "center",
 		className: "w-[100px]",
+		sortKey: "element",
 		render: (item) => {
 			const iconDefinition = getElementIconForValue(item.element);
 			return (
@@ -194,6 +205,7 @@ const tableColumns: TableColumn[] = [
 		key: "name",
 		header: "Hissatsu",
 		className: "min-w-[220px]",
+		sortKey: "name",
 		render: (item) => <HissatsuIdentity move={item} />,
 	},
 	{
@@ -201,6 +213,7 @@ const tableColumns: TableColumn[] = [
 		header: "Power",
 		align: "center",
 		className: "font-mono",
+		sortKey: "power",
 		render: (item) => formatNumber(item.power),
 	},
 	{
@@ -208,9 +221,13 @@ const tableColumns: TableColumn[] = [
 		header: "Tension",
 		align: "center",
 		className: "font-mono",
+		sortKey: "tension",
 		render: (item) => formatNumber(item.tension),
 	},
 ];
+
+const INITIAL_VISIBLE_COUNT = 50;
+const LOAD_MORE_BATCH_SIZE = 50;
 
 function getMoveIconForType(moveType: string): IconDefinition {
 	return getMoveIcon(moveType as MoveType);
@@ -221,7 +238,13 @@ function getElementIconForValue(element: string): IconDefinition {
 	return getElementIcon(normalized as ElementType);
 }
 
-function BadgeIconContent({ iconDef, label }: { iconDef: IconDefinition; label: string }) {
+function BadgeIconContent({
+	iconDef,
+	label,
+}: {
+	iconDef: IconDefinition;
+	label: string;
+}) {
 	const { icon: IconComponent, assetPath, color } = iconDef;
 
 	return (
@@ -247,6 +270,27 @@ function BadgeIconContent({ iconDef, label }: { iconDef: IconDefinition; label: 
 
 export default function HissatsuPage() {
 	const [preferences, setPreferences] = useAtom(hissatsuPreferencesAtom);
+	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+	const loadMoreRef = useRef<HTMLDivElement | null>(null);
+	const highlightControl = (isActive: boolean) =>
+		isActive ? "border-primary/60 bg-primary/10 text-primary" : undefined;
+
+	const handleSortByColumn = useCallback(
+		(sortKey: HissatsuSortKey) => {
+			setPreferences((prev) => {
+				const isSameColumn = prev.sortKey === sortKey;
+				const nextDirection =
+					isSameColumn && prev.sortDirection === "desc" ? "asc" : "desc";
+
+				return {
+					...prev,
+					sortKey,
+					sortDirection: nextDirection,
+				};
+			});
+		},
+		[setPreferences],
+	);
 
 	const filteredMoves = useMemo(() => {
 		const query = preferences.search.trim().toLowerCase();
@@ -254,7 +298,10 @@ export default function HissatsuPage() {
 			if (preferences.type !== "all" && move.type !== preferences.type) {
 				return false;
 			}
-			if (preferences.element !== "all" && move.element !== preferences.element) {
+			if (
+				preferences.element !== "all" &&
+				move.element !== preferences.element
+			) {
 				return false;
 			}
 			if (preferences.shop !== "all" && move.shop !== preferences.shop) {
@@ -271,14 +318,21 @@ export default function HissatsuPage() {
 				return false;
 			}
 			if (query) {
-				const haystack = `${move.name} ${move.shop} ${move.extras.join(" ")}`.toLowerCase();
+				const haystack =
+					`${move.name} ${move.shop} ${move.extras.join(" ")}`.toLowerCase();
 				if (!haystack.includes(query)) {
 					return false;
 				}
 			}
 			return true;
 		});
-	}, [preferences.element, preferences.extra, preferences.search, preferences.shop, preferences.type]);
+	}, [
+		preferences.element,
+		preferences.extra,
+		preferences.search,
+		preferences.shop,
+		preferences.type,
+	]);
 
 	const sortedMoves = useMemo(() => {
 		const accessor = metricAccessors[preferences.sortKey];
@@ -287,16 +341,45 @@ export default function HissatsuPage() {
 		);
 	}, [filteredMoves, preferences.sortDirection, preferences.sortKey]);
 
+	const visibleMoves = sortedMoves.slice(0, visibleCount);
+	const hasMore = visibleCount < sortedMoves.length;
+
+	useEffect(() => {
+		setVisibleCount(INITIAL_VISIBLE_COUNT);
+	}, [
+		preferences.search,
+		preferences.type,
+		preferences.element,
+		preferences.shop,
+		preferences.extra,
+		preferences.sortDirection,
+		preferences.sortKey,
+	]);
+
+	useEffect(() => {
+		if (!hasMore) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) {
+					setVisibleCount((prev) =>
+						Math.min(prev + LOAD_MORE_BATCH_SIZE, sortedMoves.length),
+					);
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+		const node = loadMoreRef.current;
+		if (node) observer.observe(node);
+
+		return () => observer.disconnect();
+	}, [hasMore, sortedMoves.length]);
+
 	const filtersAreDirty =
 		preferences.search !== DEFAULT_HISSATSU_PREFERENCES.search ||
 		preferences.type !== DEFAULT_HISSATSU_PREFERENCES.type ||
 		preferences.element !== DEFAULT_HISSATSU_PREFERENCES.element ||
 		preferences.shop !== DEFAULT_HISSATSU_PREFERENCES.shop ||
 		preferences.extra !== DEFAULT_HISSATSU_PREFERENCES.extra;
-
-	const sortIsDirty =
-		preferences.sortKey !== DEFAULT_HISSATSU_PREFERENCES.sortKey ||
-		preferences.sortDirection !== DEFAULT_HISSATSU_PREFERENCES.sortDirection;
 
 	const handleUpdate = (patch: Partial<HissatsuPreferences>) => {
 		setPreferences((prev) => ({ ...prev, ...patch }));
@@ -312,22 +395,25 @@ export default function HissatsuPage() {
 		});
 	};
 
-	const resetSorting = () => {
-		handleUpdate({
-			sortKey: DEFAULT_HISSATSU_PREFERENCES.sortKey,
-			sortDirection: DEFAULT_HISSATSU_PREFERENCES.sortDirection,
-		});
-	};
-
 	return (
 		<div className="flex flex-col gap-4">
 			<section className="rounded-lg border bg-card/50 p-3">
 				<div className="flex flex-wrap items-center gap-2">
-					<div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5">
-						<Search className="size-4 text-muted-foreground" aria-hidden="true" />
+					<div
+						className={cn(
+							"flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5",
+							highlightControl(preferences.search.trim().length > 0),
+						)}
+					>
+						<Search
+							className="size-4 text-muted-foreground"
+							aria-hidden="true"
+						/>
 						<Input
 							value={preferences.search}
-							onChange={(event) => handleUpdate({ search: event.currentTarget.value })}
+							onChange={(event) =>
+								handleUpdate({ search: event.currentTarget.value })
+							}
 							placeholder="Search Hissatsu names, shops or effects"
 							className="flex-1 border-0 bg-transparent px-0 focus-visible:ring-0"
 							aria-label="Filter Hissatsu techniques"
@@ -353,7 +439,12 @@ export default function HissatsuPage() {
 					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(
+									preferences.type !== DEFAULT_HISSATSU_PREFERENCES.type,
+								),
+							)}
 						>
 							<SelectValue placeholder="All types" />
 						</SelectTrigger>
@@ -372,7 +463,12 @@ export default function HissatsuPage() {
 					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(
+									preferences.element !== DEFAULT_HISSATSU_PREFERENCES.element,
+								),
+							)}
 						>
 							<SelectValue placeholder="All elements" />
 						</SelectTrigger>
@@ -385,10 +481,18 @@ export default function HissatsuPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={preferences.shop} onValueChange={(value) => handleUpdate({ shop: value })}>
+					<Select
+						value={preferences.shop}
+						onValueChange={(value) => handleUpdate({ shop: value })}
+					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(
+									preferences.shop !== DEFAULT_HISSATSU_PREFERENCES.shop,
+								),
+							)}
 						>
 							<SelectValue placeholder="All shops" />
 						</SelectTrigger>
@@ -401,10 +505,18 @@ export default function HissatsuPage() {
 							))}
 						</SelectContent>
 					</Select>
-					<Select value={preferences.extra} onValueChange={(value) => handleUpdate({ extra: value })}>
+					<Select
+						value={preferences.extra}
+						onValueChange={(value) => handleUpdate({ extra: value })}
+					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(
+									preferences.extra !== DEFAULT_HISSATSU_PREFERENCES.extra,
+								),
+							)}
 						>
 							<SelectValue placeholder="All extra effects" />
 						</SelectTrigger>
@@ -421,65 +533,12 @@ export default function HissatsuPage() {
 				</div>
 			</section>
 
-			<section className="rounded-lg border bg-card/40 p-3">
-				<div className="flex flex-wrap items-center justify-between gap-2">
-					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-						Ordering
-					</p>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-8 text-muted-foreground"
-						onClick={resetSorting}
-						disabled={!sortIsDirty}
-					>
-						<RotateCcw className="size-4" />
-						Reset ordering
-					</Button>
-				</div>
-				<div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-					<Select
-						value={preferences.sortKey}
-						onValueChange={(value) => handleUpdate({ sortKey: value as HissatsuSortKey })}
-					>
-						<SelectTrigger
-							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
-						>
-							<SelectValue placeholder="Sort metric" />
-						</SelectTrigger>
-						<SelectContent>
-							{sortOptions.map((option) => (
-								<SelectItem key={option.key} value={option.key}>
-									{option.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<div className="flex flex-wrap gap-2">
-						<Button
-							size="sm"
-							className="h-10"
-							variant={preferences.sortDirection === "desc" ? "default" : "outline"}
-							onClick={() => handleUpdate({ sortDirection: "desc" })}
-						>
-							High → Low
-						</Button>
-						<Button
-							size="sm"
-							className="h-10"
-							variant={preferences.sortDirection === "asc" ? "default" : "outline"}
-							onClick={() => handleUpdate({ sortDirection: "asc" })}
-						>
-							Low → High
-						</Button>
-					</div>
-				</div>
-			</section>
-
 			<section className="rounded-lg border bg-card/60">
 				<div className="flex items-center justify-between gap-2 p-3 text-xs text-muted-foreground">
-					<span>Showing {sortedMoves.length.toLocaleString()} Hissatsu</span>
+					<span>
+						Showing {visibleMoves.length.toLocaleString()} of{" "}
+						{sortedMoves.length.toLocaleString()} Hissatsu
+					</span>
 				</div>
 				<Table>
 					<TableHeader>
@@ -496,13 +555,53 @@ export default function HissatsuPage() {
 												: undefined,
 									)}
 								>
-									{column.header}
+									{column.sortKey ? (
+										<button
+											type="button"
+											onClick={() =>
+												handleSortByColumn(column.sortKey as HissatsuSortKey)
+											}
+											className={cn(
+												"flex w-full items-center gap-1 text-left text-xs font-semibold uppercase tracking-wide text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+												column.align === "right"
+													? "justify-end"
+													: column.align === "center"
+														? "justify-center"
+														: "justify-start",
+											)}
+											aria-label={`Sort by ${typeof column.header === "string" ? column.header : "column"}`}
+											aria-pressed={preferences.sortKey === column.sortKey}
+										>
+											<span>{column.header}</span>
+											{(() => {
+												const isActive = preferences.sortKey === column.sortKey;
+												const Icon = !isActive
+													? ArrowUpDown
+													: preferences.sortDirection === "asc"
+														? ArrowUp
+														: ArrowDown;
+												return (
+													<Icon
+														className={cn(
+															"size-3.5",
+															isActive
+																? "text-primary"
+																: "text-muted-foreground/60",
+														)}
+														aria-hidden="true"
+													/>
+												);
+											})()}
+										</button>
+									) : (
+										column.header
+									)}
 								</TableHead>
 							))}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{sortedMoves.map((move) => (
+						{visibleMoves.map((move) => (
 							<TableRow key={move.id}>
 								{tableColumns.map((column) => (
 									<TableCell
@@ -523,6 +622,14 @@ export default function HissatsuPage() {
 						))}
 					</TableBody>
 				</Table>
+				{hasMore && (
+					<div
+						ref={loadMoreRef}
+						className="flex h-16 items-center justify-center text-sm text-muted-foreground"
+					>
+						Loading more techniques…
+					</div>
+				)}
 				{!sortedMoves.length && (
 					<div className="border-t p-6 text-center text-sm text-muted-foreground">
 						No Hissatsu match the selected filters.
@@ -551,7 +658,9 @@ function compareValues(
 	}
 	const textA = String(valueA).toLowerCase();
 	const textB = String(valueB).toLowerCase();
-	return direction === "desc" ? textB.localeCompare(textA) : textA.localeCompare(textB);
+	return direction === "desc"
+		? textB.localeCompare(textA)
+		: textA.localeCompare(textB);
 }
 
 function HissatsuIdentity({ move }: { move: HissatsuMove }) {
@@ -576,5 +685,3 @@ function HissatsuIdentity({ move }: { move: HissatsuMove }) {
 		</div>
 	);
 }
-
-

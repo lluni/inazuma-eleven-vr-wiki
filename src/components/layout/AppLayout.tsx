@@ -1,6 +1,6 @@
 import { Github, Shirt, Sparkles, Swords, Users } from "lucide-react";
-import { Suspense } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { ChangelogNoticeboard } from "@/components/changelog/ChangelogNoticeboard";
 import {
 	Sidebar,
 	SidebarContent,
@@ -130,12 +130,10 @@ export default function AppLayout() {
 							{getPageTitle(location.pathname)}
 						</span>
 					</div>
-					<Suspense
-						fallback={
-							<Skeleton className="h-11 w-full max-w-xl rounded-full" />
-						}
-					>
-					</Suspense>
+					<div className="flex items-center gap-2">
+						<Skeleton className="hidden h-11 w-full max-w-xl rounded-full lg:block" />
+						<ChangelogNoticeboard />
+					</div>
 				</header>
 				<main className="flex-1 p-4">
 					<Outlet />

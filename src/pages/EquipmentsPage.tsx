@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
-import { RotateCcw, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, RotateCcw, Search } from "lucide-react";
 import type { ReactNode } from "react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 import {
 	DEFAULT_EQUIPMENTS_PREFERENCES,
 	type EquipmentSortKey,
+	type EquipmentTableSortKey,
 	type EquipmentsPreferences,
 	equipmentsPreferencesAtom,
 } from "@/store/equipments";
@@ -51,6 +52,7 @@ type TableColumn = {
 	align?: "left" | "center" | "right";
 	className?: string;
 	headerClassName?: string;
+	sortKey?: EquipmentTableSortKey;
 	render: (item: Equipment) => ReactNode;
 };
 
@@ -110,15 +112,6 @@ const attributeOptions: Array<{
 	...baseStatKeys.map((key) => ({ value: key, label: titleCase(key) })),
 ];
 
-const sortOptions: Array<{ key: EquipmentSortKey; label: string }> = [
-	{ key: "total", label: "Total" },
-	...baseStatKeys.map((key) => ({ key, label: titleCase(key) })),
-	...powerMetricKeys.map((key) => ({
-		key,
-		label: getPowerLabel(key),
-	})),
-];
-
 const metricAccessors: Record<EquipmentSortKey, (item: Equipment) => number> = {
 	total: (item) => item.stats.total,
 	kick: (item) => item.stats.kick,
@@ -137,6 +130,13 @@ const metricAccessors: Record<EquipmentSortKey, (item: Equipment) => number> = {
 	kp: (item) => item.power.kp,
 };
 
+const sortAccessors: Record<EquipmentTableSortKey, (item: Equipment) => number | string> = {
+	...metricAccessors,
+	name: (item) => item.name,
+	type: (item) => item.type,
+	shop: (item) => item.shop,
+};
+
 const typeBadgeClasses: Record<EquipmentType, string> = {
 	boots: "border-orange-500/30 bg-orange-500/10 text-orange-500",
 	bracelets: "border-purple-500/30 bg-purple-500/10 text-purple-500",
@@ -151,6 +151,7 @@ const sharedColumns: TableColumn[] = [
 		headerClassName: "text-xs uppercase tracking-wide text-muted-foreground",
 		align: "center",
 		className: "w-[110px]",
+		sortKey: "type",
 		render: (item) => (
 			<Badge
 				variant="outline"
@@ -169,6 +170,7 @@ const sharedColumns: TableColumn[] = [
 		headerClassName: "text-xs uppercase tracking-wide text-muted-foreground",
 		align: "center",
 		className: "w-[110px]",
+		sortKey: "shop",
 		render: (item) => (
 			<Badge
 				variant="outline"
@@ -182,6 +184,7 @@ const sharedColumns: TableColumn[] = [
 		key: "name",
 		header: "Equipment",
 		className: "min-w-[200px]",
+		sortKey: "name",
 		render: (item) => <EquipmentIdentity equipment={item} />,
 	},
 ];
@@ -192,12 +195,14 @@ const statsColumns: TableColumn[] = [
 		key,
 		header: titleCase(key),
 		align: "right" as const,
+		sortKey: key as EquipmentTableSortKey,
 		render: (item: Equipment) => formatNumber(item.stats[key]),
 	})),
 	{
 		key: "total",
 		header: "Total",
 		align: "right",
+		sortKey: "total",
 		render: (item) => formatNumber(item.stats.total),
 	},
 ];
@@ -208,12 +213,35 @@ const powerColumns: TableColumn[] = [
 		key,
 		header: getPowerLabel(key),
 		align: "right" as const,
+		sortKey: key as EquipmentTableSortKey,
 		render: (item: Equipment) => formatNumber(item.power[key]),
 	})),
 ];
 
 export default function EquipmentsPage() {
 	const [preferences, setPreferences] = useAtom(equipmentsPreferencesAtom);
+	const highlightControl = (isActive: boolean) =>
+		isActive ? "border-primary/60 bg-primary/10 text-primary" : undefined;
+
+	const handleSortByColumn = useCallback(
+		(sortKey: EquipmentTableSortKey) => {
+			setPreferences((prev) => {
+				const isSameColumn = prev.sortKey === sortKey;
+				const nextDirection = isSameColumn
+					? prev.sortDirection === "asc"
+						? "desc"
+						: "asc"
+					: "desc";
+
+				return {
+					...prev,
+					sortKey,
+					sortDirection: nextDirection,
+				};
+			});
+		},
+		[setPreferences],
+	);
 
 	const filteredEquipments = useMemo(() => {
 		const query = preferences.search.trim().toLowerCase();
@@ -244,13 +272,24 @@ export default function EquipmentsPage() {
 	]);
 
 	const sortedEquipments = useMemo(() => {
-		const accessor = metricAccessors[preferences.sortKey];
+		const fallbackKey = DEFAULT_EQUIPMENTS_PREFERENCES.sortKey;
+		const accessor = sortAccessors[preferences.sortKey] ?? sortAccessors[fallbackKey];
+
 		return [...filteredEquipments].sort((a, b) => {
 			const valueA = accessor(a);
 			const valueB = accessor(b);
-			return preferences.sortDirection === "desc"
-				? valueB - valueA
-				: valueA - valueB;
+
+			if (typeof valueA === "number" && typeof valueB === "number") {
+				return preferences.sortDirection === "desc"
+					? valueB - valueA
+					: valueA - valueB;
+			}
+
+			const comparison = String(valueA).localeCompare(String(valueB), undefined, {
+				sensitivity: "base",
+			});
+
+			return preferences.sortDirection === "desc" ? -comparison : comparison;
 		});
 	}, [filteredEquipments, preferences.sortDirection, preferences.sortKey]);
 
@@ -263,10 +302,6 @@ export default function EquipmentsPage() {
 		preferences.shop !== DEFAULT_EQUIPMENTS_PREFERENCES.shop ||
 		preferences.attribute !== DEFAULT_EQUIPMENTS_PREFERENCES.attribute ||
 		preferences.viewMode !== DEFAULT_EQUIPMENTS_PREFERENCES.viewMode;
-
-	const sortIsDirty =
-		preferences.sortKey !== DEFAULT_EQUIPMENTS_PREFERENCES.sortKey ||
-		preferences.sortDirection !== DEFAULT_EQUIPMENTS_PREFERENCES.sortDirection;
 
 	const handleUpdate = (patch: Partial<EquipmentsPreferences>) => {
 		setPreferences((prev) => ({ ...prev, ...patch }));
@@ -282,18 +317,16 @@ export default function EquipmentsPage() {
 		});
 	};
 
-	const handleResetSorting = () => {
-		handleUpdate({
-			sortKey: DEFAULT_EQUIPMENTS_PREFERENCES.sortKey,
-			sortDirection: DEFAULT_EQUIPMENTS_PREFERENCES.sortDirection,
-		});
-	};
-
 	return (
 		<div className="flex flex-col gap-4">
 			<section className="rounded-lg border bg-card/50 p-3">
 				<div className="flex flex-wrap items-center gap-2">
-					<div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5">
+					<div
+						className={cn(
+							"flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5",
+							highlightControl(preferences.search.trim().length > 0),
+						)}
+					>
 						<Search
 							className="size-4 text-muted-foreground"
 							aria-hidden="true"
@@ -346,7 +379,10 @@ export default function EquipmentsPage() {
 					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(preferences.type !== DEFAULT_EQUIPMENTS_PREFERENCES.type),
+							)}
 						>
 							<SelectValue placeholder="All types" />
 						</SelectTrigger>
@@ -364,7 +400,10 @@ export default function EquipmentsPage() {
 					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(preferences.shop !== DEFAULT_EQUIPMENTS_PREFERENCES.shop),
+							)}
 						>
 							<SelectValue placeholder="All shops" />
 						</SelectTrigger>
@@ -387,7 +426,12 @@ export default function EquipmentsPage() {
 					>
 						<SelectTrigger
 							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
+							className={cn(
+								"h-10 w-full justify-between rounded-md border bg-background/30",
+								highlightControl(
+									preferences.attribute !== DEFAULT_EQUIPMENTS_PREFERENCES.attribute,
+								),
+							)}
 						>
 							<SelectValue placeholder="Any attribute" />
 						</SelectTrigger>
@@ -399,68 +443,6 @@ export default function EquipmentsPage() {
 							))}
 						</SelectContent>
 					</Select>
-				</div>
-			</section>
-
-			<section className="rounded-lg border bg-card/40 p-3">
-				<div className="flex flex-wrap items-center justify-between gap-2">
-					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-						Ordering
-					</p>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-8 text-muted-foreground"
-						onClick={handleResetSorting}
-						disabled={!sortIsDirty}
-					>
-						<RotateCcw className="size-4" />
-						Reset
-					</Button>
-				</div>
-				<div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-					<Select
-						value={preferences.sortKey}
-						onValueChange={(value) =>
-							handleUpdate({ sortKey: value as EquipmentSortKey })
-						}
-					>
-						<SelectTrigger
-							size="sm"
-							className="h-10 w-full justify-between rounded-md border bg-background/30"
-						>
-							<SelectValue placeholder="Sort metric" />
-						</SelectTrigger>
-						<SelectContent>
-							{sortOptions.map((option) => (
-								<SelectItem key={option.key} value={option.key}>
-									{option.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<div className="flex flex-wrap gap-2">
-						<Button
-							size="sm"
-							className="h-10"
-							variant={
-								preferences.sortDirection === "desc" ? "default" : "outline"
-							}
-							onClick={() => handleUpdate({ sortDirection: "desc" })}
-						>
-							High → Low
-						</Button>
-						<Button
-							size="sm"
-							className="h-10"
-							variant={
-								preferences.sortDirection === "asc" ? "default" : "outline"
-							}
-							onClick={() => handleUpdate({ sortDirection: "asc" })}
-						>
-							Low → High
-						</Button>
-					</div>
 				</div>
 			</section>
 
@@ -488,7 +470,47 @@ export default function EquipmentsPage() {
 												: undefined,
 									)}
 								>
-									{column.header}
+									{column.sortKey ? (
+										<button
+											type="button"
+											onClick={() =>
+												handleSortByColumn(column.sortKey as EquipmentTableSortKey)
+											}
+											className={cn(
+												"flex w-full items-center gap-1 text-left text-xs font-semibold uppercase tracking-wide text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+												column.align === "right"
+													? "justify-end"
+													: column.align === "center"
+														? "justify-center"
+														: "justify-start",
+											)}
+											aria-label={`Sort by ${
+												typeof column.header === "string" ? column.header : "column"
+											}`}
+											aria-pressed={preferences.sortKey === column.sortKey}
+										>
+											<span>{column.header}</span>
+											{(() => {
+												const isActive = preferences.sortKey === column.sortKey;
+												const Icon = !isActive
+													? ArrowUpDown
+													: preferences.sortDirection === "asc"
+														? ArrowUp
+														: ArrowDown;
+												return (
+													<Icon
+														className={cn(
+															"size-3.5",
+															isActive ? "text-primary" : "text-muted-foreground/60",
+														)}
+														aria-hidden="true"
+													/>
+												);
+											})()}
+										</button>
+									) : (
+										column.header
+									)}
 								</TableHead>
 							))}
 						</TableRow>

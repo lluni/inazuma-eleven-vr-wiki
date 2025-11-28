@@ -1,0 +1,63 @@
+name: Content correction
+description: Flag inaccurate data in the Inazuma Guide wiki
+labels: ["content", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us keep every stat table and description accurate. Please provide as much detail (and source material) as possible so we can validate and patch quickly.
+  - type: input
+    id: summary
+    attributes:
+      label: Short summary
+      description: One sentence describing what is wrong.
+      placeholder: Artemis' KP listed as 100 instead of 120
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location in the guide
+      description: Page, section, URL slug, or component where the error lives.
+      placeholder: Players page → Goalkeepers tab → Artemis line item
+    validations:
+      required: true
+  - type: dropdown
+    id: data-type
+    attributes:
+      label: What type of data is affected?
+      options:
+        - Player stats
+        - Equipment bonus
+        - Hissatsu data
+        - Mechanics formula
+        - Changelog / docs
+        - UI copy
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: incorrect-info
+    attributes:
+      label: What is currently shown?
+      description: Paste the inaccurate text, numbers, or screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: correct-info
+    attributes:
+      label: What should it be?
+      description: Provide the corrected wording, stats, or calculations. Include formulas if applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Supporting evidence
+      description: Link to in-game screenshots, official references, or trusted community resources that prove the correction.
+      placeholder: https://example.com/inazuma-data-proof
+  - type: textarea
+    id: extra-notes
+    attributes:
+      label: Additional context
+      description: Add anything else that helps us reproduce or understand the discrepancy.

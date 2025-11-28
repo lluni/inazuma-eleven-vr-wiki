@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an improvement for the Inazuma Guide
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve the Inazuma Guide! If you're unsure whether the idea already exists, please search the issues tab first.
+  - type: input
+    id: headline
+    attributes:
+      label: Feature summary
+      description: One sentence that captures the user-facing value.
+      placeholder: Quick way to filter player builds by stat focus
+    validations:
+      required: true
+  - type: textarea
+    id: player-problem
+    attributes:
+      label: What problem should this solve?
+      description: Describe the pain point for players using the guide today.
+      placeholder: Team builders struggle to compare KP-focused goalkeepers quickly...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Outline the experience you imagine (UI, data, interactions, etc.). Include mockups or references if helpful.
+    validations:
+      required: true
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Which area(s) does this impact?
+      description: Choose the closest match.
+      options:
+        - Players database
+        - Equipments database
+        - Hissatsu catalog
+        - Team builder / planning
+        - UI & navigation
+        - Data accuracy / formulas
+        - Changelog & docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits & success criteria
+      description: How will we know this feature is valuable? Mention metrics, workflows, or player outcomes.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add sketches, links, or related issues/PRs if relevant.

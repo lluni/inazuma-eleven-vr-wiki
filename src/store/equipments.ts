@@ -19,17 +19,19 @@ export type EquipmentSortKey =
 	| "scrambleDF"
 	| "kp";
 
+export type EquipmentTableSortKey = EquipmentSortKey | "name" | "type" | "shop";
+
 export type EquipmentsPreferences = {
 	search: string;
 	type: "all" | "boots" | "bracelets" | "pendants" | "misc";
 	shop: string;
 	attribute: "any" | "kick" | "control" | "technique" | "pressure" | "physical" | "agility" | "intelligence";
 	viewMode: EquipmentViewMode;
-	sortKey: EquipmentSortKey;
+	sortKey: EquipmentTableSortKey;
 	sortDirection: EquipmentSortDirection;
 };
 
-export const EQUIPMENTS_PREFERENCES_KEY = "inazuma-guide.equipments.v1";
+export const EQUIPMENTS_PREFERENCES_KEY = "inazuma-guide.equipments.v2";
 
 export const DEFAULT_EQUIPMENTS_PREFERENCES: EquipmentsPreferences = {
 	search: "",

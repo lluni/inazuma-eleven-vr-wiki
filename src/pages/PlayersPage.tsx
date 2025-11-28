@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, MouseEvent } from "react";
 import { useAtom } from "jotai";
-import { RotateCcw, Search, Star } from "lucide-react";
+import {
+	ArrowDown,
+	ArrowUp,
+	ArrowUpDown,
+	RotateCcw,
+	Search,
+	Star,
+} from "lucide-react";
+import type { CSSProperties, MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,27 +27,28 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
 import {
 	createSortedUniqueOptions,
 	formatNumber,
 	titleCase,
 } from "@/lib/data-helpers";
-import {
-	DEFAULT_PLAYERS_PREFERENCES,
-	playersPreferencesAtom,
-	type PlayersPreferences,
-	type PlayersSortKey,
-} from "@/store/players";
-import { favoritePlayersAtom } from "@/store/favorites";
-import { type BaseStats, type PowerStats } from "@/lib/inazuma-math";
+import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
+import type { BaseStats, PowerStats } from "@/lib/inazuma-math";
 import {
 	mapToElementType,
 	mapToTeamPosition,
-	playersDataset,
 	type PlayerRecord,
+	playersDataset,
 } from "@/lib/players-data";
+import { cn } from "@/lib/utils";
+import { favoritePlayersAtom } from "@/store/favorites";
+import {
+	DEFAULT_PLAYERS_PREFERENCES,
+	type PlayersPreferences,
+	type PlayersSortKey,
+	type PlayerTableSortKey,
+	playersPreferencesAtom,
+} from "@/store/players";
 
 type Player = PlayerRecord;
 
@@ -49,37 +57,12 @@ type TableColumn = {
 	header: string;
 	className?: string;
 	align?: "left" | "right" | "center";
+	sortKey?: PlayerTableSortKey;
 	render: (player: Player) => React.ReactNode;
-};
-
-type SortMetric = {
-	key: PlayersSortKey;
-	label: string;
-	category: "Base stats" | "Power values";
 };
 
 const INITIAL_VISIBLE_COUNT = 50;
 const LOAD_MORE_BATCH_SIZE = 50;
-
-const metricDefinitions: SortMetric[] = [
-	{ key: "total", label: "Total", category: "Base stats" },
-	{ key: "kick", label: "Kick", category: "Base stats" },
-	{ key: "control", label: "Control", category: "Base stats" },
-	{ key: "technique", label: "Technique", category: "Base stats" },
-	{ key: "pressure", label: "Pressure", category: "Base stats" },
-	{ key: "physical", label: "Physical", category: "Base stats" },
-	{ key: "agility", label: "Agility", category: "Base stats" },
-	{ key: "intelligence", label: "Intelligence", category: "Base stats" },
-	{ key: "shootAT", label: "Shoot AT", category: "Power values" },
-	{ key: "focusAT", label: "Focus AT", category: "Power values" },
-	{ key: "focusDF", label: "Focus DF", category: "Power values" },
-	{ key: "wallDF", label: "Wall DF", category: "Power values" },
-	{ key: "scrambleAT", label: "Scramble AT", category: "Power values" },
-	{ key: "scrambleDF", label: "Scramble DF", category: "Power values" },
-	{ key: "kp", label: "KP", category: "Power values" },
-];
-
-const metricLabelMap = new Map(metricDefinitions.map((metric) => [metric.key, metric.label]));
 
 const metricAccessors: Record<PlayersSortKey, (player: Player) => number> = {
 	total: (player) => player.stats.total,
@@ -99,19 +82,45 @@ const metricAccessors: Record<PlayersSortKey, (player: Player) => number> = {
 	kp: (player) => player.power.kp,
 };
 
-const elementOptions = createSortedUniqueOptions(playersDataset.map((player) => player.element));
-const positionOptions = createSortedUniqueOptions(playersDataset.map((player) => player.position));
-const roleOptions = createSortedUniqueOptions(playersDataset.map((player) => player.role));
+const sortAccessors: Record<
+	PlayerTableSortKey,
+	(player: Player) => number | string
+> = {
+	name: (player) => player.name,
+	...metricAccessors,
+};
+
+const elementOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.element),
+);
+const genderOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.gender).filter((value) => value),
+);
+const positionOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.position),
+);
+const roleOptions = createSortedUniqueOptions(
+	playersDataset.map((player) => player.role),
+);
 
 const statsMetricColumns: TableColumn[] = [
-	...["kick", "control", "technique", "pressure", "physical", "agility", "intelligence", "total"].map(
-		(key) => ({
-			key,
-			header: titleCase(key),
-			align: "center" as const,
-			render: (player: Player) => formatNumber(player.stats[key as keyof BaseStats]),
-		}),
-	),
+	...[
+		"kick",
+		"control",
+		"technique",
+		"pressure",
+		"physical",
+		"agility",
+		"intelligence",
+		"total",
+	].map((key) => ({
+		key,
+		header: titleCase(key),
+		align: "center" as const,
+		sortKey: key as PlayerTableSortKey,
+		render: (player: Player) =>
+			formatNumber(player.stats[key as keyof BaseStats]),
+	})),
 ];
 
 const powerMetricColumns: TableColumn[] = [
@@ -127,37 +136,43 @@ const powerMetricColumns: TableColumn[] = [
 		key,
 		header: label,
 		align: "center" as const,
-		render: (player: Player) => formatNumber(player.power[key as keyof PowerStats]),
+		sortKey: key as PlayerTableSortKey,
+		render: (player: Player) =>
+			formatNumber(player.power[key as keyof PowerStats]),
 	})),
 ];
 
 export default function PlayersPage() {
 	const [preferences, setPreferences] = useAtom(playersPreferencesAtom);
 	const [favoritePlayers, setFavoritePlayers] = useAtom(favoritePlayersAtom);
-	const favoriteSet = useMemo(() => new Set(favoritePlayers), [favoritePlayers]);
+	const favoriteSet = useMemo(
+		() => new Set(favoritePlayers),
+		[favoritePlayers],
+	);
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
-	const activeSortKeys =
-		preferences.sortKeys.length > 0
-			? preferences.sortKeys
-			: DEFAULT_PLAYERS_PREFERENCES.sortKeys;
-
-	useEffect(() => {
-		if (preferences.sortKeys.length === 0) {
-			setPreferences((prev) => ({
-				...prev,
-				sortKeys: DEFAULT_PLAYERS_PREFERENCES.sortKeys,
-			}));
-		}
-	}, [preferences.sortKeys.length, setPreferences]);
+	const highlightControl = (isActive: boolean) =>
+		isActive ? "border-primary/60 bg-primary/10 text-primary" : undefined;
 
 	const filteredPlayers = useMemo(() => {
 		const query = preferences.search.trim().toLowerCase();
 		return playersDataset.filter((player) => {
-			if (preferences.element !== "all" && player.element !== preferences.element) {
+			if (
+				preferences.element !== "all" &&
+				player.element !== preferences.element
+			) {
 				return false;
 			}
-			if (preferences.position !== "all" && player.position !== preferences.position) {
+			if (
+				preferences.gender !== "all" &&
+				player.gender !== preferences.gender
+			) {
+				return false;
+			}
+			if (
+				preferences.position !== "all" &&
+				player.position !== preferences.position
+			) {
 				return false;
 			}
 			if (preferences.role !== "all" && player.role !== preferences.role) {
@@ -175,6 +190,7 @@ export default function PlayersPage() {
 	}, [
 		favoriteSet,
 		preferences.element,
+		preferences.gender,
 		preferences.favoritesOnly,
 		preferences.position,
 		preferences.role,
@@ -182,16 +198,29 @@ export default function PlayersPage() {
 	]);
 
 	const sortedPlayers = useMemo(() => {
-		const { sortDirection } = preferences;
-		const aggregateValue = (player: Player) =>
-			activeSortKeys.reduce((total, key) => total + metricAccessors[key](player), 0);
+		const { sortDirection, sortKey } = preferences;
+		const fallbackKey = DEFAULT_PLAYERS_PREFERENCES.sortKey;
+		const accessor = sortAccessors[sortKey] ?? sortAccessors[fallbackKey];
 
 		return [...filteredPlayers].sort((a, b) => {
-			const valueA = aggregateValue(a);
-			const valueB = aggregateValue(b);
-			return sortDirection === "desc" ? valueB - valueA : valueA - valueB;
+			const valueA = accessor(a);
+			const valueB = accessor(b);
+
+			if (typeof valueA === "number" && typeof valueB === "number") {
+				return sortDirection === "desc" ? valueB - valueA : valueA - valueB;
+			}
+
+			const comparison = String(valueA).localeCompare(
+				String(valueB),
+				undefined,
+				{
+					sensitivity: "base",
+				},
+			);
+
+			return sortDirection === "desc" ? -comparison : comparison;
 		});
-	}, [activeSortKeys, filteredPlayers, preferences.sortDirection]);
+	}, [filteredPlayers, preferences.sortDirection, preferences.sortKey]);
 
 	const handleToggleFavorite = useCallback(
 		(playerId: number) => {
@@ -206,9 +235,31 @@ export default function PlayersPage() {
 		[setFavoritePlayers],
 	);
 
+	const handleSortByColumn = useCallback(
+		(sortKey: PlayerTableSortKey) => {
+			setPreferences((prev) => {
+				const isSameColumn = prev.sortKey === sortKey;
+				const nextDirection = isSameColumn
+					? prev.sortDirection === "asc"
+						? "desc"
+						: "asc"
+					: "desc";
+
+				return {
+					...prev,
+					sortKey,
+					sortDirection: nextDirection,
+				};
+			});
+		},
+		[setPreferences],
+	);
+
 	const tableColumns = useMemo(() => {
 		const metricColumns =
-			preferences.viewMode === "stats" ? statsMetricColumns : powerMetricColumns;
+			preferences.viewMode === "stats"
+				? statsMetricColumns
+				: powerMetricColumns;
 		const favoriteColumn: TableColumn = {
 			key: "favorite",
 			header: "",
@@ -225,6 +276,7 @@ export default function PlayersPage() {
 			key: "identity",
 			header: "Player",
 			className: "min-w-[240px]",
+			sortKey: "name",
 			render: (player: Player) => <PlayerIdentity player={player} />,
 		};
 		return [favoriteColumn, identityColumn, ...metricColumns];
@@ -236,50 +288,23 @@ export default function PlayersPage() {
 	const filtersAreDirty =
 		preferences.search !== DEFAULT_PLAYERS_PREFERENCES.search ||
 		preferences.element !== DEFAULT_PLAYERS_PREFERENCES.element ||
+		preferences.gender !== DEFAULT_PLAYERS_PREFERENCES.gender ||
 		preferences.position !== DEFAULT_PLAYERS_PREFERENCES.position ||
 		preferences.role !== DEFAULT_PLAYERS_PREFERENCES.role ||
 		preferences.favoritesOnly !== DEFAULT_PLAYERS_PREFERENCES.favoritesOnly;
 
-	const sortIsDirty =
-		preferences.sortDirection !== DEFAULT_PLAYERS_PREFERENCES.sortDirection ||
-		activeSortKeys.join(",") !== DEFAULT_PLAYERS_PREFERENCES.sortKeys.join(",");
-
 	const handleUpdate = (patch: Partial<PlayersPreferences>) => {
 		setPreferences((prev) => ({ ...prev, ...patch }));
-	};
-
-	const handleToggleSortKey = (key: PlayersSortKey) => {
-		setPreferences((prev) => {
-			const exists = prev.sortKeys.includes(key);
-			let nextKeys = exists
-				? prev.sortKeys.filter((item) => item !== key)
-				: [...prev.sortKeys, key];
-
-			if (nextKeys.length === 0) {
-				nextKeys = DEFAULT_PLAYERS_PREFERENCES.sortKeys;
-			}
-
-			return {
-				...prev,
-				sortKeys: nextKeys,
-			};
-		});
 	};
 
 	const handleResetFilters = () => {
 		handleUpdate({
 			search: DEFAULT_PLAYERS_PREFERENCES.search,
 			element: DEFAULT_PLAYERS_PREFERENCES.element,
+			gender: DEFAULT_PLAYERS_PREFERENCES.gender,
 			position: DEFAULT_PLAYERS_PREFERENCES.position,
 			role: DEFAULT_PLAYERS_PREFERENCES.role,
 			favoritesOnly: DEFAULT_PLAYERS_PREFERENCES.favoritesOnly,
-		});
-	};
-
-	const handleResetSorting = () => {
-		handleUpdate({
-			sortKeys: DEFAULT_PLAYERS_PREFERENCES.sortKeys,
-			sortDirection: DEFAULT_PLAYERS_PREFERENCES.sortDirection,
 		});
 	};
 
@@ -290,7 +315,17 @@ export default function PlayersPage() {
 			value: preferences.element,
 			defaultLabel: "All elements",
 			options: elementOptions,
+			isActive: preferences.element !== DEFAULT_PLAYERS_PREFERENCES.element,
 			onValueChange: (value: string) => handleUpdate({ element: value }),
+		},
+		{
+			key: "gender",
+			label: "Gender",
+			value: preferences.gender,
+			defaultLabel: "All genders",
+			options: genderOptions,
+			isActive: preferences.gender !== DEFAULT_PLAYERS_PREFERENCES.gender,
+			onValueChange: (value: string) => handleUpdate({ gender: value }),
 		},
 		{
 			key: "position",
@@ -298,6 +333,7 @@ export default function PlayersPage() {
 			value: preferences.position,
 			defaultLabel: "All positions",
 			options: positionOptions,
+			isActive: preferences.position !== DEFAULT_PLAYERS_PREFERENCES.position,
 			onValueChange: (value: string) => handleUpdate({ position: value }),
 		},
 		{
@@ -306,6 +342,7 @@ export default function PlayersPage() {
 			value: preferences.role,
 			defaultLabel: "All roles",
 			options: roleOptions,
+			isActive: preferences.role !== DEFAULT_PLAYERS_PREFERENCES.role,
 			onValueChange: (value: string) => handleUpdate({ role: value }),
 		},
 	] as const;
@@ -315,12 +352,13 @@ export default function PlayersPage() {
 	}, [
 		preferences.search,
 		preferences.element,
+		preferences.gender,
 		preferences.position,
 		preferences.role,
 		preferences.favoritesOnly,
 		preferences.viewMode,
 		preferences.sortDirection,
-		activeSortKeys.join(","),
+		preferences.sortKey,
 		favoritePlayers.join(","),
 	]);
 
@@ -348,11 +386,21 @@ export default function PlayersPage() {
 		<div className="flex flex-col gap-4">
 			<section className="rounded-lg border bg-card/50 p-3">
 				<div className="flex flex-wrap items-center gap-2">
-					<div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5">
-						<Search className="size-4 text-muted-foreground" aria-hidden="true" />
+					<div
+						className={cn(
+							"flex min-w-[220px] flex-1 items-center gap-2 rounded-md border bg-background/40 px-3 py-1.5",
+							highlightControl(preferences.search.trim().length > 0),
+						)}
+					>
+						<Search
+							className="size-4 text-muted-foreground"
+							aria-hidden="true"
+						/>
 						<Input
 							value={preferences.search}
-							onChange={(event) => handleUpdate({ search: event.currentTarget.value })}
+							onChange={(event) =>
+								handleUpdate({ search: event.currentTarget.value })
+							}
 							placeholder="Search players"
 							className="flex-1 border-0 bg-transparent px-0 focus-visible:ring-0"
 							aria-label="Filter players by name"
@@ -379,7 +427,9 @@ export default function PlayersPage() {
 					<Button
 						size="sm"
 						variant={preferences.favoritesOnly ? "default" : "outline"}
-						onClick={() => handleUpdate({ favoritesOnly: !preferences.favoritesOnly })}
+						onClick={() =>
+							handleUpdate({ favoritesOnly: !preferences.favoritesOnly })
+						}
 						aria-pressed={preferences.favoritesOnly}
 						className="h-8"
 					>
@@ -402,7 +452,7 @@ export default function PlayersPage() {
 						Reset
 					</Button>
 				</div>
-				<div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+				<div className="mt-3 grid gap-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
 					{traitFilters.map((filter) => (
 						<Select
 							key={filter.key}
@@ -411,7 +461,10 @@ export default function PlayersPage() {
 						>
 							<SelectTrigger
 								size="sm"
-								className="h-10 w-full justify-between rounded-md border bg-background/30"
+								className={cn(
+									"h-10 w-full justify-between rounded-md border bg-background/30",
+									highlightControl(filter.isActive),
+								)}
 								aria-label={filter.label}
 							>
 								<SelectValue placeholder={filter.defaultLabel} />
@@ -425,90 +478,6 @@ export default function PlayersPage() {
 								))}
 							</SelectContent>
 						</Select>
-					))}
-				</div>
-			</section>
-
-			<section className="rounded-lg border bg-card/40 p-3">
-				<div className="flex flex-wrap items-center justify-between gap-2">
-					<p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-						Ordering
-					</p>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-8 text-muted-foreground"
-						onClick={handleResetSorting}
-						disabled={!sortIsDirty}
-					>
-						<RotateCcw className="size-4" />
-						Reset
-					</Button>
-				</div>
-
-				<div className="mt-3 flex flex-wrap items-center gap-2">
-					<span className="text-[11px] font-semibold uppercase text-muted-foreground">
-						Direction
-					</span>
-					<Button
-						size="sm"
-						className="h-8"
-						variant={preferences.sortDirection === "desc" ? "default" : "outline"}
-						onClick={() => handleUpdate({ sortDirection: "desc" })}
-					>
-						High → Low
-					</Button>
-					<Button
-						size="sm"
-						className="h-8"
-						variant={preferences.sortDirection === "asc" ? "default" : "outline"}
-						onClick={() => handleUpdate({ sortDirection: "asc" })}
-					>
-						Low → High
-					</Button>
-				</div>
-
-				<div className="mt-3 grid gap-2 lg:grid-cols-2">
-					{["Base stats", "Power values"].map((category) => (
-						<div key={category} className="rounded-lg border bg-background/10 p-2">
-							<div className="mb-2 flex items-center justify-between">
-								<p className="text-[11px] font-semibold uppercase text-muted-foreground">
-									{category}
-								</p>
-								<span className="text-[10px] uppercase text-muted-foreground">
-									Multi-select
-								</span>
-							</div>
-							<div className="flex flex-wrap gap-2">
-								{metricDefinitions
-									.filter((metric) => metric.category === category)
-									.map((metric) => {
-										const isActive = preferences.sortKeys.includes(metric.key);
-										return (
-											<Button
-												key={metric.key}
-												size="sm"
-												className="h-8"
-												variant={isActive ? "default" : "outline"}
-												onClick={() => handleToggleSortKey(metric.key)}
-											>
-												{metric.label}
-											</Button>
-										);
-									})}
-							</div>
-						</div>
-					))}
-				</div>
-
-				<div className="mt-3 flex flex-wrap items-center gap-2">
-					<span className="text-xs font-semibold uppercase text-muted-foreground">
-						Active metrics
-					</span>
-					{activeSortKeys.map((key) => (
-						<Badge key={key} variant="secondary">
-							{metricLabelMap.get(key) ?? key}
-						</Badge>
 					))}
 				</div>
 			</section>
@@ -536,7 +505,47 @@ export default function PlayersPage() {
 												: undefined,
 									)}
 								>
-									{column.header}
+									{column.sortKey ? (
+										<button
+											type="button"
+											onClick={() =>
+												handleSortByColumn(column.sortKey as PlayerTableSortKey)
+											}
+											className={cn(
+												"flex w-full items-center gap-1 text-left text-xs font-semibold uppercase tracking-wide text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+												column.align === "right"
+													? "justify-end"
+													: column.align === "center"
+														? "justify-center"
+														: "justify-start",
+											)}
+											aria-label={`Sort by ${column.header}`}
+											aria-pressed={preferences.sortKey === column.sortKey}
+										>
+											<span>{column.header}</span>
+											{(() => {
+												const isActive = preferences.sortKey === column.sortKey;
+												const Icon = !isActive
+													? ArrowUpDown
+													: preferences.sortDirection === "asc"
+														? ArrowUp
+														: ArrowDown;
+												return (
+													<Icon
+														className={cn(
+															"size-3.5",
+															isActive
+																? "text-primary"
+																: "text-muted-foreground/60",
+														)}
+														aria-hidden="true"
+													/>
+												);
+											})()}
+										</button>
+									) : (
+										column.header
+									)}
 								</TableHead>
 							))}
 						</TableRow>
@@ -599,7 +608,9 @@ function PlayerIdentity({ player }: PlayerIdentityProps) {
 			/>
 			<div className="flex flex-1 flex-col">
 				<span className="font-semibold leading-tight">{player.name}</span>
-				<span className="text-xs text-muted-foreground">“{player.nickname}”</span>
+				<span className="text-xs text-muted-foreground">
+					“{player.nickname}”
+				</span>
 				<div className="mt-1 flex flex-wrap gap-1 text-xs">
 					<PositionBadge position={player.position} />
 					<ElementBadge element={player.element} />
@@ -637,7 +648,10 @@ function FavoriteToggle({ isFavorite, onToggle }: FavoriteToggleProps) {
 			)}
 		>
 			<Star
-				className={cn("size-4", isFavorite ? "fill-current" : "fill-transparent")}
+				className={cn(
+					"size-4",
+					isFavorite ? "fill-current" : "fill-transparent",
+				)}
 				aria-hidden="true"
 			/>
 		</button>
@@ -653,12 +667,12 @@ function PositionBadge({ position }: { position: string }) {
 				backgroundImage: colors.gradient,
 				color: "#fff",
 				borderColor: "transparent",
-		  }
+			}
 		: {
 				backgroundColor: addAlpha(colors.primary, "22"),
 				borderColor: addAlpha(colors.primary, "44"),
 				color: colors.secondary ?? colors.primary,
-		  };
+			};
 
 	return (
 		<Badge
@@ -689,7 +703,12 @@ function ElementBadge({ element }: { element: string }) {
 			{Icon ? (
 				<Icon className="size-3" aria-hidden="true" />
 			) : definition.assetPath ? (
-				<img src={definition.assetPath} alt="" className="size-3" aria-hidden="true" />
+				<img
+					src={definition.assetPath}
+					alt=""
+					className="size-3"
+					aria-hidden="true"
+				/>
 			) : null}
 			{element}
 		</Badge>
@@ -709,4 +728,3 @@ function addAlpha(hex: string, alpha: string): string {
 	}
 	return hex;
 }
-

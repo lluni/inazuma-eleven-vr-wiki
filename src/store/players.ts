@@ -19,27 +19,31 @@ export type PlayersSortKey =
 	| "scrambleDF"
 	| "kp";
 
+export type PlayerTableSortKey = PlayersSortKey | "name";
+
 export type PlayersPreferences = {
 	search: string;
 	element: string;
+	gender: string;
 	position: string;
 	role: string;
 	favoritesOnly: boolean;
 	viewMode: PlayersViewMode;
-	sortKeys: PlayersSortKey[];
+	sortKey: PlayerTableSortKey;
 	sortDirection: PlayersSortDirection;
 };
 
-export const PLAYERS_PREFERENCES_KEY = "inazuma-guide.players.v1";
+export const PLAYERS_PREFERENCES_KEY = "inazuma-guide.players.v3";
 
 export const DEFAULT_PLAYERS_PREFERENCES: PlayersPreferences = {
 	search: "",
 	element: "all",
+	gender: "all",
 	position: "all",
 	role: "all",
 	favoritesOnly: false,
 	viewMode: "stats",
-	sortKeys: ["total"],
+	sortKey: "total",
 	sortDirection: "desc",
 };
 
@@ -53,4 +57,3 @@ export const playersPreferencesAtom = atomWithStorage<PlayersPreferences>(
 	DEFAULT_PLAYERS_PREFERENCES,
 	storage,
 );
-
