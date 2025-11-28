@@ -9,8 +9,6 @@ type RarityDefinition = {
 	cardBackground: string;
 };
 
-const BASE_INCREMENT = 0.2;
-
 const rarityDefinitions: Record<SlotRarity, RarityDefinition> = {
 	normal: {
 		value: "normal",
@@ -22,35 +20,35 @@ const rarityDefinitions: Record<SlotRarity, RarityDefinition> = {
 	growing: {
 		value: "growing",
 		label: "Growing",
-		multiplier: 1 + BASE_INCREMENT,
+		multiplier: 1.1,
 		accent: "#38bdf8",
 		cardBackground: "#2563eb",
 	},
 	advanced: {
 		value: "advanced",
 		label: "Advanced",
-		multiplier: 1 + BASE_INCREMENT * 2,
+		multiplier: 1.2,
 		accent: "#c084fc",
 		cardBackground: "#7c3aed",
 	},
 	top: {
 		value: "top",
 		label: "Top",
-		multiplier: 1 + BASE_INCREMENT * 3,
+		multiplier: 1.3,
 		accent: "#facc15",
 		cardBackground: "#fbbf24",
 	},
 	legendary: {
 		value: "legendary",
 		label: "Legendary",
-		multiplier: 1 + BASE_INCREMENT * 4,
+		multiplier: 1.4,
 		accent: "#fb923c",
 		cardBackground: "#f97316",
 	},
 	hero: {
 		value: "hero",
 		label: "Hero",
-		multiplier: 1 + BASE_INCREMENT * 5,
+		multiplier: 1.67,
 		accent: "#f472b6",
 		cardBackground: "linear-gradient(135deg,#7dd3fc,#f472b6)",
 	},
