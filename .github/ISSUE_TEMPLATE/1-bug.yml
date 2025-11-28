@@ -34,28 +34,20 @@ body:
   - type: textarea
     id: app-logs
     attributes:
-      label: Relevant logs
-      description: Please copy and paste any relevant log output. (This will be automatically formatted, so no need for backticks.)
-      render: shell
-  - type: input
-    id: version
-    attributes:
-      label: Version
-      description: Which app build or commit hash are you using? (Shown in the footer or browser dev tools.)
-      placeholder: e.g. v0.5.1 or commit 4fd2a3b
-    validations:
-      required: true
+      label: Anything else we should know?
+      description: Optional notes, screenshots, or recorded GIFs that help illustrate the issue.
   - type: dropdown
     id: os-platform
     attributes:
-      label: What Operating System are you using?
+      label: What browser are you using?
       options:
-        - Windows
-        - macOS
-        - Linux
+        - Chrome
+        - Firefox
+        - Edge
+        - Safari
+        - Arc
+        - Brave
         - Other
-    validations:
-      required: true
   - type: dropdown
     id: feature-area
     attributes:
