@@ -50,8 +50,17 @@ export type SlotComputedStats = {
 	beanBonuses: Record<BaseAttributeKey, number>;
 };
 
+export type SlotKind = "starter" | "reserve" | "manager" | "coordinator";
+
+export type TeamBuilderSlot = Omit<FormationSlot, "label"> & {
+	label: FormationSlot["label"] | string;
+	kind: SlotKind;
+	displayLabel?: string;
+	configScope: "full" | "rarity-only";
+};
+
 export type SlotAssignment = {
-	slot: FormationSlot;
+	slot: TeamBuilderSlot;
 	player: PlayerRecord | null;
 	config: SlotConfig;
 	computed: SlotComputedStats | null;

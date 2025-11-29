@@ -1,4 +1,12 @@
-# Version 1.1.2 - 2025-11-28
+# Version 1.2.0 - 2025-11-29
+- Team Builder Page:
+  - Added staff section to the team builder page.
+  - Added reserves section to the team builder page.
+  - Added option to export the team as an image.
+- I am now working on adding passives and tactics to the team builder page.
+  If you have any community-collected lists of tactics or passives, please share them in [this discussion thread](https://github.com/vitorfdl/game-inazuma-eleven/issues/3).
+
+# Version 1.1.3 - 2025-11-28
 
 - Added changelog noticeboard that surfaces the latest updates in-app.
 - Team Builder Page:

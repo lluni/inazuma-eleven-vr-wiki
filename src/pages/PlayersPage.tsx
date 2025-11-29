@@ -600,10 +600,11 @@ function PlayerIdentity({ player }: PlayerIdentityProps) {
 	return (
 		<div className="flex items-center gap-3">
 			<img
-				src={player.image}
+				src={player.safeImage}
 				alt={player.name}
 				className="size-16 rounded-md border object-cover"
 				loading="lazy"
+				crossOrigin="anonymous"
 				referrerPolicy="no-referrer"
 			/>
 			<div className="flex flex-1 flex-col">

@@ -13,7 +13,14 @@ import { withBase } from "@/lib/utils";
 
 export type ElementType = "Forest" | "Wind" | "Fire" | "Mountain";
 export type MoveType = "Shot" | "Dribble" | "Wall" | "Catch";
-export type TeamPosition = "FW" | "MD" | "DF" | "GK";
+export type TeamPosition =
+	| "FW"
+	| "MD"
+	| "DF"
+	| "GK"
+	| "RESERVE"
+	| "MANAGER"
+	| "COORDINATOR";
 
 type IconDefinition = {
 	icon?: LucideIcon;
@@ -67,7 +74,7 @@ const MOVE_ICON_MAP: Record<MoveType, IconDefinition> = {
 	Catch: {
 		icon: Hand,
 		color: "#ffd700",
-	}
+	},
 };
 
 const POSITION_COLOR_MAP: Record<TeamPosition, PositionColor> = {
@@ -91,6 +98,21 @@ const POSITION_COLOR_MAP: Record<TeamPosition, PositionColor> = {
 		secondary: "#b45309",
 		gradient: "linear-gradient(135deg, #fef08a 0%, #b45309 100%)",
 	},
+	RESERVE: {
+		primary: "#fb923c",
+		secondary: "#c2410c",
+		gradient: "linear-gradient(135deg, #fdba74 0%, #c2410c 100%)",
+	},
+	MANAGER: {
+		primary: "#c084fc",
+		secondary: "#7e22ce",
+		gradient: "linear-gradient(135deg, #e9d5ff 0%, #7e22ce 100%)",
+	},
+	COORDINATOR: {
+		primary: "#67e8f9",
+		secondary: "#0e7490",
+		gradient: "linear-gradient(135deg, #a5f3fc 0%, #0e7490 100%)",
+	},
 };
 
 function normalizeIcon(definition: IconDefinition): IconDefinition {
@@ -112,8 +134,9 @@ export function getMoveIcon(move: MoveType): IconDefinition {
 }
 
 export function getPositionColor(position: TeamPosition): PositionColor {
-	return POSITION_COLOR_MAP[position] ?? {
-		primary: "#94a3b8",
-	};
+	return (
+		POSITION_COLOR_MAP[position] ?? {
+			primary: "#94a3b8",
+		}
+	);
 }
-

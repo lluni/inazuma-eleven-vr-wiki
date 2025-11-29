@@ -1,6 +1,7 @@
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import type { FormationId } from "@/data/formations";
 import { FORMATIONS } from "@/data/formations";
+import { EXTRA_SLOT_IDS } from "@/data/team-builder-slots";
 import { createEmptySlotBeans, normalizeSlotBeans } from "@/lib/slot-beans";
 import type { SlotConfig, SlotEquipments } from "@/types/team-builder";
 
@@ -74,9 +75,17 @@ export function mergeSlotConfig(
 	};
 }
 
+const defaultAssignments: TeamBuilderAssignments = EXTRA_SLOT_IDS.reduce(
+	(acc, slotId) => {
+		acc[slotId] = null;
+		return acc;
+	},
+	{} as TeamBuilderAssignments,
+);
+
 const defaultState: TeamBuilderState = {
 	formationId: DEFAULT_FORMATION_ID,
-	assignments: {},
+	assignments: defaultAssignments,
 	displayMode: "nickname",
 	slotConfigs: {},
 };

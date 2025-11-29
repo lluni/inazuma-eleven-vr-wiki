@@ -122,7 +122,7 @@ export default function AppLayout() {
 				</SidebarFooter>
 			</Sidebar>
 			<SidebarInset>
-				<header className="sticky top-0 z-40 flex h-20 shrink-0 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+				<header className="sticky top-0 z-40 flex h-15 shrink-0 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
 					<SidebarTrigger className="-ml-1" />
 					<div className="h-10 w-px bg-border/70" />
 					<div className="flex flex-1 flex-col justify-center">

@@ -1,6 +1,13 @@
 import { useAtom, useAtomValue } from "jotai";
-import { CheckCircle2, CirclePlus, RefreshCcw, Share2, UserX } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+	ClipboardList,
+	ImageDown,
+	RefreshCcw,
+	Share2,
+	UserX,
+} from "lucide-react";
+import { toPng } from "html-to-image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PositionChip } from "@/components/team-builder/Chips";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
@@ -28,14 +35,10 @@ import {
 	type FormationSlot,
 	formationsMap,
 } from "@/data/formations";
+import { EXTRA_SLOT_IDS, EXTRA_TEAM_SLOTS } from "@/data/team-builder-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatNumber } from "@/lib/data-helpers";
 import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
-import {
-	TEAM_SHARE_QUERY_KEY,
-	decodeTeamShareState,
-	encodeTeamShareState,
-} from "@/lib/team-share";
 import {
 	mapToElementType,
 	mapToTeamPosition,
@@ -45,6 +48,11 @@ import {
 } from "@/lib/players-data";
 import { getSlotRarityDefinition } from "@/lib/slot-rarity";
 import { computeSlotComputedStats } from "@/lib/team-builder-calculations";
+import {
+	decodeTeamShareState,
+	encodeTeamShareState,
+	TEAM_SHARE_QUERY_KEY,
+} from "@/lib/team-share";
 import { cn } from "@/lib/utils";
 import { favoritePlayersAtom } from "@/store/favorites";
 import {
@@ -60,6 +68,7 @@ import type {
 	FiltersState,
 	SlotAssignment,
 	SlotConfig,
+	TeamBuilderSlot,
 } from "@/types/team-builder";
 
 const DISPLAY_MODE_OPTIONS: { value: DisplayMode; label: string }[] = [
@@ -77,6 +86,7 @@ const FIELD_COLUMNS = 5;
 const FIELD_ROWS = 6;
 const COLUMN_STOPS = [8, 30, 50, 70, 92];
 const ROW_STOPS = [14, 30, 48, 65, 78, 94];
+const SLOT_CARD_WIDTH_CLASS = "w-[clamp(92px,12vw,128px)]";
 const DEFAULT_FILTERS: FiltersState = {
 	search: "",
 	element: "all",
@@ -109,18 +119,54 @@ export default function TeamBuilderPage() {
 	const [shareDialogOpen, setShareDialogOpen] = useState(false);
 	const [shareLink, setShareLink] = useState("");
 	const [shareCopyState, setShareCopyState] = useState<ShareCopyState>("idle");
-	const [shareAlert, setShareAlert] = useState<string | null>(null);
+	const [pageAlert, setPageAlert] = useState<string | null>(null);
 	const [sharedCandidate, setSharedCandidate] =
 		useState<SharedTeamCandidate | null>(null);
 	const [importDialogOpen, setImportDialogOpen] = useState(false);
 	const [clearDialogOpen, setClearDialogOpen] = useState(false);
+	const [teamBoardOpen, setTeamBoardOpen] = useState(false);
+	const [isExportingImage, setIsExportingImage] = useState(false);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const isMobile = useIsMobile();
+	const teamImageRef = useRef<HTMLDivElement | null>(null);
+	const layoutContainerRef = useRef<HTMLDivElement | null>(null);
+	const [isStackedLayout, setIsStackedLayout] = useState(true);
 	const favoriteSet = useMemo(
 		() => new Set(favoritePlayerIds),
 		[favoritePlayerIds],
 	);
+
+	useEffect(() => {
+		const updateLayoutState = () => {
+			if (typeof window === "undefined") {
+				return;
+			}
+			const current = layoutContainerRef.current;
+			if (!current) {
+				return;
+			}
+			const direction = window.getComputedStyle(current).flexDirection;
+			setIsStackedLayout(direction !== "row");
+		};
+
+		updateLayoutState();
+
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		if (typeof ResizeObserver !== "undefined") {
+			const observer = new ResizeObserver(() => updateLayoutState());
+			if (layoutContainerRef.current) {
+				observer.observe(layoutContainerRef.current);
+			}
+			return () => observer.disconnect();
+		}
+
+		window.addEventListener("resize", updateLayoutState);
+		return () => window.removeEventListener("resize", updateLayoutState);
+	}, []);
 
 	const previewState = sharedCandidate?.state ?? null;
 	const effectiveState = previewState ?? teamState;
@@ -129,21 +175,31 @@ export default function TeamBuilderPage() {
 	const formation =
 		formationsMap.get(effectiveState.formationId) ?? FORMATIONS[0];
 	const displayMode = effectiveState.displayMode ?? "nickname";
+	const starterSlots = useMemo(
+		() => formation.slots.map((slot) => extendFormationSlot(slot)),
+		[formation],
+	);
+	const allSlots = useMemo(
+		() => [...starterSlots, ...EXTRA_TEAM_SLOTS],
+		[starterSlots],
+	);
+	const slotMap = useMemo(
+		() => new Map(allSlots.map((slot) => [slot.id, slot])),
+		[allSlots],
+	);
+	const totalSlotCount = allSlots.length;
 
 	useEffect(() => {
-		if (!formation.slots.length) {
+		if (!allSlots.length) {
 			setActiveSlotId(null);
 			setDetailsOpen(false);
 			return;
 		}
-		if (
-			activeSlotId &&
-			!formation.slots.some((slot) => slot.id === activeSlotId)
-		) {
+		if (activeSlotId && !allSlots.some((slot) => slot.id === activeSlotId)) {
 			setActiveSlotId(null);
 			setDetailsOpen(false);
 		}
-	}, [formation, activeSlotId]);
+	}, [allSlots, activeSlotId]);
 
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
@@ -153,14 +209,11 @@ export default function TeamBuilderPage() {
 		}
 		params.delete(TEAM_SHARE_QUERY_KEY);
 		const nextSearch = params.toString();
-		navigate(
-			`${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`,
-			{
-				replace: true,
-				state: location.state,
-				preventScrollReset: true,
-			},
-		);
+		navigate(`${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`, {
+			replace: true,
+			state: location.state,
+			preventScrollReset: true,
+		});
 		const decodedState = decodeTeamShareState(encodedShare);
 		if (decodedState) {
 			setSharedCandidate({
@@ -175,15 +228,15 @@ export default function TeamBuilderPage() {
 			setPickerOpen(false);
 			setDetailsOpen(false);
 			setClearDialogOpen(false);
-			setShareAlert(null);
+			setPageAlert(null);
 		} else {
-			setShareAlert("We couldn't read the shared team link.");
+			setPageAlert("We couldn't read the shared team link.");
 		}
 	}, [location.pathname, location.search, location.state, navigate]);
 
-	const slotAssignments: SlotAssignment[] = useMemo(() => {
+	const allAssignments: SlotAssignment[] = useMemo(() => {
 		const slotConfigs = effectiveState.slotConfigs ?? {};
-		return formation.slots.map((slot) => {
+		return allSlots.map((slot) => {
 			const config = normalizeSlotConfig(slotConfigs[slot.id]);
 			const player = getPlayerById(effectiveState.assignments[slot.id]);
 			return {
@@ -193,7 +246,17 @@ export default function TeamBuilderPage() {
 				computed: player ? computeSlotComputedStats(player, config) : null,
 			};
 		});
-	}, [effectiveState.assignments, effectiveState.slotConfigs, formation.slots]);
+	}, [allSlots, effectiveState.assignments, effectiveState.slotConfigs]);
+	const starterAssignments = allAssignments.filter(
+		(entry) => entry.slot.kind === "starter",
+	);
+	const reserveAssignments = allAssignments.filter(
+		(entry) => entry.slot.kind === "reserve",
+	);
+	const staffAssignments = allAssignments.filter(
+		(entry) =>
+			entry.slot.kind === "manager" || entry.slot.kind === "coordinator",
+	);
 
 	const assignedPlayerIds = useMemo(() => {
 		const ids = Object.values(effectiveState.assignments).filter(
@@ -202,12 +265,10 @@ export default function TeamBuilderPage() {
 		return new Set(ids);
 	}, [effectiveState.assignments]);
 
-	const filledCount = slotAssignments.filter((entry) => entry.player).length;
-	const activeSlot = activeSlotId
-		? (formation.slots.find((slot) => slot.id === activeSlotId) ?? null)
-		: null;
+	const filledCount = allAssignments.filter((entry) => entry.player).length;
+	const activeSlot = activeSlotId ? (slotMap.get(activeSlotId) ?? null) : null;
 	const activeAssignment = activeSlot
-		? (slotAssignments.find((entry) => entry.slot.id === activeSlot.id) ?? null)
+		? (allAssignments.find((entry) => entry.slot.id === activeSlot.id) ?? null)
 		: null;
 
 	const filteredPlayers = useMemo(() => {
@@ -262,6 +323,8 @@ export default function TeamBuilderPage() {
 			const nextFormation = formationsMap.get(formationId) ?? fallbackFormation;
 			const prevAssignments = prev.assignments ?? {};
 			const prevSlotConfigs = prev.slotConfigs ?? {};
+			const extraAssignmentsSnapshot = pickExtraAssignments(prevAssignments);
+			const extraSlotConfigsSnapshot = pickExtraSlotConfigs(prevSlotConfigs);
 
 			const nextAssignments: TeamBuilderAssignments = {};
 			const nextSlotConfigs: TeamBuilderSlotConfigs = {};
@@ -270,6 +333,12 @@ export default function TeamBuilderPage() {
 				nextAssignments[slot.id] = prevAssignments[slot.id] ?? null;
 				if (prevSlotConfigs[slot.id]) {
 					nextSlotConfigs[slot.id] = prevSlotConfigs[slot.id];
+				}
+			});
+			EXTRA_SLOT_IDS.forEach((slotId) => {
+				nextAssignments[slotId] = extraAssignmentsSnapshot[slotId] ?? null;
+				if (extraSlotConfigsSnapshot[slotId]) {
+					nextSlotConfigs[slotId] = extraSlotConfigsSnapshot[slotId];
 				}
 			});
 
@@ -292,7 +361,7 @@ export default function TeamBuilderPage() {
 		}));
 	};
 
-	const handleOpenPicker = (slot: FormationSlot) => {
+	const handleOpenPicker = (slot: TeamBuilderSlot) => {
 		if (isPreviewingSharedTeam) return;
 		setActiveSlotId(slot.id);
 		setPickerOpen(true);
@@ -332,12 +401,12 @@ export default function TeamBuilderPage() {
 		});
 	};
 
-	const handleSelectSlot = (slot: FormationSlot) => {
+	const handleSelectSlot = (slot: TeamBuilderSlot) => {
 		setActiveSlotId(slot.id);
 		setDetailsOpen(true);
 	};
 
-	const handleSelectEmptySlot = (slot: FormationSlot) => {
+	const handleSelectEmptySlot = (slot: TeamBuilderSlot) => {
 		if (isPreviewingSharedTeam) return;
 		setActiveSlotId(slot.id);
 		setDetailsOpen(false);
@@ -365,6 +434,9 @@ export default function TeamBuilderPage() {
 			const nextAssignments: TeamBuilderAssignments = {};
 			formation.slots.forEach((slot) => {
 				nextAssignments[slot.id] = null;
+			});
+			EXTRA_SLOT_IDS.forEach((slotId) => {
+				nextAssignments[slotId] = null;
 			});
 			return {
 				...prev,
@@ -397,10 +469,12 @@ export default function TeamBuilderPage() {
 	const handleShareTeam = () => {
 		if (isPreviewingSharedTeam) return;
 		setShareCopyState("idle");
-		setShareAlert(null);
+		setPageAlert(null);
 		const encoded = encodeTeamShareState(teamState);
 		if (!encoded || typeof window === "undefined") {
-			setShareAlert("Unable to generate a share link right now. Please try again.");
+			setPageAlert(
+				"Unable to generate a share link right now. Please try again.",
+			);
 			return;
 		}
 		const shareUrl = new URL(window.location.href);
@@ -420,7 +494,7 @@ export default function TeamBuilderPage() {
 	const handleDismissSharedCandidate = () => {
 		setSharedCandidate(null);
 		setImportDialogOpen(false);
-		setShareAlert(null);
+		setPageAlert(null);
 	};
 
 	const handleImportSharedTeam = () => {
@@ -435,17 +509,43 @@ export default function TeamBuilderPage() {
 		}));
 		setSharedCandidate(null);
 		setImportDialogOpen(false);
-		setShareAlert(null);
+		setPageAlert(null);
 		setActiveSlotId(null);
 		setDetailsOpen(false);
 		setPickerOpen(false);
 	};
 
+	const handleDownloadTeamImage = async () => {
+		if (!teamImageRef.current || typeof window === "undefined") {
+			return;
+		}
+		setIsExportingImage(true);
+		setPageAlert(null);
+		try {
+			const dataUrl = await toPng(teamImageRef.current, {
+				cacheBust: true,
+				pixelRatio: Math.min(window.devicePixelRatio || 2, 3),
+				backgroundColor: "#020617",
+			});
+			const link = document.createElement("a");
+			link.href = dataUrl;
+			link.download = `inazuma-team-${new Date()
+				.toISOString()
+				.split("T")[0]}.png`;
+			link.click();
+		} catch (error) {
+			console.error("Failed to export team image", error);
+			setPageAlert("We couldn't export the team image. Please try again.");
+		} finally {
+			setIsExportingImage(false);
+		}
+	};
+
 	return (
 		<div className="flex flex-col gap-4">
-			{shareAlert ? (
+			{pageAlert ? (
 				<div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-sm">
-					{shareAlert}
+					{pageAlert}
 				</div>
 			) : null}
 
@@ -453,9 +553,11 @@ export default function TeamBuilderPage() {
 				<div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm shadow-sm">
 					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<p className="font-semibold text-amber-900">Previewing shared team</p>
+							<p className="font-semibold text-amber-900">
+								Previewing shared team
+							</p>
 							<p className="text-xs text-amber-800">
-								{sharedCandidate.filledSlots}/11 slots ·{" "}
+								{sharedCandidate.filledSlots}/{totalSlotCount} slots ·{" "}
 								{sharedCandidate.formationName}
 							</p>
 							<p className="text-xs text-amber-700">
@@ -488,29 +590,11 @@ export default function TeamBuilderPage() {
 					<div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-6">
 						<div className="space-y-1">
 							<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-								Formation
+								Team actions
 							</p>
 							<div className="flex flex-wrap gap-2">
-								<Select
-									disabled={isPreviewingSharedTeam}
-									value={formation.id}
-									onValueChange={(value) => handleFormationChange(value)}
-								>
-									<SelectTrigger className="w-full min-w-[220px] bg-background/80 sm:w-[260px]">
-										<SelectValue placeholder="Choose formation" />
-									</SelectTrigger>
-									<SelectContent>
-										{FORMATIONS.map((item) => (
-											<SelectItem key={item.id} value={item.id}>
-												<span className="flex flex-col text-left">
-													<span className="font-semibold">{item.name}</span>
-												</span>
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
 								<Button
-									variant="outline"
+									variant="destructive"
 									size="sm"
 									className="gap-1"
 									onClick={() => setClearDialogOpen(true)}
@@ -527,6 +611,25 @@ export default function TeamBuilderPage() {
 								>
 									<Share2 className="size-4" />
 									Share team
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									className="gap-1"
+									onClick={handleDownloadTeamImage}
+									disabled={isExportingImage}
+								>
+									<ImageDown className="size-4" />
+									{isExportingImage ? "Preparing..." : "Export image"}
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									className="gap-1"
+									onClick={() => setTeamBoardOpen(true)}
+								>
+									<ClipboardList className="size-4" />
+									Open board
 								</Button>
 							</div>
 						</div>
@@ -554,89 +657,42 @@ export default function TeamBuilderPage() {
 							</div>
 						</div>
 					</div>
-					<div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-						<span>{filledCount}/11 slots filled</span>
-						{filledCount === 11 ? (
-							<CheckCircle2
-								className="size-4 text-emerald-500"
-								aria-hidden="true"
-							/>
-						) : (
-							<CirclePlus
-								className="size-4 text-amber-500"
-								aria-hidden="true"
-							/>
-						)}
-					</div>
 				</div>
 			</section>
 
-			<section className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-				<div className="space-y-3 rounded-xl border bg-card p-3 shadow-sm">
-					<FormationPitch
-						assignments={slotAssignments}
-						activeSlotId={activeSlotId}
-						displayMode={displayMode}
-						onSlotSelect={handleSelectSlot}
-						onEmptySlotSelect={handleSelectEmptySlot}
-					/>
-				</div>
-
-				<div className="space-y-3">
-					<div className="space-y-3 rounded-xl border bg-card p-3 shadow-sm">
-						<header className="flex flex-wrap items-center justify-between gap-2">
-							<div>
-								<p className="text-sm font-semibold">Team board</p>
-								<p className="text-xs text-muted-foreground">
-									Overview of every slot and the chosen player.
-								</p>
-							</div>
-						</header>
-						<div className="space-y-2">
-							{slotAssignments.map(({ slot, player }) => (
-								<div
-									key={slot.id}
-									className={cn(
-										"flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm",
-										player
-											? "border-muted bg-background"
-											: "border-dashed border-muted-foreground/40 bg-transparent text-muted-foreground",
-									)}
-								>
-									<div className="flex items-center gap-2">
-										<PositionChip label={slot.label} />
-										{player ? (
-											<span className="text-sm font-semibold">
-												{player.name}
-											</span>
-										) : (
-											<button
-												type="button"
-												onClick={() => handleOpenPicker(slot)}
-												disabled={isPreviewingSharedTeam}
-												className="text-[10px] font-semibold uppercase tracking-[0.35em] text-primary underline-offset-2 hover:underline disabled:opacity-60"
-											>
-												Assign player
-											</button>
-										)}
-									</div>
-									{player ? (
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 px-2"
-											disabled={isPreviewingSharedTeam}
-											onClick={() => handleOpenPicker(slot)}
-										>
-											<RefreshCcw className="size-4" />
-										</Button>
-									) : null}
-								</div>
-							))}
+			<div ref={teamImageRef} className="grid gap-4">
+				<div className="rounded-xl border bg-card p-3 shadow-sm">
+					<div
+						ref={layoutContainerRef}
+						className="mx-auto flex w-full max-w-6xl flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-3"
+					>
+						<div className="flex-1">
+							<FormationPitch
+								assignments={starterAssignments}
+								staffEntries={staffAssignments}
+								activeSlotId={activeSlotId}
+								displayMode={displayMode}
+								onSlotSelect={handleSelectSlot}
+								onEmptySlotSelect={handleSelectEmptySlot}
+								formationId={formation.id}
+								onFormationChange={handleFormationChange}
+								isFormationDisabled={isPreviewingSharedTeam}
+							/>
+						</div>
+						<div className="self-start">
+							<ReservesRail
+								entries={reserveAssignments}
+								displayMode={displayMode}
+								activeSlotId={activeSlotId}
+								onSlotSelect={handleSelectSlot}
+								onEmptySlotSelect={handleSelectEmptySlot}
+								isStackedLayout={isStackedLayout}
+								variant="compact"
+							/>
 						</div>
 					</div>
 				</div>
-			</section>
+			</div>
 
 			<SlotDetailsDrawer
 				open={detailsOpen && Boolean(activeSlot)}
@@ -671,6 +727,63 @@ export default function TeamBuilderPage() {
 				}}
 			/>
 
+			<Dialog open={teamBoardOpen} onOpenChange={setTeamBoardOpen}>
+				<DialogContent className="!max-w-3xl">
+					<DialogHeader>
+						<DialogTitle>Team board</DialogTitle>
+						<DialogDescription>
+							Overview of every slot and its current assignment.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+						{allAssignments.map(({ slot, player }) => (
+							<div
+								key={slot.id}
+								className={cn(
+									"flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm",
+									player
+										? "border-muted bg-background"
+										: "border-dashed border-muted-foreground/40 bg-transparent text-muted-foreground",
+								)}
+							>
+								<div className="flex items-center gap-2">
+									<PositionChip label={slot.displayLabel ?? slot.label} />
+									{player ? (
+										<span className="text-sm font-semibold">{player.name}</span>
+									) : (
+										<button
+											type="button"
+											onClick={() => {
+												setTeamBoardOpen(false);
+												handleOpenPicker(slot);
+											}}
+											disabled={isPreviewingSharedTeam}
+											className="text-[10px] font-semibold uppercase tracking-[0.35em] text-primary underline-offset-2 hover:underline disabled:opacity-60"
+										>
+											Assign player
+										</button>
+									)}
+								</div>
+								{player ? (
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-7 px-2"
+										disabled={isPreviewingSharedTeam}
+										onClick={() => {
+											setTeamBoardOpen(false);
+											handleOpenPicker(slot);
+										}}
+									>
+										<RefreshCcw className="size-4" />
+									</Button>
+								) : null}
+							</div>
+						))}
+					</div>
+				</DialogContent>
+			</Dialog>
+
 			<Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
 				<DialogContent>
 					<DialogHeader>
@@ -695,7 +808,9 @@ export default function TeamBuilderPage() {
 							Anyone with this URL can import your team into their own builder.
 						</p>
 						{shareCopyState === "copied" ? (
-							<p className="text-xs text-emerald-600">Link copied to clipboard.</p>
+							<p className="text-xs text-emerald-600">
+								Link copied to clipboard.
+							</p>
 						) : null}
 						{shareCopyState === "error" ? (
 							<p className="text-xs text-destructive">
@@ -711,8 +826,8 @@ export default function TeamBuilderPage() {
 					<DialogHeader>
 						<DialogTitle>Clear current team?</DialogTitle>
 						<DialogDescription>
-							This will remove every assigned player and reset slot customizations.
-							You can't undo this action.
+							This will remove every assigned player and reset slot
+							customizations. You can't undo this action.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
@@ -752,7 +867,10 @@ export default function TeamBuilderPage() {
 						</p>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+						<Button
+							variant="outline"
+							onClick={() => setImportDialogOpen(false)}
+						>
 							Maybe later
 						</Button>
 						<Button onClick={handleImportSharedTeam}>Import team</Button>
@@ -765,23 +883,62 @@ export default function TeamBuilderPage() {
 
 type FormationPitchProps = {
 	assignments: SlotAssignment[];
+	staffEntries: SlotAssignment[];
 	activeSlotId: string | null;
 	displayMode: DisplayMode;
-	onSlotSelect: (slot: FormationSlot) => void;
-	onEmptySlotSelect: (slot: FormationSlot) => void;
+	onSlotSelect: (slot: TeamBuilderSlot) => void;
+	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
+	formationId: FormationDefinition["id"];
+	onFormationChange: (formationId: FormationDefinition["id"]) => void;
+	isFormationDisabled: boolean;
 };
 
 function FormationPitch({
 	assignments,
+	staffEntries,
 	activeSlotId,
 	displayMode,
 	onSlotSelect,
 	onEmptySlotSelect,
+	formationId,
+	onFormationChange,
+	isFormationDisabled,
 }: FormationPitchProps) {
+	const managerEntry = staffEntries.find((entry) => entry.slot.kind === "manager");
+	const coordinatorEntries = staffEntries.filter(
+		(entry) => entry.slot.kind === "coordinator",
+	);
+	const hasStaffFooter = managerEntry || coordinatorEntries.length > 0;
+
 	return (
-		<div className="mx-auto w-full">
-			<div className="relative mx-auto w-full max-w-5xl">
-				<div className="relative aspect-[3/4] w-full rounded-[36px] border border-emerald-800 bg-gradient-to-b from-emerald-700/70 via-emerald-800/80 to-emerald-900/95 p-4 shadow-[inset_0_0_50px_rgba(0,0,0,0.35)] sm:aspect-[5/6] lg:aspect-[6/5]">
+		<div className="w-full">
+			<div className="relative w-full">
+				<div className="pointer-events-none absolute inset-x-0 -top-2 z-20 flex justify-center sm:-top-3">
+					<div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-black/40 bg-black/70 px-3 py-1.5 shadow-lg shadow-emerald-900/60">
+						<p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-emerald-100/90">
+							Formation
+						</p>
+						<Select
+							disabled={isFormationDisabled}
+							value={formationId}
+							onValueChange={(value) => onFormationChange(value)}
+						>
+							<SelectTrigger className="h-8 min-w-[180px] border-white/20 bg-emerald-950/80 text-xs text-emerald-50 shadow-sm sm:min-w-[220px]">
+								<SelectValue placeholder="Choose formation" />
+							</SelectTrigger>
+							<SelectContent>
+								{FORMATIONS.map((item) => (
+									<SelectItem key={item.id} value={item.id}>
+										<span className="flex flex-col text-left">
+											<span className="text-xs font-semibold">{item.name}</span>
+										</span>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				</div>
+				<div className="relative aspect-[3/4] w-full rounded-[36px] border border-emerald-800 bg-gradient-to-b from-emerald-700/70 via-emerald-800/80 to-emerald-900/95 p-4 shadow-[inset_0_0_50px_rgba(0,0,0,0.35)] sm:aspect-[5/6] lg:aspect-[5/5]">
 					<div className="absolute inset-4 rounded-[30px] border border-white/25" />
 					<div className="absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-white/15" />
 					<div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/15 sm:h-56 sm:w-56" />
@@ -802,6 +959,149 @@ function FormationPitch({
 					</div>
 				</div>
 			</div>
+			{hasStaffFooter && (
+				<div className="mt-4 flex w-full flex-wrap items-center gap-2 rounded-3xl border border-emerald-900/50 bg-gradient-to-r from-emerald-900/40 via-emerald-950/30 to-emerald-900/40 p-3 text-white shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] sm:gap-3 sm:justify-between">
+					<div className="flex flex-1 justify-start">
+						{managerEntry ? (
+							<SlotEntryButton
+								entry={managerEntry}
+								displayMode={displayMode}
+								activeSlotId={activeSlotId}
+								onSlotSelect={onSlotSelect}
+								onEmptySlotSelect={onEmptySlotSelect}
+								buttonClassName="justify-start"
+								variant="compact"
+							/>
+						) : null}
+					</div>
+					<div className="flex flex-1 justify-end gap-1.5">
+						{coordinatorEntries.map((entry) => (
+							<SlotEntryButton
+								key={entry.slot.id}
+								entry={entry}
+								displayMode={displayMode}
+								activeSlotId={activeSlotId}
+								onSlotSelect={onSlotSelect}
+								onEmptySlotSelect={onEmptySlotSelect}
+								buttonClassName="justify-start"
+								variant="compact"
+							/>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
+	);
+}
+
+type SlotEntryButtonProps = {
+	entry: SlotAssignment;
+	displayMode: DisplayMode;
+	activeSlotId: string | null;
+	onSlotSelect: (slot: TeamBuilderSlot) => void;
+	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
+	buttonClassName?: string;
+	cardWrapperClassName?: string;
+	variant?: "default" | "compact";
+};
+
+function SlotEntryButton({
+	entry,
+	displayMode,
+	activeSlotId,
+	onSlotSelect,
+	onEmptySlotSelect,
+	buttonClassName,
+	cardWrapperClassName,
+	variant = "default",
+}: SlotEntryButtonProps) {
+	const isActive = entry.slot.id === activeSlotId;
+	const hasPlayer = Boolean(entry.player);
+	const handleClick = hasPlayer
+		? () => onSlotSelect(entry.slot)
+		: () => onEmptySlotSelect(entry.slot);
+
+	return (
+		<button
+			type="button"
+			onClick={handleClick}
+			className={cn(
+				"transition",
+				variant === "compact"
+					? "inline-flex w-auto hover:-translate-y-1 hover:scale-[1.02]"
+					: "flex w-full justify-center",
+				buttonClassName,
+			)}
+		>
+			<div
+				className={cn(
+					variant === "compact"
+						? SLOT_CARD_WIDTH_CLASS
+						: "w-[clamp(120px,25vw,180px)]",
+					cardWrapperClassName,
+				)}
+			>
+				<SlotCard
+					entry={entry}
+					displayMode={displayMode}
+					isActive={isActive}
+					variant={variant}
+				/>
+			</div>
+		</button>
+	);
+}
+
+type ReservesRailProps = {
+	entries: SlotAssignment[];
+	displayMode: DisplayMode;
+	activeSlotId: string | null;
+	onSlotSelect: (slot: TeamBuilderSlot) => void;
+	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
+	variant?: "default" | "compact";
+	isStackedLayout?: boolean;
+};
+
+function ReservesRail({
+	entries,
+	displayMode,
+	activeSlotId,
+	onSlotSelect,
+	onEmptySlotSelect,
+	variant = "default",
+	isStackedLayout = false,
+}: ReservesRailProps) {
+	if (!entries.length) return null;
+
+	return (
+		<div className="rounded-2xl border border-white/15 bg-gradient-to-b from-emerald-950/20 via-emerald-900/10 to-emerald-950/30 p-3 text-white shadow-inner xl:max-w-[280px]">
+			<p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-100/90">
+				Reserves
+			</p>
+			<div
+				className={cn(
+					"mt-3 flex gap-2",
+					isStackedLayout
+						? "flex-row overflow-x-auto pb-1"
+						: "flex-col overflow-visible pb-0",
+				)}
+			>
+				{entries.map((entry) => (
+					<SlotEntryButton
+						key={entry.slot.id}
+						entry={entry}
+						displayMode={displayMode}
+						activeSlotId={activeSlotId}
+						onSlotSelect={onSlotSelect}
+						onEmptySlotSelect={onEmptySlotSelect}
+						buttonClassName="justify-start"
+						cardWrapperClassName={
+							variant === "compact" ? undefined : "w-full"
+						}
+						variant={variant}
+					/>
+				))}
+			</div>
 		</div>
 	);
 }
@@ -821,12 +1121,9 @@ function PlayerSlotMarker({
 	onSelect,
 	onEmptySelect,
 }: PlayerSlotMarkerProps) {
-	const { slot, player, config } = entry;
-	const positionColor = getPositionColor(mapToTeamPosition(slot.label));
+	const { slot, player } = entry;
 	const positionStyle = getSlotPositionStyle(slot);
-	const rarityDefinition = getSlotRarityDefinition(config?.rarity ?? "normal");
 	const handleClick = player ? onSelect : onEmptySelect;
-	const hasPlayer = Boolean(player);
 
 	return (
 		<button
@@ -834,85 +1131,115 @@ function PlayerSlotMarker({
 			onClick={handleClick}
 			style={positionStyle}
 			className={cn(
-				"absolute flex w-[clamp(92px,12vw,128px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-white outline-none transition",
+				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-white outline-none transition",
+				SLOT_CARD_WIDTH_CLASS,
 				isActive
 					? "scale-105 drop-shadow-[0_12px_20px_rgba(0,0,0,0.35)]"
 					: "hover:scale-105",
 			)}
 		>
-			<div
-				className={cn(
-					"relative w-full rounded-lg border-2 bg-black/40 p-0.5 backdrop-blur-sm transition",
-					hasPlayer
-						? "border-white/60 shadow-xl"
-						: "border-dashed border-white/40",
-					isActive && "ring-2 ring-emerald-200",
-				)}
-			>
-				<div
-					className={cn(
-						"relative w-full rounded-md",
-						hasPlayer
-							? "p-[2px]"
-							: "overflow-hidden border border-dashed border-white/30 bg-black/20",
-					)}
-					style={
-						hasPlayer
-							? { background: rarityDefinition.cardBackground }
-							: undefined
-					}
-				>
-					<div className="relative w-full overflow-hidden rounded-[10px]">
-						{player ? (
-							<img
-								src={player.image}
-								alt={player.name}
-								className="aspect-[4/4] w-full object-cover shadow-inner"
-								loading="lazy"
-							/>
-						) : (
-							<div className="flex aspect-[4/4] flex-col items-center justify-center gap-2 px-3 text-center">
-								<span className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
-									{slot.label}
-								</span>
-								<span className="text-[10px] uppercase tracking-[0.3em] text-white/50">
-									Tap to assign
-								</span>
-							</div>
-						)}
-
-						{player && (
-							<>
-								<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/80 text-center shadow-2xl backdrop-blur">
-									<span className="m-0 block text-xs font-semibold uppercase  text-white/95">
-										{player ? getSlotDisplayValue(entry, displayMode) : null}
-									</span>
-								</div>
-								<span
-									className="absolute left-0 top-0 items-center justify-center px-2 py-[2px] text-xs font-semibold uppercase "
-									style={{
-										background:
-											positionColor.gradient ?? `${positionColor.primary}22`,
-										color: positionColor.gradient
-											? "#fff"
-											: positionColor.primary,
-									}}
-								>
-									{slot.label}
-								</span>
-								<span className="absolute right-0 top-0 drop-shadow-[0_6px_12px_rgba(0,0,0,0.4)]">
-									<ElementIcon element={player.element} />
-								</span>
-							</>
-						)}
-					</div>
-				</div>
-			</div>
+			<SlotCard entry={entry} displayMode={displayMode} isActive={isActive} />
 		</button>
 	);
 }
 
-function getSlotPositionStyle(slot: FormationSlot) {
+type SlotCardProps = {
+	entry: SlotAssignment;
+	displayMode: DisplayMode;
+	isActive: boolean;
+	variant?: "default" | "compact";
+};
+
+function SlotCard({
+	entry,
+	displayMode,
+	isActive,
+	variant = "default",
+}: SlotCardProps) {
+	const { slot, player, config } = entry;
+	const positionColor = getPositionColor(mapToTeamPosition(slot.label));
+	const rarityDefinition = getSlotRarityDefinition(config?.rarity ?? "normal");
+	const hasPlayer = Boolean(player);
+	const label = slot.displayLabel ?? slot.label;
+	const isCompact = variant === "compact";
+
+	return (
+		<div
+			className={cn(
+				"relative w-full rounded-lg border-2 bg-black/40 p-0.5 text-white backdrop-blur-sm transition",
+				hasPlayer
+					? "border-white/60 shadow-xl"
+					: "border-dashed border-white/40",
+				isActive && "ring-2 ring-emerald-200",
+				isCompact && "rounded-md border-white/50 text-[11px]",
+			)}
+		>
+			<div
+				className={cn(
+					"relative w-full rounded-md",
+					hasPlayer
+						? "p-[2px]"
+						: "overflow-hidden border border-dashed border-white/30 bg-black/20",
+					isCompact && "rounded-[8px]",
+				)}
+				style={
+					hasPlayer
+						? { background: rarityDefinition.cardBackground }
+						: undefined
+				}
+			>
+				<div className="relative w-full overflow-hidden rounded-[10px]">
+					{player ? (
+						<img
+							src={player.safeImage}
+							alt={player.name}
+							className="aspect-[4/4] w-full object-cover shadow-inner"
+							loading="lazy"
+							crossOrigin="anonymous"
+							referrerPolicy="no-referrer"
+						/>
+					) : (
+						<div className="flex aspect-[4/4] flex-col items-center justify-center gap-2 px-2 text-center">
+							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
+								{label}
+							</span>
+							<span className="text-[9px] uppercase tracking-[0.3em] text-white/50">
+								Tap to assign
+							</span>
+						</div>
+					)}
+
+					{player && (
+						<>
+							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/80 text-center shadow-2xl backdrop-blur">
+								<span className="m-0 block text-xs font-semibold uppercase  text-white/95">
+									{player ? getSlotDisplayValue(entry, displayMode) : null}
+								</span>
+							</div>
+							<span
+								className="absolute left-0 top-0 items-center justify-center px-2 py-[2px] text-xs font-semibold uppercase "
+								style={{
+									background:
+										positionColor.gradient ?? `${positionColor.primary}22`,
+									color: positionColor.gradient
+										? "#fff"
+										: positionColor.primary,
+								}}
+							>
+								{label}
+							</span>
+							<span className="absolute right-0 top-0 drop-shadow-[0_6px_12px_rgba(0,0,0,0.4)]">
+								<ElementIcon element={player.element} />
+							</span>
+						</>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function getSlotPositionStyle(slot: TeamBuilderSlot) {
 	const columnIndex = slot.column - 1;
 	const rowIndex = slot.row - 1;
 	const left =
@@ -928,9 +1255,10 @@ function getSlotPositionStyle(slot: FormationSlot) {
 
 function getSlotDisplayValue(entry: SlotAssignment, mode: DisplayMode) {
 	const player = entry.player;
-	const fallback = player?.nickname || player?.name || entry.slot.label;
+	const slotLabel = entry.slot.displayLabel ?? entry.slot.label;
+	const fallback = player?.nickname || player?.name || slotLabel;
 	if (!player) {
-		return entry.slot.label;
+		return slotLabel;
 	}
 	if (mode === "nickname") {
 		return fallback;
@@ -940,6 +1268,37 @@ function getSlotDisplayValue(entry: SlotAssignment, mode: DisplayMode) {
 		return formatNumber(statValue);
 	}
 	return fallback;
+}
+
+function extendFormationSlot(slot: FormationSlot): TeamBuilderSlot {
+	return {
+		...slot,
+		kind: "starter",
+		displayLabel: slot.label,
+		configScope: "full",
+	};
+}
+
+function pickExtraAssignments(
+	assignments: TeamBuilderAssignments,
+): TeamBuilderAssignments {
+	const snapshot: TeamBuilderAssignments = {};
+	EXTRA_SLOT_IDS.forEach((slotId) => {
+		snapshot[slotId] = assignments?.[slotId] ?? null;
+	});
+	return snapshot;
+}
+
+function pickExtraSlotConfigs(
+	configs: TeamBuilderSlotConfigs,
+): TeamBuilderSlotConfigs {
+	const snapshot: TeamBuilderSlotConfigs = {};
+	EXTRA_SLOT_IDS.forEach((slotId) => {
+		if (configs?.[slotId]) {
+			snapshot[slotId] = configs[slotId];
+		}
+	});
+	return snapshot;
 }
 
 function countAssignedPlayers(assignments: TeamBuilderAssignments): number {

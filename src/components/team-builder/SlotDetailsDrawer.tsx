@@ -12,7 +12,6 @@ import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { ElementChip, PositionChip } from "@/components/team-builder/Chips";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogContent,
@@ -21,6 +20,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -29,7 +29,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import type { FormationSlot } from "@/data/formations";
 import { formatNumber, titleCase } from "@/lib/data-helpers";
 import {
 	EQUIPMENT_CATEGORIES,
@@ -57,6 +56,7 @@ import type {
 	SlotConfig,
 	SlotEquipments,
 	SlotRarity,
+	TeamBuilderSlot,
 } from "@/types/team-builder";
 
 type StatKey =
@@ -99,9 +99,9 @@ const BEAN_SLOT_KEYS = ["bean-1", "bean-2", "bean-3"] as const;
 
 export type SlotDetailsDrawerProps = {
 	open: boolean;
-	slot: FormationSlot | null;
+	slot: TeamBuilderSlot | null;
 	assignment: SlotAssignment | null;
-	onAssign: (slot: FormationSlot) => void;
+	onAssign: (slot: TeamBuilderSlot) => void;
 	onClearSlot: (slotId: string) => void;
 	onUpdateSlotConfig: (
 		slotId: string,
@@ -140,9 +140,9 @@ export function SlotDetailsDrawer({
 }
 
 type SlotDetailsPanelProps = {
-	slot: FormationSlot | null;
+	slot: TeamBuilderSlot | null;
 	assignment: SlotAssignment | null;
-	onAssign: (slot: FormationSlot) => void;
+	onAssign: (slot: TeamBuilderSlot) => void;
 	onClearSlot: (slotId: string) => void;
 	onUpdateSlotConfig: (
 		slotId: string,
@@ -165,6 +165,8 @@ function SlotDetailsPanel({
 	const currentEquipments =
 		assignment?.config.equipments ?? createEmptySlotEquipments();
 	const currentBeans = assignment?.config.beans ?? createEmptySlotBeans();
+	const allowsEquipmentConfig = slot?.configScope !== "rarity-only";
+	const allowsBeanConfig = slot?.configScope !== "rarity-only";
 
 	useEffect(() => {
 		if (!player || !slot) {
@@ -207,7 +209,7 @@ function SlotDetailsPanel({
 				<div>
 					<p className="text-sm font-semibold">Slot details</p>
 				</div>
-				{slot ? <PositionChip label={slot.label} /> : null}
+				{slot ? <PositionChip label={slot.displayLabel ?? slot.label} /> : null}
 			</header>
 			<div className="mt-4 space-y-4">
 				{!slot ? (
@@ -217,7 +219,7 @@ function SlotDetailsPanel({
 				) : !player ? (
 					<div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center">
 						<div className="flex size-32 items-center justify-center rounded-2xl border border-dashed text-xl font-semibold">
-							{slot.label}
+							{slot.displayLabel ?? slot.label}
 						</div>
 						<p className="text-sm text-muted-foreground">
 							This slot is empty. Choose a player to assign.
@@ -228,10 +230,12 @@ function SlotDetailsPanel({
 					<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
 						<div className="flex flex-col items-center gap-3">
 							<img
-								src={player.image}
+								src={player.safeImage}
 								alt={player.name}
 								className="w-full max-w-[220px] rounded-2xl border object-cover shadow-lg"
 								loading="lazy"
+								crossOrigin="anonymous"
+								referrerPolicy="no-referrer"
 							/>
 							<div className="flex flex-wrap items-center justify-center gap-2 text-xs">
 								<ElementChip element={player.element} />
@@ -258,9 +262,14 @@ function SlotDetailsPanel({
 									Remove from slot
 								</Button>
 							</div>
-							<div className="w-full">
-								<BeansConfig value={currentBeans} onChange={handleBeanChange} />
-							</div>
+							{allowsBeanConfig ? (
+								<div className="w-full">
+									<BeansConfig
+										value={currentBeans}
+										onChange={handleBeanChange}
+									/>
+								</div>
+							) : null}
 						</div>
 						<div className="space-y-3">
 							<RarityConfig
@@ -296,10 +305,12 @@ function SlotDetailsPanel({
 									);
 								})}
 							</div>
-							<EquipmentLoadoutConfig
-								value={currentEquipments}
-								onChange={handleEquipmentChange}
-							/>
+							{allowsEquipmentConfig ? (
+								<EquipmentLoadoutConfig
+									value={currentEquipments}
+									onChange={handleEquipmentChange}
+								/>
+							) : null}
 						</div>
 					</div>
 				)}

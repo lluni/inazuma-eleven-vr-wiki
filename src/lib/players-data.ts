@@ -29,9 +29,12 @@ export type RawPlayerRecord = {
 	Role: string;
 };
 
+const PLAYER_IMAGE_PROXY_ENDPOINT = "https://images.weserv.nl/?url=";
+
 export type PlayerRecord = {
 	id: number;
 	image: string;
+	safeImage: string;
 	name: string;
 	nickname: string;
 	game: string;
@@ -79,6 +82,7 @@ export const playersDataset: PlayerRecord[] = rawPlayers.map((player) => {
 	return {
 		id: player["Nº"],
 		image: player.Image,
+		safeImage: getSafePlayerImageUrl(player.Image),
 		name: sanitizeAttribute(player.Name),
 		nickname: sanitizeAttribute(player.Nickname),
 		game: sanitizeAttribute(player.Game),
@@ -114,6 +118,15 @@ export function mapToElementType(element: string): ElementType {
 
 export function mapToTeamPosition(position: string): TeamPosition {
 	const normalized = position.trim().toUpperCase();
+	if (normalized.startsWith("RESERVE")) {
+		return "RESERVE";
+	}
+	if (normalized === "MANAGER") {
+		return "MANAGER";
+	}
+	if (normalized.startsWith("COORDINATOR")) {
+		return "COORDINATOR";
+	}
 	const map: Record<string, TeamPosition> = {
 		GK: "GK",
 		DF: "DF",
@@ -122,4 +135,26 @@ export function mapToTeamPosition(position: string): TeamPosition {
 		MD: "MD",
 	};
 	return map[normalized] ?? "MD";
+}
+
+export function getSafePlayerImageUrl(imageUrl: string | null | undefined) {
+	if (!imageUrl || typeof imageUrl !== "string") {
+		return "";
+	}
+	if (imageUrl.startsWith(PLAYER_IMAGE_PROXY_ENDPOINT)) {
+		return imageUrl;
+	}
+	try {
+		const parsed = new URL(imageUrl);
+		const hasSupportedProtocol =
+			parsed.protocol === "https:" || parsed.protocol === "http:";
+		if (!hasSupportedProtocol) {
+			return imageUrl;
+		}
+		return `${PLAYER_IMAGE_PROXY_ENDPOINT}${encodeURIComponent(
+			parsed.toString(),
+		)}`;
+	} catch {
+		return imageUrl;
+	}
 }

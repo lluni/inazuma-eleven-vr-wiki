@@ -27,11 +27,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { FormationSlot } from "@/data/formations";
 import { createSortedUniqueOptions } from "@/lib/data-helpers";
 import { type PlayerRecord, playersDataset } from "@/lib/players-data";
 import { cn } from "@/lib/utils";
-import type { FiltersState } from "@/types/team-builder";
+import type { FiltersState, TeamBuilderSlot } from "@/types/team-builder";
 
 const elementOptions = createSortedUniqueOptions(
 	playersDataset.map((player) => player.element),
@@ -46,7 +45,7 @@ const roleOptions = createSortedUniqueOptions(
 type PlayerAssignmentModalProps = {
 	isMobile: boolean;
 	open: boolean;
-	activeSlot: FormationSlot | null;
+	activeSlot: TeamBuilderSlot | null;
 	favoriteSet: Set<number>;
 	favoritePlayers: PlayerRecord[];
 	assignedIds: Set<number>;
@@ -75,9 +74,7 @@ export function PlayerAssignmentModal({
 }: PlayerAssignmentModalProps) {
 	const header = (
 		<div className="space-y-1">
-			<p className="text-xs text-muted-foreground">
-				Search or filter players. 
-			</p>
+			<p className="text-xs text-muted-foreground">Search or filter players.</p>
 		</div>
 	);
 
@@ -246,7 +243,9 @@ export function PlayerAssignmentModal({
 				<DrawerContent>
 					<DrawerHeader>
 						<DrawerTitle>
-							{activeSlot ? activeSlot.label : "Pick a slot"}
+							{activeSlot
+								? (activeSlot.displayLabel ?? activeSlot.label)
+								: "Pick a slot"}
 						</DrawerTitle>
 						<DrawerDescription>
 							Assign players to complete your team. Use filters to narrow the
@@ -268,7 +267,9 @@ export function PlayerAssignmentModal({
 			<DialogContent className="!max-w-4xl">
 				<DialogHeader>
 					<DialogTitle>
-						{activeSlot ? `Pick a ${activeSlot.label}` : "Pick a slot"}
+						{activeSlot
+							? `Pick a ${activeSlot.displayLabel ?? activeSlot.label}`
+							: "Pick a slot"}
 					</DialogTitle>
 				</DialogHeader>
 				<div className="flex flex-col gap-4">
@@ -304,10 +305,12 @@ function PlayerOptionCard({
 		>
 			<div className="flex items-center gap-3">
 				<img
-					src={player.image}
+					src={player.safeImage}
 					alt={player.name}
 					className="size-12 rounded-full border border-muted object-cover"
 					loading="lazy"
+					crossOrigin="anonymous"
+					referrerPolicy="no-referrer"
 				/>
 				<div className="flex min-w-0 flex-1 flex-col">
 					<p className="truncate font-semibold leading-tight">{player.name}</p>

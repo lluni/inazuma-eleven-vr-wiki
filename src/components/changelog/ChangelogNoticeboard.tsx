@@ -297,7 +297,10 @@ export function ChangelogNoticeboard() {
 				) : null}
 			</Button>
 			<Dialog open={open} onOpenChange={handleOpenChange}>
-				<DialogContent className="flex max-h-[85vh] w-full !max-w-2xl flex-col overflow-hidden">
+				<DialogContent
+					onOpenAutoFocus={(event) => event.preventDefault()}
+					className="flex max-h-[85vh] w-full !max-w-2xl flex-col overflow-hidden"
+				>
 					<DialogHeader className="shrink-0">
 						<DialogTitle>{headline}</DialogTitle>
 						<DialogDescription>

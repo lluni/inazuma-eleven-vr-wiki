@@ -1,6 +1,7 @@
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate";
 
 import { FORMATIONS, formationsMap } from "@/data/formations";
+import { EXTRA_SLOT_IDS } from "@/data/team-builder-slots";
 import type {
 	DisplayMode,
 	TeamBuilderAssignments,
@@ -99,6 +100,11 @@ function sanitizeAssignments(value: unknown): TeamBuilderAssignments {
 	entries.forEach(([slotId, playerId]) => {
 		if (typeof playerId === "number" && Number.isInteger(playerId)) {
 			result[slotId] = playerId;
+		}
+	});
+	EXTRA_SLOT_IDS.forEach((slotId) => {
+		if (!(slotId in result)) {
+			result[slotId] = null;
 		}
 	});
 
