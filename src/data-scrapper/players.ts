@@ -151,7 +151,7 @@ function extractListItems(
 }
 
 function extractParagraphItems(
-	$: CheerioAPI,
+	_$: CheerioAPI,
 	$root: Cheerio<any>,
 ): string[] {
 	const clone = $root.clone();
