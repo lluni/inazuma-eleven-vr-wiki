@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { ExternalLink, Info } from "lucide-react";
 import type { MouseEvent } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +50,15 @@ export function PlayerDetailsDialog({ player, open, onOpenChange, statMetrics, p
 						<div className="text-center text-xs text-muted-foreground">
 							<span className="font-semibold">{player.ageGroup}</span> · {player.year} · {player.gender || "Unknown"}
 						</div>
+
+						{player.inazugleLink ? (
+							<Button asChild variant="outline" size="sm" className="w-full justify-center text-xs">
+								<a href={player.inazugleLink} target="_blank" rel="noreferrer noopener">
+									<ExternalLink className="size-3.5" aria-hidden="true" />
+									View 3D model
+								</a>
+							</Button>
+						) : null}
 					</div>
 					<div className="space-y-4">
 						<MetricSection title="Base stats" metrics={statMetrics} />
