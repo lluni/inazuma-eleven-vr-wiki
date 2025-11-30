@@ -792,13 +792,33 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 						}}
 						onValueChange={handleSelectChange}
 					>
-						<SelectTrigger
-							className={`bg-background/90 w-full !h-full whitespace-normal *:data-[slot=select-value]:line-clamp-none *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words ${isEmptySelection ? "text-muted-foreground/70" : ""}`}
-						>
-							{selectedPassive
-								? <PassiveSelectValue passive={selectedPassive} />
-								: <SelectValue placeholder="Select passive" />}
-						</SelectTrigger>
+						{(() => {
+							const tooltipContent = selectedPassive
+								? getPassiveTooltipContent(selectedPassive)
+								: null;
+							const trigger = (
+								<SelectTrigger
+									className={`bg-background/90 w-full !h-full whitespace-normal *:data-[slot=select-value]:line-clamp-none *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words ${isEmptySelection ? "text-muted-foreground/70" : ""}`}
+								>
+									{selectedPassive
+										? <PassiveSelectValue passive={selectedPassive} />
+										: <SelectValue placeholder="Select passive" />}
+								</SelectTrigger>
+							);
+
+							if (!tooltipContent) {
+								return trigger;
+							}
+
+							return (
+								<Tooltip>
+									<TooltipTrigger asChild>
+										{trigger}
+									</TooltipTrigger>
+									<TooltipContent side="top">{tooltipContent}</TooltipContent>
+								</Tooltip>
+							);
+						})()}
 						<SelectContent
 							className="max-h-80 space-y-1"
 							searchValue={query}
@@ -807,11 +827,28 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 							onSearchKeyDown={handleSearchKeyDown}
 						>
 							<SelectItem value="none">Empty</SelectItem>
-							{filteredOptions.map((passive) => (
-								<SelectItem key={passive.id} value={String(passive.id)}>
-									<PassiveSelectValue passive={passive} />
-								</SelectItem>
-							))}
+							{filteredOptions.map((passive) => {
+								const tooltipContent = getPassiveTooltipContent(passive);
+
+								if (!tooltipContent) {
+									return (
+										<SelectItem key={passive.id} value={String(passive.id)}>
+											<PassiveSelectValue passive={passive} />
+										</SelectItem>
+									);
+								}
+
+								return (
+									<Tooltip key={passive.id}>
+										<TooltipTrigger asChild>
+											<SelectItem value={String(passive.id)}>
+												<PassiveSelectValue passive={passive} />
+											</SelectItem>
+										</TooltipTrigger>
+										<TooltipContent side="top">{tooltipContent}</TooltipContent>
+									</Tooltip>
+								);
+							})}
 							{!filteredOptions.length && (
 								<div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
 									No matches
@@ -847,28 +884,13 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 }
 
 function PassiveSelectValue({ passive }: { passive: PassiveRecord }) {
-	const tooltipContent = getPassiveTooltipContent(passive);
-
-	const content = (
+	return (
 		<div className="flex flex-col break-words text-left leading-tight">
 			<span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
 				{passive.buildType ? `[${passive.buildType}] ` : ""} Passive #{passive.number}
 			</span>
 			<span className="text-xs">{passive.description}</span>
 		</div>
-	);
-
-	if (!tooltipContent) {
-		return content;
-	}
-
-	return (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				{content}
-			</TooltipTrigger>
-			<TooltipContent side="top">{tooltipContent}</TooltipContent>
-		</Tooltip>
 	);
 }
 
