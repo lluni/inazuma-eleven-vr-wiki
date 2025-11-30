@@ -355,10 +355,10 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 								<span className="m-0 block text-xs font-semibold uppercase  text-white">{player ? getSlotDisplayValue(entry, displayMode) : null}</span>
 							</div>
 							<span
-								className="absolute left-0 top-0 items-center justify-center px-2 py-[2px] text-xs font-semibold uppercase "
+								className="absolute left-0.5 top-0.5 inline-flex items-center justify-center rounded-sm border-[2px] border-black/70 px-2.5 py-[2px] text-xs font-semibold uppercase text-white shadow-[0_4px_0_rgba(0,0,0,0.35)]"
 								style={{
-									background: positionColor.gradient ?? `${positionColor.primary}22`,
-									color: positionColor.gradient ? "#fff" : positionColor.primary,
+									background: positionColor.gradient ?? positionColor.primary,
+									color: positionColor.gradient ? "#fff" : "#fff",
 								}}
 							>
 								{label}
@@ -383,7 +383,7 @@ function ElementIcon({ element }: { element: string }) {
 
 	return (
 		<span
-			className="inline-flex items-center justify-center rounded-full border-[2px] border-black/70 p-1.5 shadow-[0_6px_0_rgba(0,0,0,0.35)] dark:border-white/60"
+			className="inline-flex items-center justify-center rounded-full border-[2px] p-1.5 shadow-[0_6px_0_rgba(0,0,0,0.35)] border-white/60"
 			style={{
 				backgroundColor: definition.color,
 			}}

@@ -1,26 +1,11 @@
 import type { LucideIcon } from "lucide-react";
-import {
-	BrickWall,
-	Dribbble,
-	Flame,
-	Hand,
-	Mountain,
-	Tornado,
-	TreePine,
-} from "lucide-react";
+import { BrickWall, Dribbble, Flame, Hand, Mountain, Tornado, TreePine } from "lucide-react";
 
 import { withBase } from "@/lib/utils";
 
 export type ElementType = "Forest" | "Wind" | "Fire" | "Mountain";
 export type MoveType = "Shot" | "Dribble" | "Wall" | "Catch";
-export type TeamPosition =
-	| "FW"
-	| "MD"
-	| "DF"
-	| "GK"
-	| "RESERVE"
-	| "MANAGER"
-	| "COORDINATOR";
+export type TeamPosition = "FW" | "MD" | "DF" | "GK" | "RESERVE" | "MANAGER" | "COORDINATOR";
 
 type IconDefinition = {
 	icon?: LucideIcon;
@@ -81,37 +66,37 @@ const POSITION_COLOR_MAP: Record<TeamPosition, PositionColor> = {
 	FW: {
 		primary: "#f43f5e",
 		secondary: "#be123c",
-		gradient: "linear-gradient(135deg, #fb7185 0%, #be123c 100%)",
+		gradient: "linear-gradient(135deg, #fb4c66 0%, #e11d48 50%, #be123c 100%)",
 	},
 	MD: {
 		primary: "#4ade80",
 		secondary: "#15803d",
-		gradient: "linear-gradient(135deg, #86efac 0%, #15803d 100%)",
+		gradient: "linear-gradient(135deg, #34c665 0%, #22c55e 50%, #15803d 100%)",
 	},
 	DF: {
 		primary: "#60a5fa",
 		secondary: "#1d4ed8",
-		gradient: "linear-gradient(135deg, #93c5fd 0%, #1d4ed8 100%)",
+		gradient: "linear-gradient(135deg, #4896e5 0%, #3b82f6 50%, #1d4ed8 100%)",
 	},
 	GK: {
 		primary: "#fbbf24",
 		secondary: "#b45309",
-		gradient: "linear-gradient(135deg, #fef08a 0%, #b45309 100%)",
+		gradient: "linear-gradient(135deg, #eab308 0%, #f59e0b 50%, #b45309 100%)",
 	},
 	RESERVE: {
 		primary: "#fb923c",
 		secondary: "#c2410c",
-		gradient: "linear-gradient(135deg, #fdba74 0%, #c2410c 100%)",
+		gradient: "linear-gradient(135deg, #f97316 0%, #fb923c 50%, #c2410c 100%)",
 	},
 	MANAGER: {
 		primary: "#c084fc",
 		secondary: "#7e22ce",
-		gradient: "linear-gradient(135deg, #e9d5ff 0%, #7e22ce 100%)",
+		gradient: "linear-gradient(135deg, #c084fc 0%, #7e22ce 100%)",
 	},
 	COORDINATOR: {
 		primary: "#67e8f9",
 		secondary: "#0e7490",
-		gradient: "linear-gradient(135deg, #a5f3fc 0%, #0e7490 100%)",
+		gradient: "linear-gradient(135deg, #22d3ee 0%, #0e7490 100%)",
 	},
 };
 
