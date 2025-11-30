@@ -1,4 +1,4 @@
-# Version 1.3.0 – 2025-12-01
+# Version 1.3.0 – 2025-11-30
 
 - You can now switch between light and dark themes.
 - Team Builder page:
@@ -7,7 +7,7 @@
   - Removed the "Team Comp" button and replaced it with the Team Passives button.
   - Improved the player assignment modal to be more intuitive and user-friendly.
 
-# Version 1.2.1 – 2025-11-29
+# Version 1.2.1 - 2025-11-29
 
 - Team Builder page:
   - Added drag-and-drop functionality to the Team Builder page, allowing you to move players between slots.
