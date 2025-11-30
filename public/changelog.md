@@ -1,3 +1,12 @@
+# Version 1.3.0 – 2025-12-01
+
+- You can now switch between light and dark themes.
+- Team Builder page:
+  - Added passive configuration for each slot. Thanks to [VR Calculator](https://www.reddit.com/r/inazumaeleven/comments/1p5nefv/inazuma_eleven_vr_charactershissatsuequipment/) for the passives data.
+  - Passives are now automatically filtered based on those allowed for each slot.
+  - Removed the "Team Comp" button and replaced it with the Team Passives button.
+  - Improved the player assignment modal to be more intuitive and user-friendly.
+
 # Version 1.2.1 – 2025-11-29
 
 - Team Builder page:

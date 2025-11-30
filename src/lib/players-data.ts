@@ -8,7 +8,7 @@ import {
 } from "@/lib/inazuma-math";
 
 export type RawPlayerRecord = {
-	Nº: number;
+	id: number;
 	Image: string;
 	Name: string;
 	Nickname: string;
@@ -80,7 +80,7 @@ export const playersDataset: PlayerRecord[] = rawPlayers.map((player) => {
 	};
 
 	return {
-		id: player["Nº"],
+		id: player.id,
 		image: player.Image,
 		safeImage: getSafePlayerImageUrl(player.Image),
 		name: sanitizeAttribute(player.Name),

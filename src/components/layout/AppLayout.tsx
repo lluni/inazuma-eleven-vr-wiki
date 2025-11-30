@@ -1,4 +1,14 @@
-import { Github, Shirt, Sparkles, Swords, Users } from "lucide-react";
+import {
+	Github,
+	Moon,
+	Shirt,
+	Sparkles,
+	Sun,
+	Swords,
+	Users,
+} from "lucide-react";
+import { useAtom } from "jotai";
+import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { ChangelogNoticeboard } from "@/components/changelog/ChangelogNoticeboard";
 import {
@@ -17,6 +27,7 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { themePreferenceAtom } from "@/store/theme";
 
 // Helper function to get page title based on current route
 function getPageTitle(pathname: string): string {
@@ -37,6 +48,27 @@ function getPageTitle(pathname: string): string {
 
 export default function AppLayout() {
 	const location = useLocation();
+	const [theme, setTheme] = useAtom(themePreferenceAtom);
+	const isDarkMode = theme === "dark";
+	const nextThemeLabel = isDarkMode ? "Light" : "Dark";
+	useEffect(() => {
+		if (typeof document === "undefined") {
+			return;
+		}
+		const root = document.documentElement;
+		root.classList.toggle("dark", isDarkMode);
+		root.dataset.theme = theme;
+		root.style.setProperty("color-scheme", isDarkMode ? "dark" : "light");
+		const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+		if (themeColorMeta) {
+			themeColorMeta.setAttribute(
+				"content",
+				isDarkMode ? "#0b1017" : "#f4f1ec",
+			);
+		}
+	}, [isDarkMode, theme]);
+	const handleThemeToggle = () =>
+		setTheme((current) => (current === "dark" ? "light" : "dark"));
 	const faviconUrl = `${import.meta.env.BASE_URL}favicon/favicon.svg`;
 	const playersActive =
 		location.pathname === "/" || location.pathname.startsWith("/players");
@@ -106,6 +138,17 @@ export default function AppLayout() {
 				</SidebarContent>
 				<SidebarFooter>
 					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								type="button"
+								onClick={handleThemeToggle}
+								aria-pressed={isDarkMode}
+								title={`Switch to ${nextThemeLabel} theme`}
+							>
+								{isDarkMode ? <Moon /> : <Sun />}
+								<span>{isDarkMode ? "Dark theme" : "Light theme"}</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
 						<SidebarMenuItem>
 							<SidebarMenuButton asChild>
 								<a

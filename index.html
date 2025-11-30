@@ -17,7 +17,7 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://inazuma-vr.statframe.site/" />
     <meta name="application-name" content="Inazuma Eleven Guide" />
-    <meta name="theme-color" content="#0b1017" />
+    <meta name="theme-color" content="#f4f1ec" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Inazuma Eleven Guide & Team Builder" />
     <meta property="og:description" content="Players encyclopedia, stat comparisons, hissatsu lookup, and roster planning tools tuned for mobile coaches." />
@@ -53,10 +53,37 @@
         }
       }
     </script>
+    <script>
+      (() => {
+        const STORAGE_KEY = "inazuma-guide.theme";
+        const root = document.documentElement;
+        const getStoredTheme = () => {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (!stored) return null;
+            const parsed = JSON.parse(stored);
+            return parsed === "light" || parsed === "dark" ? parsed : null;
+          } catch {
+            return null;
+          }
+        };
+        const getPreferredTheme = () =>
+          window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const theme = getStoredTheme() ?? getPreferredTheme();
+        const isDark = theme === "dark";
+        root.classList.toggle("dark", isDark);
+        root.dataset.theme = theme;
+        root.style.setProperty("color-scheme", isDark ? "dark" : "light");
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute("content", isDark ? "#0b1017" : "#f4f1ec");
+        }
+      })();
+    </script>
   </head>
   
   <body>
-    <div id="root" class="dark"></div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

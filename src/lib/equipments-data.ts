@@ -20,6 +20,7 @@ type RawEquipmentRecord = {
 	Intelligence: number | "";
 	Agility: number | "";
 	Shop: string;
+	id: string;
 };
 
 export type EquipmentRecord = {
@@ -76,7 +77,7 @@ const parsedEquipments: EquipmentRecord[] = (
 	Object.entries(equipmentSources) as Array<[EquipmentCategory, string]>
 ).flatMap(([type, json]) => {
 	const records = JSON.parse(json) as RawEquipmentRecord[];
-	return records.map((record, index) => {
+	return records.map((record) => {
 		const statsWithoutTotal = baseAttributeKeys.reduce(
 			(acc, key) => {
 				const rawValue = record[rawFieldNameMap[key]];
@@ -95,7 +96,7 @@ const parsedEquipments: EquipmentRecord[] = (
 		};
 
 		return {
-			id: `${type}-${index}-${record.Name}`,
+			id: record.id,
 			name: sanitizeAttribute(record.Name),
 			type,
 			shop: sanitizeAttribute(record.Shop),

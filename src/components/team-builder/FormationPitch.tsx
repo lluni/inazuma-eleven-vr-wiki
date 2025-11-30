@@ -44,10 +44,12 @@ export function FormationPitch({
 		<div className="w-full">
 			<div className="relative w-full">
 				<div className="pointer-events-none absolute inset-x-0 -top-2 z-20 flex justify-center sm:-top-3">
-					<div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-black/40 bg-black/70 px-3 py-1.5 shadow-lg shadow-emerald-900/60">
-						<p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-emerald-100/90">Formation</p>
+					<div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1.5 text-emerald-900 shadow-md shadow-emerald-400/30 dark:border-white/30 dark:bg-black/70 dark:text-emerald-100/90 dark:shadow-emerald-900/60">
+						<p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-emerald-900/80 dark:text-emerald-100/90">
+							Formation
+						</p>
 						<Select disabled={isFormationDisabled} value={formationId} onValueChange={(value) => onFormationChange(value)}>
-							<SelectTrigger className="h-8 min-w-[180px] border-white/20 bg-emerald-950/80 text-xs text-emerald-50 shadow-sm sm:min-w-[220px]">
+							<SelectTrigger className="h-8 min-w-[180px] border-border bg-background/90 text-xs text-foreground shadow-sm sm:min-w-[220px] dark:border-white/20 dark:bg-emerald-950/80 dark:text-emerald-50">
 								<SelectValue placeholder="Choose formation" />
 							</SelectTrigger>
 							<SelectContent>
@@ -86,7 +88,7 @@ export function FormationPitch({
 				</div>
 			</div>
 			{hasStaffFooter && (
-				<div className="mt-4 flex w-full flex-wrap items-center gap-2 rounded-3xl border border-emerald-900/50 bg-gradient-to-r from-emerald-900/40 via-emerald-950/30 to-emerald-900/40 p-3 text-white shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] sm:gap-3 sm:justify-between">
+				<div className="mt-4 flex w-full flex-wrap items-center gap-2 rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-emerald-100 to-emerald-50 p-3 text-emerald-950 shadow-[inset_0_0_25px_rgba(16,185,129,0.25)] dark:border-emerald-900/50 dark:from-emerald-900/40 dark:via-emerald-950/30 dark:to-emerald-900/40 dark:text-white dark:shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] sm:gap-3 sm:justify-between">
 					<div className="flex flex-1 justify-start">
 						{managerEntry ? (
 							<SlotEntryButton
@@ -150,8 +152,7 @@ export function ReservesRail({
 	if (!entries.length) return null;
 
 	return (
-		<div className="rounded-2xl border border-white/15 bg-gradient-to-b from-emerald-950/20 via-emerald-900/10 to-emerald-950/30 p-3 text-white shadow-inner xl:max-w-[280px]">
-			<p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-100/90">Reserves</p>
+		<div className="rounded-2xl border border-emerald-300 bg-gradient-to-b from-emerald-200 via-emerald-400 to-emerald-200 p-3 text-emerald-950 shadow-inner shadow-emerald-400/40 dark:border-white/15 dark:from-emerald-950/20 dark:via-emerald-900/10 dark:to-emerald-950/30 dark:text-white xl:max-w-[280px]">
 			<div className={cn("mt-3 flex gap-2", isStackedLayout ? "flex-row overflow-x-auto pb-1" : "flex-col overflow-visible pb-0")}>
 				{entries.map((entry) => (
 					<SlotEntryButton
@@ -285,9 +286,11 @@ function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelec
 			onClick={handleClick}
 			style={positionStyle}
 			className={cn(
-				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-white outline-none transition",
+				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-emerald-950 outline-none transition dark:text-white",
 				SLOT_CARD_WIDTH_CLASS,
-				isActive ? "scale-105 drop-shadow-[0_12px_20px_rgba(0,0,0,0.35)]" : "hover:scale-105",
+				isActive
+					? "scale-105 drop-shadow-[0_12px_20px_rgba(15,118,110,0.3)] dark:drop-shadow-[0_12px_20px_rgba(0,0,0,0.35)]"
+					: "hover:scale-105",
 				isDragging && "scale-110 opacity-80 drop-shadow-[0_12px_25px_rgba(16,185,129,0.35)] cursor-grabbing",
 				isOver && "ring-2 ring-emerald-200/80 drop-shadow-[0_0_30px_rgba(16,185,129,0.45)]",
 				cursorClass,
@@ -318,16 +321,20 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 	return (
 		<div
 			className={cn(
-				"relative w-full rounded-lg border-2 bg-black/40 p-0.5 text-white backdrop-blur-sm transition",
-				hasPlayer ? "border-white/60 shadow-xl" : "border-dashed border-white/40",
-				isActive && "ring-2 ring-emerald-200",
-				isCompact && "rounded-md border-white/50 text-[11px]",
+				"relative w-full rounded-lg border-2 bg-white/80 p-0.5 text-emerald-950 backdrop-blur-sm transition dark:bg-black/40 dark:text-white",
+				hasPlayer
+					? "border-emerald-300 shadow-xl dark:border-white/60"
+					: "border-dashed border-emerald-200 dark:border-white/40",
+				isActive && "ring-2 ring-emerald-300 dark:ring-emerald-200",
+				isCompact && "rounded-md border-emerald-200 dark:border-white/50 text-[11px]",
 			)}
 		>
 			<div
 				className={cn(
 					"relative w-full rounded-md",
-					hasPlayer ? "p-[2px]" : "overflow-hidden border border-dashed border-white/30 bg-black/20",
+					hasPlayer
+						? "p-[2px]"
+						: "overflow-hidden border border-dashed border-emerald-200 bg-emerald-50/80 dark:border-white/30 dark:bg-black/20",
 					isCompact && "rounded-[8px]",
 				)}
 				style={hasPlayer ? { background: rarityDefinition.cardBackground } : undefined}
@@ -344,15 +351,21 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 						/>
 					) : (
 						<div className="flex aspect-[4/4] flex-col items-center justify-center gap-2 px-2 text-center">
-							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-white/80">{label}</span>
-							<span className="text-[9px] uppercase tracking-[0.3em] text-white/50">Tap to assign</span>
+							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700 dark:text-white/80">
+								{label}
+							</span>
+							<span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">
+								Tap to assign
+							</span>
 						</div>
 					)}
 
 					{player && (
 						<>
-							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/80 text-center shadow-2xl backdrop-blur">
-								<span className="m-0 block text-xs font-semibold uppercase  text-white/95">{player ? getSlotDisplayValue(entry, displayMode) : null}</span>
+							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/75 text-center shadow-2xl backdrop-blur">
+								<span className="m-0 block text-xs font-semibold uppercase  text-white">
+									{player ? getSlotDisplayValue(entry, displayMode) : null}
+								</span>
 							</div>
 							<span
 								className="absolute left-0 top-0 items-center justify-center px-2 py-[2px] text-xs font-semibold uppercase "

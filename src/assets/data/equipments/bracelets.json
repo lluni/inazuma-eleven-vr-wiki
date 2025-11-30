@@ -8,7 +8,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C1"
   },
   {
     "Name": "Colorful Bracelet",
@@ -19,7 +20,8 @@
     "Physical": 4,
     "Intelligence": 6,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C2"
   },
   {
     "Name": "Smiley Bracelet",
@@ -30,7 +32,8 @@
     "Physical": "",
     "Intelligence": 4,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C3"
   },
   {
     "Name": "Lucky Bracelet",
@@ -41,7 +44,8 @@
     "Physical": "",
     "Intelligence": 5,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C4"
   },
   {
     "Name": "Wind Bangle",
@@ -52,7 +56,8 @@
     "Physical": "",
     "Intelligence": 6,
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C5"
   },
   {
     "Name": "Leather Gloves",
@@ -63,7 +68,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": 5,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C6"
   },
   {
     "Name": "Pastel Gloves",
@@ -74,7 +80,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": 6,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C7"
   },
   {
     "Name": "Skyborn Bangle",
@@ -85,7 +92,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C8"
   },
   {
     "Name": "Genesis Bangle",
@@ -96,7 +104,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C9"
   },
   {
     "Name": "Scholar's Watch",
@@ -107,7 +116,8 @@
     "Physical": 10,
     "Intelligence": 13,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C10"
   },
   {
     "Name": "Bangle of Obsession",
@@ -118,7 +128,8 @@
     "Physical": "",
     "Intelligence": 13,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C11"
   },
   {
     "Name": "Power Gloves",
@@ -129,7 +140,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C12"
   },
   {
     "Name": "Striker Gloves",
@@ -140,7 +152,8 @@
     "Physical": 12,
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C13"
   },
   {
     "Name": "Blazing Bangle",
@@ -151,7 +164,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C14"
   },
   {
     "Name": "Neo Sports Watch",
@@ -162,7 +176,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C15"
   },
   {
     "Name": "Shadow Bangle",
@@ -173,7 +188,8 @@
     "Physical": "",
     "Intelligence": 18,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C16"
   },
   {
     "Name": "Benevolence Bangle",
@@ -184,7 +200,8 @@
     "Physical": "",
     "Intelligence": 22,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C17"
   },
   {
     "Name": "Grandpa's Gloves",
@@ -195,7 +212,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C18"
   },
   {
     "Name": "Abyss Bracelet",
@@ -206,7 +224,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C19"
   },
   {
     "Name": "Bangle of Ambition",
@@ -217,7 +236,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C20"
   },
   {
     "Name": "Bangle of Greatness",
@@ -228,7 +248,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 23,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "C21"
   },
   {
     "Name": "Fire Bangle",
@@ -239,7 +260,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C22"
   },
   {
     "Name": "Youth Bracelet",
@@ -250,7 +272,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C23"
   },
   {
     "Name": "Mountain Bangle",
@@ -261,7 +284,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C24"
   },
   {
     "Name": "Forest Bangle",
@@ -272,7 +296,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C25"
   },
   {
     "Name": "Sparkling Bangle",
@@ -283,7 +308,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C26"
   },
   {
     "Name": "Dutch Bracelet",
@@ -294,7 +320,8 @@
     "Physical": 4,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C27"
   },
   {
     "Name": "Fingerless Gloves",
@@ -305,7 +332,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C28"
   },
   {
     "Name": "Fiery Bracelet",
@@ -316,7 +344,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C29"
   },
   {
     "Name": "Phantasm Watch",
@@ -327,7 +356,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C30"
   },
   {
     "Name": "Exotic Bracelet",
@@ -338,7 +368,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 10,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C31"
   },
   {
     "Name": "Prayer Bracelet",
@@ -349,7 +380,8 @@
     "Physical": "",
     "Intelligence": 14,
     "Agility": 10,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C32"
   },
   {
     "Name": "Meteor Gloves",
@@ -360,7 +392,8 @@
     "Physical": 12,
     "Intelligence": "",
     "Agility": 12,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C33"
   },
   {
     "Name": "Cosmic Bracelet",
@@ -371,7 +404,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 17,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C34"
   },
   {
     "Name": "Hero Gloves",
@@ -382,7 +416,8 @@
     "Physical": 20,
     "Intelligence": "",
     "Agility": 21,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "C35"
   },
   {
     "Name": "Legendary Gloves",
@@ -393,6 +428,7 @@
     "Physical": 35,
     "Intelligence": "",
     "Agility": 35,
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "C36"
   }
 ]

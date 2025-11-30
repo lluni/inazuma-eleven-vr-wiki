@@ -37,10 +37,29 @@ export type SlotBean = {
 
 export type SlotBeans = [SlotBean, SlotBean, SlotBean];
 
+export type SlotPassivePreset = {
+	passiveId: string | null;
+	value: number;
+};
+
+export type SlotCustomPassive = SlotPassivePreset;
+
+export type SlotPassives = {
+	presets: [
+		SlotPassivePreset,
+		SlotPassivePreset,
+		SlotPassivePreset,
+		SlotPassivePreset,
+		SlotPassivePreset,
+	];
+	custom: SlotCustomPassive;
+};
+
 export type SlotConfig = {
 	rarity: SlotRarity;
 	equipments: SlotEquipments;
 	beans: SlotBeans;
+	passives: SlotPassives;
 };
 
 export type SlotComputedStats = {

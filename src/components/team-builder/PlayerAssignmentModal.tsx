@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Filter, RotateCcw, Search } from "lucide-react";
 import { ElementChip, PositionChip, StatChip } from "@/components/team-builder/Chips";
 import { Badge } from "@/components/ui/badge";
@@ -45,22 +46,35 @@ export function PlayerAssignmentModal({
 	onSelectPlayer,
 	onOpenChange,
 }: PlayerAssignmentModalProps) {
+	const hasActiveFilters =
+		Boolean(filters.search.trim()) || filters.element !== "all" || filters.position !== "all" || filters.role !== "all";
+	useEffect(() => {
+		if (!open) {
+			onResetFilters();
+		}
+	}, [open, onResetFilters]);
+
 	const filtersSection = (
-		<div className="space-y-2">
+		<div className="space-y-3 rounded-xl border border-border/70 bg-card/70 p-3 shadow-inner sm:p-4">
 			<div className="relative">
 				<Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
 				<Input
 					value={filters.search}
 					onChange={(event) => onFiltersChange({ ...filters, search: event.target.value })}
 					placeholder="Search by name or nickname"
-					className="pl-9"
+					className={cn(
+						"pl-9 text-sm",
+						filters.search
+							? "border-primary bg-primary/5 text-foreground shadow-[0_0_0_1px_theme(colors.primary.DEFAULT)]"
+							: "border-muted-foreground/30",
+					)}
 					type="search"
 					autoFocus={!isMobile}
 				/>
 			</div>
-			<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-				<Select value={filters.element} onValueChange={(value) => onFiltersChange({ ...filters, element: value })}>
-					<SelectTrigger>
+			<div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
+				<Select  value={filters.element} onValueChange={(value) => onFiltersChange({ ...filters, element: value })}>
+					<SelectTrigger className={cn("w-full", filters.element !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Element" />
 					</SelectTrigger>
 					<SelectContent>
@@ -72,8 +86,8 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={filters.position} onValueChange={(value) => onFiltersChange({ ...filters, position: value })}>
-					<SelectTrigger>
+				<Select  value={filters.position} onValueChange={(value) => onFiltersChange({ ...filters, position: value })}>
+					<SelectTrigger className={cn("w-full", filters.position !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Position" />
 					</SelectTrigger>
 					<SelectContent>
@@ -85,8 +99,8 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Select value={filters.role} onValueChange={(value) => onFiltersChange({ ...filters, role: value })}>
-					<SelectTrigger>
+				<Select  value={filters.role} onValueChange={(value) => onFiltersChange({ ...filters, role: value })}>
+					<SelectTrigger className={cn("w-full", filters.role !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Role" />
 					</SelectTrigger>
 					<SelectContent>
@@ -98,7 +112,16 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Button variant="outline" size="sm" className="w-full gap-1" onClick={onResetFilters}>
+				<Button
+					variant={hasActiveFilters ? "default" : "outline"}
+					size="sm"
+					className={cn(
+						"w-full gap-1 text-xs font-semibold uppercase tracking-[0.3em]",
+						hasActiveFilters ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+					)}
+					onClick={onResetFilters}
+					disabled={!hasActiveFilters}
+				>
 					<RotateCcw className="size-4" />
 					Reset
 				</Button>
@@ -111,10 +134,7 @@ export function PlayerAssignmentModal({
 	const playerList = (
 		<div
 			className={cn(
-				"mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1",
-				"[scrollbar-width:thin] [scrollbar-color:theme(colors.emerald.400)_transparent]",
-				"[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full",
-				"[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-emerald-400/50",
+				"mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1 hm-scrollbar",
 			)}
 		>
 			{!activeSlot ? (

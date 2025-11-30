@@ -22,7 +22,7 @@ const STAT_KEYS = [
 type StatKey = (typeof STAT_KEYS)[number];
 
 type PlayerRecord = {
-	Nº: number;
+	id: number;
 	Image: string;
 	InazugleLink: string;
 	Description: string;
@@ -166,6 +166,7 @@ function extractPlayers(html: string): PlayerRecordWithoutIndex[] {
 			: "";
 
 		players.push({
+			id: players.length + 1,
 			Image: image,
 			InazugleLink: inazugleLink,
 			Description: description,
@@ -216,8 +217,8 @@ async function fetchAllPlayers(perPage = 1000): Promise<PlayerRecord[]> {
 	}
 
 	return aggregated.map((player, index) => ({
-		Nº: index + 1,
 		...player,
+		id: index + 1,
 	}));
 }
 

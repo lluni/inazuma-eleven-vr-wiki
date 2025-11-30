@@ -43,39 +43,40 @@
 
 :root {
 	--radius: 0.625rem;
-	/* Harvest Moon – Dark as default */
-	--background: oklch(0.17 0.03 255); /* moonlit navy */
-	--foreground: oklch(0.95 0.02 95); /* warm wheat */
-	--card: oklch(0.22 0.03 255);
-	--card-foreground: oklch(0.96 0.01 95);
-	--popover: oklch(0.22 0.03 255);
-	--popover-foreground: oklch(0.96 0.01 95);
-	--primary: oklch(0.78 0.17 85); /* harvest gold */
-	--primary-foreground: oklch(0.96 0.01 95); /* luminescent wheat */
-	--secondary: oklch(0.68 0.12 240); /* cornflower night sky */
-	--secondary-foreground: oklch(0.96 0.01 95);
-	--muted: oklch(0.24 0.02 255); /* deep slate */
-	--muted-foreground: oklch(0.7 0.04 255);
-	--accent: oklch(0.7 0.18 50); /* pumpkin */
-	--accent-foreground: oklch(0.96 0.01 95);
+	color-scheme: light;
+	/* Aurora Dawn – Light as default */
+	--background: oklch(0.98 0.015 95); /* morning mist */
+	--foreground: oklch(0.2 0.04 255); /* deep indigo */
+	--card: oklch(0.99 0.01 100);
+	--card-foreground: oklch(0.22 0.03 250);
+	--popover: oklch(0.99 0.01 100);
+	--popover-foreground: oklch(0.22 0.03 250);
+	--primary: oklch(0.72 0.16 85); /* radiant gold */
+	--primary-foreground: oklch(0.17 0.03 255);
+	--secondary: oklch(0.92 0.04 250); /* sky glaze */
+	--secondary-foreground: oklch(0.28 0.04 250);
+	--muted: oklch(0.94 0.02 255);
+	--muted-foreground: oklch(0.48 0.03 255);
+	--accent: oklch(0.92 0.06 70); /* peach glow */
+	--accent-foreground: oklch(0.32 0.06 70);
 	--destructive: oklch(0.62 0.2 25); /* brick red */
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.74 0.15 85); /* golden glow */
-	/* Chart colors tuned for dark */
-	--chart-1: oklch(0.78 0.17 85); /* gold */
-	--chart-2: oklch(0.66 0.12 240); /* cornflower */
-	--chart-3: oklch(0.7 0.18 50); /* pumpkin */
-	--chart-4: oklch(0.62 0.12 320); /* plum */
-	--chart-5: oklch(0.62 0.12 150); /* meadow green */
-	--sidebar: oklch(0.2 0.03 255);
-	--sidebar-foreground: oklch(0.95 0.02 95);
-	--sidebar-primary: oklch(0.78 0.17 85);
+	--border: oklch(0.9 0.02 255);
+	--input: oklch(0.92 0.015 255);
+	--ring: oklch(0.7 0.14 90); /* sun halo */
+	/* Chart colors tuned for light */
+	--chart-1: oklch(0.72 0.16 85);
+	--chart-2: oklch(0.64 0.13 240);
+	--chart-3: oklch(0.66 0.16 50);
+	--chart-4: oklch(0.6 0.14 320);
+	--chart-5: oklch(0.6 0.14 150);
+	--sidebar: oklch(0.95 0.02 110);
+	--sidebar-foreground: oklch(0.28 0.04 250);
+	--sidebar-primary: oklch(0.72 0.16 85);
 	--sidebar-primary-foreground: oklch(0.18 0.02 255);
-	--sidebar-accent: oklch(0.7 0.18 50);
-	--sidebar-accent-foreground: oklch(0.18 0.02 255);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.74 0.15 85);
+	--sidebar-accent: oklch(0.9 0.06 70);
+	--sidebar-accent-foreground: oklch(0.24 0.04 250);
+	--sidebar-border: oklch(0.9 0.02 255);
+	--sidebar-ring: oklch(0.7 0.14 90);
 	/* Brand gradient */
 	--brand-from: var(--chart-2);
 	--brand-via: var(--chart-1);
@@ -83,7 +84,8 @@
 }
 
 .dark {
-	/* Same palette when explicit dark mode class is present */
+	/* Harvest Moon – Dark */
+	color-scheme: dark;
 	--background: oklch(0.17 0.03 255);
 	--foreground: oklch(0.95 0.02 95);
 	--card: oklch(0.22 0.03 255);
@@ -169,4 +171,17 @@
 	.hm-scrollbar::-webkit-scrollbar-corner {
 		background: transparent;
 	}
+}
+
+/* Styled number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	appearance: none;
+	margin: 0;
+}
+
+input[type="number"] {
+	-moz-appearance: textfield;
+	appearance: textfield;
 }

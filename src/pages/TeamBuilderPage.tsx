@@ -1,20 +1,22 @@
 import { DndContext, type DragCancelEvent, type DragEndEvent, DragOverlay, type DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { toPng } from "html-to-image";
 import { useAtom, useAtomValue } from "jotai";
-import { ClipboardList, ImageDown, RefreshCcw, Share2, UserX } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Activity, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PositionChip } from "@/components/team-builder/Chips";
 import { FormationPitch, ReservesRail, SlotCard } from "@/components/team-builder/FormationPitch";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
 import { SlotDetailsDrawer } from "@/components/team-builder/SlotDetailsDrawer";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { formatNumber } from "@/lib/data-helpers";
 import { FORMATIONS, type FormationDefinition, formationsMap } from "@/data/formations";
 import { EXTRA_SLOT_IDS, EXTRA_TEAM_SLOTS } from "@/data/team-builder-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { type PlayerRecord, playersById, playersDataset } from "@/lib/players-data";
+import { passivesById } from "@/lib/passives-data";
 import { computeSlotComputedStats } from "@/lib/team-builder-calculations";
 import { DISPLAY_MODE_OPTIONS } from "@/lib/team-builder-display";
 import {
@@ -26,7 +28,6 @@ import {
 	pickExtraSlotConfigs,
 } from "@/lib/team-builder-ui";
 import { decodeTeamShareState, encodeTeamShareState, TEAM_SHARE_QUERY_KEY } from "@/lib/team-share";
-import { cn } from "@/lib/utils";
 import { favoritePlayersAtom } from "@/store/favorites";
 import {
 	type DisplayMode,
@@ -47,6 +48,70 @@ type SharedTeamCandidate = {
 	formationName: string;
 };
 
+type CombinedPassiveEntry = {
+	description: string;
+	totalValue: number;
+	count: number;
+	renderedDescription: string;
+};
+
+type PassiveHighlightDescriptor = {
+	pattern: RegExp;
+	label: string;
+	colorClass: string;
+	Icon: LucideIcon;
+};
+
+const PASSIVE_HIGHLIGHTS: PassiveHighlightDescriptor[] = [
+	{
+		pattern: /shot|shoot/i,
+		label: "Shoot AT",
+		colorClass: "text-amber-600 dark:text-amber-200",
+		Icon: Target,
+	},
+	{
+		pattern: /focus/i,
+		label: "Focus",
+		colorClass: "text-sky-600 dark:text-sky-200",
+		Icon: Activity,
+	},
+	{
+		pattern: /scramble/i,
+		label: "Scramble",
+		colorClass: "text-emerald-600 dark:text-emerald-200",
+		Icon: Zap,
+	},
+	{
+		pattern: /wall|defense|df/i,
+		label: "Defense",
+		colorClass: "text-cyan-600 dark:text-cyan-200",
+		Icon: Shield,
+	},
+	{
+		pattern: /tension|spirit/i,
+		label: "Tension",
+		colorClass: "text-purple-600 dark:text-purple-300",
+		Icon: Activity,
+	},
+	{
+		pattern: /keeper|goal|kp/i,
+		label: "Keeper",
+		colorClass: "text-rose-600 dark:text-rose-200",
+		Icon: Sparkles,
+	},
+];
+
+const DEFAULT_PASSIVE_HIGHLIGHT: PassiveHighlightDescriptor = {
+	pattern: /.*/,
+	label: "Team Buff",
+	colorClass: "text-slate-600 dark:text-slate-200",
+	Icon: Sparkles,
+};
+
+function getPassiveHighlight(description: string): PassiveHighlightDescriptor {
+	return PASSIVE_HIGHLIGHTS.find((entry) => entry.pattern.test(description)) ?? DEFAULT_PASSIVE_HIGHLIGHT;
+}
+
 export default function TeamBuilderPage() {
 	const [teamState, setTeamState] = useAtom(teamBuilderAtom);
 	const favoritePlayerIds = useAtomValue(favoritePlayersAtom);
@@ -61,7 +126,7 @@ export default function TeamBuilderPage() {
 	const [sharedCandidate, setSharedCandidate] = useState<SharedTeamCandidate | null>(null);
 	const [importDialogOpen, setImportDialogOpen] = useState(false);
 	const [clearDialogOpen, setClearDialogOpen] = useState(false);
-	const [teamBoardOpen, setTeamBoardOpen] = useState(false);
+	const [teamPassivesOpen, setTeamPassivesOpen] = useState(false);
 	const [isExportingImage, setIsExportingImage] = useState(false);
 	const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null);
 	const sensors = useSensors(
@@ -179,6 +244,9 @@ export default function TeamBuilderPage() {
 	const reserveAssignments = allAssignments.filter((entry) => entry.slot.kind === "reserve");
 	const staffAssignments = allAssignments.filter((entry) => entry.slot.kind === "manager" || entry.slot.kind === "coordinator");
 
+	const nonReserveAssignments = useMemo(() => allAssignments.filter((entry) => entry.slot.kind !== "reserve"), [allAssignments]);
+	const combinedTeamPassives = useMemo<CombinedPassiveEntry[]>(() => combineTeamPassives(nonReserveAssignments), [nonReserveAssignments]);
+
 	const assignedPlayerIds = useMemo(() => {
 		const ids = Object.values(effectiveState.assignments).filter((value): value is number => typeof value === "number");
 		return new Set(ids);
@@ -190,36 +258,40 @@ export default function TeamBuilderPage() {
 	const activeDragEntry = activeDragSlotId ? (assignmentsById.get(activeDragSlotId) ?? null) : null;
 	const isDragActive = Boolean(activeDragSlotId);
 
-	const filteredPlayers = useMemo(() => {
-		if (!activeSlot) return [];
-		const query = filters.search.trim().toLowerCase();
+	const matchesActiveFilters = useCallback(
+		(player: PlayerRecord) => {
+			if (!activeSlot) return false;
+			const query = filters.search.trim().toLowerCase();
+			if (filters.position !== "all" && player.position !== filters.position) return false;
+			if (filters.element !== "all" && player.element !== filters.element) {
+				return false;
+			}
+			if (filters.role !== "all" && player.role !== filters.role) {
+				return false;
+			}
+			if (query && !player.name.toLowerCase().includes(query) && !player.nickname.toLowerCase().includes(query)) {
+				return false;
+			}
+			return true;
+		},
+		[activeSlot, filters.element, filters.position, filters.role, filters.search],
+	);
 
+	const filteredPlayers = useMemo(() => {
 		return playersDataset
-			.filter((player) => {
-				if (filters.position !== "all" && player.position !== filters.position) return false;
-				if (filters.element !== "all" && player.element !== filters.element) {
-					return false;
-				}
-				if (filters.role !== "all" && player.role !== filters.role) {
-					return false;
-				}
-				if (query && !player.name.toLowerCase().includes(query) && !player.nickname.toLowerCase().includes(query)) {
-					return false;
-				}
-				return true;
-			})
+			.filter((player) => matchesActiveFilters(player))
 			.slice()
 			.sort((a, b) => {
 				const byPosition = getPositionSortValue(a.position) - getPositionSortValue(b.position);
 				if (byPosition !== 0) return byPosition;
 				return b.stats.total - a.stats.total;
 			});
-	}, [activeSlot, filters.element, filters.position, filters.role, filters.search]);
+	}, [matchesActiveFilters]);
 
 	const favoriteOptions = useMemo(() => {
 		if (!activeSlot) return [];
-		return playersDataset.filter((player) => favoriteSet.has(player.id));
-	}, [activeSlot, favoriteSet]);
+		return playersDataset.filter((player) => favoriteSet.has(player.id) && matchesActiveFilters(player));
+	}, [activeSlot, favoriteSet, matchesActiveFilters]);
 
 	const handleFormationChange = (formationId: FormationDefinition["id"]) => {
 		if (isPreviewingSharedTeam) return;
@@ -552,9 +624,9 @@ export default function TeamBuilderPage() {
 									<ImageDown className="size-4" />
 									{isExportingImage ? "Preparing..." : "Export image"}
 								</Button>
-								<Button variant="outline" size="sm" className="gap-1" onClick={() => setTeamBoardOpen(true)}>
+								<Button variant="outline" size="sm" className="gap-1" onClick={() => setTeamPassivesOpen(true)}>
 									<ClipboardList className="size-4" />
-									Open board
+									Team passives
 								</Button>
 							</div>
 						</div>
@@ -660,55 +732,66 @@ export default function TeamBuilderPage() {
 				}}
 			/>
 
-			<Dialog open={teamBoardOpen} onOpenChange={setTeamBoardOpen}>
-				<DialogContent className="!max-w-3xl">
+			<Dialog open={teamPassivesOpen} onOpenChange={setTeamPassivesOpen}>
+				<DialogContent className="!max-w-5xl border border-border/60 bg-[color:color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_45px_90px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-popover dark:shadow-[0_35px_75px_rgba(2,6,23,0.65)]">
 					<DialogHeader>
-						<DialogTitle>Team board</DialogTitle>
-						<DialogDescription>Overview of every slot and its current assignment.</DialogDescription>
+						<DialogTitle>Team passives</DialogTitle>
+						<DialogDescription>Combined bonuses from every configured passive across the squad.</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-						{allAssignments.map(({ slot, player }) => (
-							<div
-								key={slot.id}
-								className={cn(
-									"flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm",
-									player ? "border-muted bg-background" : "border-dashed border-muted-foreground/40 bg-transparent text-muted-foreground",
-								)}
-							>
-								<div className="flex items-center gap-2">
-									<PositionChip label={slot.displayLabel ?? slot.label} />
-									{player ? (
-										<span className="text-sm font-semibold">{player.name}</span>
-									) : (
-										<button
-											type="button"
-											onClick={() => {
-												setTeamBoardOpen(false);
-												handleOpenPicker(slot);
-											}}
-											disabled={isPreviewingSharedTeam}
-											className="text-[10px] font-semibold uppercase tracking-[0.35em] text-primary underline-offset-2 hover:underline disabled:opacity-60"
+					<div className="max-h-[60vh] overflow-y-auto pr-1">
+						{combinedTeamPassives.length ? (
+							<div className="grid gap-4 sm:grid-cols-2">
+								{combinedTeamPassives.map((entry) => {
+									const highlight = getPassiveHighlight(entry.description);
+									const HighlightIcon = highlight.Icon;
+									const formattedValue = formatSignedPercent(entry.totalValue);
+									const valueColor =
+										entry.totalValue >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300";
+
+									return (
+										<div
+											key={entry.description}
+											className="group relative overflow-hidden rounded-2xl border border-border/70 bg-[color:color-mix(in_oklab,var(--card)_88%,white_12%)] p-4 text-left shadow-md dark:border-white/5 dark:bg-gradient-to-br dark:from-background/95 dark:via-background/90 dark:to-background/80 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
 										>
-											Assign player
-										</button>
-									)}
-								</div>
-								{player ? (
-									<Button
-										variant="ghost"
-										size="sm"
-										className="h-7 px-2"
-										disabled={isPreviewingSharedTeam}
-										onClick={() => {
-											setTeamBoardOpen(false);
-											handleOpenPicker(slot);
-										}}
-									>
-										<RefreshCcw className="size-4" />
-									</Button>
-								) : null}
+											<div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100">
+												<div className="absolute inset-0 bg-[radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_25%,white_15%),transparent_65%)] dark:bg-[radial-gradient(circle_at_top,var(--primary)/20,transparent_65%)]" />
+											</div>
+											<div className="relative space-y-3">
+												<div className="flex items-start gap-3">
+													<div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-border/70 bg-white/80 text-sm font-semibold text-foreground dark:border-white/10 dark:bg-white/5 dark:text-foreground/80">
+														<HighlightIcon className={`size-5 ${highlight.colorClass}`} />
+													</div>
+													<div className="flex-1 space-y-1">
+														<div className="flex items-center justify-between gap-3">
+															<span className={`text-[10px] font-semibold uppercase tracking-[0.35em] ${highlight.colorClass}`}>
+																{highlight.label}
+															</span>
+															<span className={`text-sm font-semibold ${valueColor}`}>{formattedValue}</span>
+														</div>
+														<p className="text-sm font-semibold leading-snug text-foreground">{entry.renderedDescription}</p>
+													</div>
+												</div>
+												<div className="flex items-center justify-between text-[10px] uppercase tracking-[0.35em] text-muted-foreground/80">
+													<div className="flex items-center gap-1 text-muted-foreground">
+														<ClipboardList className="size-3.5 text-muted-foreground/80" />
+														<span>Sources</span>
+													</div>
+													<div className="flex items-center gap-1 font-semibold text-foreground/80">
+														<span className={entry.count ? "text-muted-foreground" : "text-muted-foreground/60"}>
+															{entry.count} {entry.count === 1 ? "slot" : "slots"}
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									);
+								})}
 							</div>
-						))}
+						) : (
+							<div className="rounded-lg border border-dashed border-muted-foreground/40 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+								No passives configured yet. Assign players and set their passives to see combined effects here.
+							</div>
+						)}
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -777,4 +860,77 @@ export default function TeamBuilderPage() {
 function getPlayerById(id: number | null | undefined): PlayerRecord | null {
 	if (typeof id !== "number") return null;
 	return playersById.get(id) ?? null;
+}
+
+function combineTeamPassives(assignments: SlotAssignment[]): CombinedPassiveEntry[] {
+	const map = new Map<
+		string,
+		{
+			description: string;
+			totalValue: number;
+			count: number;
+		}
+	>();
+
+	const pushPassive = (passiveId: string | null, value: number) => {
+		if (!passiveId) return;
+		const passive = passivesById.get(passiveId);
+		if (!passive?.description) {
+			return;
+		}
+		const key = passive.description;
+		const entry = map.get(key);
+		if (entry) {
+			entry.totalValue += value;
+			entry.count += 1;
+		} else {
+			map.set(key, {
+				description: key,
+				totalValue: value,
+				count: 1,
+			});
+		}
+	};
+
+	assignments.forEach(({ config }) => {
+		const slotPassives = config.passives;
+		if (!slotPassives) return;
+		slotPassives.presets.forEach((preset) => pushPassive(preset.passiveId, preset.value));
+		pushPassive(slotPassives.custom.passiveId, slotPassives.custom.value);
+	});
+
+	return Array.from(map.values())
+		.map((entry) => ({
+			...entry,
+			renderedDescription: replacePassivePlaceholders(entry.description, entry.totalValue),
+		}))
+		.sort((a, b) => {
+			const byValue = Math.abs(b.totalValue) - Math.abs(a.totalValue);
+			if (byValue !== 0) {
+				return byValue;
+			}
+			return a.description.localeCompare(b.description);
+		});
+}
+
+function replacePassivePlaceholders(description: string, totalValue: number): string {
+	if (!description) return "";
+	return description.replace(/\+%|-%/g, (placeholder) => {
+		if (placeholder === "+%") {
+			return formatSignedPercent(totalValue);
+		}
+		return formatOppositePercent(totalValue);
+	});
+}
+
+function formatSignedPercent(value: number): string {
+	const absolute = formatNumber(Math.abs(value));
+	const prefix = value >= 0 ? "+" : "-";
+	return `${prefix}${absolute}%`;
+}
+
+function formatOppositePercent(value: number): string {
+	const absolute = formatNumber(Math.abs(value));
+	const prefix = value >= 0 ? "-" : "+";
+	return `${prefix}${absolute}%`;
 }

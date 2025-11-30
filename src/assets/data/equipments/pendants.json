@@ -8,7 +8,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P1"
   },
   {
     "Name": "Chain Pendant",
@@ -19,7 +20,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P2"
   },
   {
     "Name": "Colorful Choker",
@@ -30,7 +32,8 @@
     "Physical": 4,
     "Intelligence": 4,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P3"
   },
   {
     "Name": "Droplet Pendant",
@@ -41,7 +44,8 @@
     "Physical": "",
     "Intelligence": 4,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P4"
   },
   {
     "Name": "Lady's Scarf",
@@ -52,7 +56,8 @@
     "Physical": "",
     "Intelligence": 4,
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P5"
   },
   {
     "Name": "Ward Pendant",
@@ -63,7 +68,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P6"
   },
   {
     "Name": "Bold Scarf",
@@ -74,7 +80,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 5,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P7"
   },
   {
     "Name": "Champion's Scarf",
@@ -85,7 +92,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "P8"
   },
   {
     "Name": "Alius Crystal",
@@ -96,7 +104,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P9"
   },
   {
     "Name": "Chrono Stone Necklace",
@@ -107,7 +116,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P10"
   },
   {
     "Name": "Victory Pendant",
@@ -118,7 +128,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P11"
   },
   {
     "Name": "Pact Pendant",
@@ -129,7 +140,8 @@
     "Physical": 11,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P12"
   },
   {
     "Name": "Beachside Pendant",
@@ -140,7 +152,8 @@
     "Physical": 11,
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P13"
   },
   {
     "Name": "Monster Choker",
@@ -151,7 +164,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P14"
   },
   {
     "Name": "Hawk Pendant",
@@ -162,7 +176,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P15"
   },
   {
     "Name": "Emerald Necklace",
@@ -173,7 +188,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P16"
   },
   {
     "Name": "Princess Mantle",
@@ -184,7 +200,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P17"
   },
   {
     "Name": "Power Pendant",
@@ -195,7 +212,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P18"
   },
   {
     "Name": "Hero Mantle",
@@ -206,7 +224,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P19"
   },
   {
     "Name": "Kido's Mantle",
@@ -217,7 +236,8 @@
     "Physical": 30,
     "Intelligence": 40,
     "Agility": "",
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "P20"
   },
   {
     "Name": "Pendant of Bonds",
@@ -228,7 +248,8 @@
     "Physical": 20,
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P21"
   },
   {
     "Name": "Commander's Mantle",
@@ -239,7 +260,8 @@
     "Physical": 19,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P22"
   },
   {
     "Name": "Necklace of Protection",
@@ -250,7 +272,8 @@
     "Physical": 19,
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P23"
   },
   {
     "Name": "Rebel Choker",
@@ -261,7 +284,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P24"
   },
   {
     "Name": "Protective Pendant",
@@ -272,7 +296,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P25"
   },
   {
     "Name": "Rusty Pendant",
@@ -283,7 +308,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P26"
   },
   {
     "Name": "Stylish Mantle",
@@ -294,7 +320,8 @@
     "Physical": "",
     "Intelligence": 6,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P27"
   },
   {
     "Name": "Rock Choker",
@@ -305,7 +332,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P28"
   },
   {
     "Name": "Steel Choker",
@@ -316,7 +344,8 @@
     "Physical": 4,
     "Intelligence": "",
     "Agility": 6,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P29"
   },
   {
     "Name": "Wildwood Choker",
@@ -327,7 +356,8 @@
     "Physical": 17,
     "Intelligence": 18,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P30"
   },
   {
     "Name": "Jungle Choker",
@@ -338,7 +368,8 @@
     "Physical": "",
     "Intelligence": 11,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P31"
   },
   {
     "Name": "Sparkling Mascot",
@@ -349,7 +380,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 10,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P32"
   },
   {
     "Name": "Fiery Pendant",
@@ -360,7 +392,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "P33"
   },
   {
     "Name": "Hightide Choker",
@@ -371,7 +404,8 @@
     "Physical": "",
     "Intelligence": 23,
     "Agility": 17,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P34"
   },
   {
     "Name": "Azure Necklace",
@@ -382,7 +416,8 @@
     "Physical": "",
     "Intelligence": 21,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P35"
   },
   {
     "Name": "Trial Necklace",
@@ -393,7 +428,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P36"
   },
   {
     "Name": "Comet Pendant",
@@ -404,7 +440,8 @@
     "Physical": "",
     "Intelligence": 25,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P37"
   },
   {
     "Name": "Pendant of Infinity",
@@ -415,6 +452,7 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 27,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "P38"
   }
 ]

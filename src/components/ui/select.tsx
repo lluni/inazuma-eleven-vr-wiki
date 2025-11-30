@@ -1,7 +1,8 @@
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, Search } from "lucide-react";
 import type * as React from "react";
 
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 function Select({
@@ -48,12 +49,33 @@ function SelectTrigger({
 	);
 }
 
+type SelectContentProps = React.ComponentProps<typeof SelectPrimitive.Content> & {
+	searchValue?: string;
+	onSearchValueChange?: (value: string) => void;
+	searchPlaceholder?: string;
+	onSearchKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+	searchInputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+};
+
 function SelectContent({
 	className,
 	children,
 	position = "popper",
+	searchValue,
+	onSearchValueChange,
+	searchPlaceholder = "Search…",
+	onSearchKeyDown,
+	searchInputProps,
 	...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+}: SelectContentProps) {
+	const isSearchable = typeof onSearchValueChange === "function";
+	const {
+		className: searchInputClassName,
+		onChange: searchInputOnChange,
+		onKeyDown: searchInputOnKeyDown,
+		...restSearchInputProps
+	} = searchInputProps ?? {};
+
 	return (
 		<SelectPrimitive.Portal>
 			<SelectPrimitive.Content
@@ -70,12 +92,40 @@ function SelectContent({
 				<SelectScrollUpButton />
 				<SelectPrimitive.Viewport
 					className={cn(
-						"p-1",
+						"p-0",
 						position === "popper" &&
 							"h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
 					)}
 				>
-					{children}
+					<div className="p-1">
+						{isSearchable
+							? (
+								<div className="sticky top-0 z-20 -mx-1 -mt-1 mb-1 border-b border-border/50 bg-popover px-3 py-2 shadow-sm">
+									<div className="relative rounded-md bg-background shadow-xs ring-1 ring-border/70">
+										<Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+										<Input
+											{...restSearchInputProps}
+											value={searchValue ?? ""}
+											onChange={(event) => {
+												onSearchValueChange?.(event.currentTarget.value);
+												searchInputOnChange?.(event);
+											}}
+											onKeyDown={(event) => {
+												onSearchKeyDown?.(event);
+												searchInputOnKeyDown?.(event);
+											}}
+											placeholder={searchPlaceholder}
+											className={cn(
+												"h-9 border-none bg-transparent pl-8 pr-3 text-sm shadow-none focus-visible:ring-0",
+												searchInputClassName,
+											)}
+										/>
+									</div>
+								</div>
+							)
+							: null}
+						{children}
+					</div>
 				</SelectPrimitive.Viewport>
 				<SelectScrollDownButton />
 			</SelectPrimitive.Content>

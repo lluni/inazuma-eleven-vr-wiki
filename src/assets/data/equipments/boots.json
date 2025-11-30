@@ -8,7 +8,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 6,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B1"
   },
   {
     "Name": "Occult Boots",
@@ -19,7 +20,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B2"
   },
   {
     "Name": "Wild Boots",
@@ -30,7 +32,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B3"
   },
   {
     "Name": "Hypno Boots",
@@ -41,7 +44,8 @@
     "Physical": "",
     "Intelligence": 5,
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B4"
   },
   {
     "Name": "Royal Boots",
@@ -52,7 +56,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B5"
   },
   {
     "Name": "Shuriken Boots",
@@ -63,7 +68,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B6"
   },
   {
     "Name": "Protocol 3.0 Boots",
@@ -74,7 +80,8 @@
     "Physical": 28,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B7"
   },
   {
     "Name": "Zeus Boots",
@@ -85,7 +92,8 @@
     "Physical": 23,
     "Intelligence": 25,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B8"
   },
   {
     "Name": "Gahl Boots",
@@ -96,7 +104,8 @@
     "Physical": 22,
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B9"
   },
   {
     "Name": "Fauxshore Boots",
@@ -107,7 +116,8 @@
     "Physical": 21,
     "Intelligence": "",
     "Agility": 21,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B10"
   },
   {
     "Name": "Alpine Boots",
@@ -118,7 +128,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B11"
   },
   {
     "Name": "Gemini Storm Boots",
@@ -129,7 +140,8 @@
     "Physical": 3,
     "Intelligence": 6,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B12"
   },
   {
     "Name": "Cloister Divinity Boots",
@@ -140,7 +152,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 9,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B13"
   },
   {
     "Name": "Royal Academy Redux Boots",
@@ -151,7 +164,8 @@
     "Physical": 12,
     "Intelligence": "",
     "Agility": 12,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B14"
   },
   {
     "Name": "Epsilon Boots",
@@ -162,7 +176,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B15"
   },
   {
     "Name": "Little Gigants Boots",
@@ -173,7 +188,8 @@
     "Physical": 20,
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B16"
   },
   {
     "Name": "Omega Boots",
@@ -184,7 +200,8 @@
     "Physical": 20,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B17"
   },
   {
     "Name": "Revolutionaries Boots",
@@ -195,7 +212,8 @@
     "Physical": 19,
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B18"
   },
   {
     "Name": "Ragnah Boots",
@@ -206,7 +224,8 @@
     "Physical": 19,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B19"
   },
   {
     "Name": "Diamond Dust Boots",
@@ -217,7 +236,8 @@
     "Physical": 17,
     "Intelligence": 19,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B20"
   },
   {
     "Name": "Farm Boots",
@@ -228,7 +248,8 @@
     "Physical": "",
     "Intelligence": 23,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B21"
   },
   {
     "Name": "Desert Lion Boots",
@@ -239,7 +260,8 @@
     "Physical": "",
     "Intelligence": 5,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B22"
   },
   {
     "Name": "Neo National Boots",
@@ -250,7 +272,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B23"
   },
   {
     "Name": "Fire Dragon Boots",
@@ -261,7 +284,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B24"
   },
   {
     "Name": "Queen's Knights Boots",
@@ -272,7 +296,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B25"
   },
   {
     "Name": "Team K Boots",
@@ -283,7 +308,8 @@
     "Physical": "",
     "Intelligence": 11,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B26"
   },
   {
     "Name": "Empire Boots",
@@ -294,7 +320,8 @@
     "Physical": 12,
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B27"
   },
   {
     "Name": "Unicorn Boots",
@@ -305,7 +332,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B28"
   },
   {
     "Name": "Kirkwood Boots",
@@ -316,7 +344,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B29"
   },
   {
     "Name": "Team Ogre Boots",
@@ -327,7 +356,8 @@
     "Physical": "",
     "Intelligence": 27,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B30"
   },
   {
     "Name": "Revolutionary Raimon Boots",
@@ -338,7 +368,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B31"
   },
   {
     "Name": "Verdant Boots",
@@ -349,7 +380,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B32"
   },
   {
     "Name": "Inazuma Kids FC Boots (GO)",
@@ -360,7 +392,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 5,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B33"
   },
   {
     "Name": "Prodigy Boots",
@@ -371,7 +404,8 @@
     "Physical": "",
     "Intelligence": 6,
     "Agility": 3,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B34"
   },
   {
     "Name": "Almighty Faith Boots",
@@ -382,7 +416,8 @@
     "Physical": 11,
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B35"
   },
   {
     "Name": "Reformed Royal Boots",
@@ -393,7 +428,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B36"
   },
   {
     "Name": "Raimon Second Squad Boots",
@@ -404,7 +440,8 @@
     "Physical": 11,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B37"
   },
   {
     "Name": "Pirate Cove Boots",
@@ -415,7 +452,8 @@
     "Physical": 9,
     "Intelligence": 13,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B38"
   },
   {
     "Name": "Golden Oldies Boots",
@@ -426,7 +464,8 @@
     "Physical": "",
     "Intelligence": 13,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B39"
   },
   {
     "Name": "Mary Times Boots",
@@ -437,7 +476,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 16,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B40"
   },
   {
     "Name": "Chaos Shoes",
@@ -448,7 +488,8 @@
     "Physical": "",
     "Intelligence": 20,
     "Agility": 19,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B41"
   },
   {
     "Name": "Genesis Shoes",
@@ -459,7 +500,8 @@
     "Physical": "",
     "Intelligence": 28,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B42"
   },
   {
     "Name": "Dark Emperors Boots",
@@ -470,7 +512,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B43"
   },
   {
     "Name": "Apostle from the Sky Greaves",
@@ -481,7 +524,8 @@
     "Physical": "",
     "Intelligence": 18,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B44"
   },
   {
     "Name": "Lunar Sea Boots",
@@ -492,7 +536,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B45"
   },
   {
     "Name": "Alpine Boots (GO)",
@@ -503,7 +548,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B46"
   },
   {
     "Name": "Universal Boots",
@@ -514,7 +560,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B47"
   },
   {
     "Name": "Kirkwood Boots (GO)",
@@ -525,7 +572,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B48"
   },
   {
     "Name": "Eternal Light Boots",
@@ -536,7 +584,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 23,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B49"
   },
   {
     "Name": "Ancient Darkness Boots",
@@ -547,7 +596,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B50"
   },
   {
     "Name": "Shiroshika Boots",
@@ -558,7 +608,8 @@
     "Physical": "",
     "Intelligence": 5,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B51"
   },
   {
     "Name": "Mirage Boots",
@@ -569,7 +620,8 @@
     "Physical": "",
     "Intelligence": 22,
     "Agility": 17,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B52"
   },
   {
     "Name": "Zanark Domain Boots",
@@ -580,7 +632,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B53"
   },
   {
     "Name": "Perfect Cascade Boots",
@@ -591,7 +644,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 12,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B54"
   },
   {
     "Name": "Mount Olympus Boots",
@@ -602,7 +656,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B55"
   },
   {
     "Name": "Dragon Link Boots",
@@ -613,7 +668,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 21,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B56"
   },
   {
     "Name": "Zanark Outsiders Boots",
@@ -624,7 +680,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "B57"
   },
   {
     "Name": "Inazuma Kids FC Boots",
@@ -635,7 +692,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": 5,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B58"
   },
   {
     "Name": "Otaku Boots",
@@ -646,7 +704,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B59"
   },
   {
     "Name": "Raimon Veterans Boots",
@@ -657,7 +716,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B60"
   },
   {
     "Name": "Secret Service Shoes",
@@ -668,7 +728,8 @@
     "Physical": 4,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B61"
   },
   {
     "Name": "Triple C Boots",
@@ -679,7 +740,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B62"
   },
   {
     "Name": "Prominence Boots",
@@ -690,7 +752,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B63"
   },
   {
     "Name": "Black Templars Boots",
@@ -701,7 +764,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B64"
   },
   {
     "Name": "Milky Way Boots",
@@ -712,7 +776,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B65"
   },
   {
     "Name": "Team Zero Boots",
@@ -723,7 +788,8 @@
     "Physical": "",
     "Intelligence": 28,
     "Agility": 23,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B66"
   },
   {
     "Name": "Mirage Boots",
@@ -734,7 +800,8 @@
     "Physical": "",
     "Intelligence": 22,
     "Agility": 17,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B67"
   },
   {
     "Name": "Tenmas Boots",
@@ -745,7 +812,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B68"
   },
   {
     "Name": "Zan Boots",
@@ -756,7 +824,8 @@
     "Physical": 14,
     "Intelligence": "",
     "Agility": 9,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B69"
   },
   {
     "Name": "Gihl Boots",
@@ -767,7 +836,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B70"
   },
   {
     "Name": "Musical Boots",
@@ -778,7 +848,8 @@
     "Physical": "",
     "Intelligence": 12,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B71"
   },
   {
     "Name": "Panda Boots",
@@ -789,7 +860,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B72"
   },
   {
     "Name": "Gale Boots",
@@ -800,7 +872,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": 6,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B73"
   },
   {
     "Name": "Plain Boots",
@@ -811,7 +884,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B74"
   },
   {
     "Name": "Smooth Boots",
@@ -822,7 +896,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "B75"
   },
   {
     "Name": "Spiketail Boots",
@@ -833,6 +908,7 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "B76"
   }
 ]

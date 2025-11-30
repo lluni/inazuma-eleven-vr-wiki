@@ -3,6 +3,10 @@ import type { FormationId } from "@/data/formations";
 import { FORMATIONS } from "@/data/formations";
 import { EXTRA_SLOT_IDS } from "@/data/team-builder-slots";
 import { createEmptySlotBeans, normalizeSlotBeans } from "@/lib/slot-beans";
+import {
+	createEmptySlotPassives,
+	normalizeSlotPassives,
+} from "@/lib/slot-passives";
 import type { SlotConfig, SlotEquipments } from "@/types/team-builder";
 
 export type TeamBuilderAssignments = Record<string, number | null>;
@@ -38,6 +42,7 @@ export const DEFAULT_SLOT_CONFIG: SlotConfig = Object.freeze({
 	rarity: "normal",
 	equipments: DEFAULT_SLOT_EQUIPMENTS,
 	beans: createEmptySlotBeans(),
+	passives: createEmptySlotPassives(),
 });
 
 export function createEmptySlotEquipments(): SlotEquipments {
@@ -57,6 +62,7 @@ export function normalizeSlotConfig(config?: SlotConfig | null): SlotConfig {
 			...(config?.equipments ?? {}),
 		},
 		beans: normalizeSlotBeans(config?.beans),
+		passives: normalizeSlotPassives(config?.passives),
 	};
 }
 
@@ -72,6 +78,7 @@ export function mergeSlotConfig(
 			...(patch.equipments ?? {}),
 		},
 		beans: normalizeSlotBeans(patch.beans ?? base.beans),
+		passives: normalizeSlotPassives(patch.passives ?? base.passives),
 	};
 }
 

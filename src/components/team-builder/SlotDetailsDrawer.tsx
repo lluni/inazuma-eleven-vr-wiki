@@ -1,18 +1,66 @@
 import type { LucideIcon } from "lucide-react";
-import { Bean, BrickWall, HeartPulse, Shield, ShieldCheck, Swords, Target } from "lucide-react";
+import {
+	Bean,
+	BrickWall,
+	HeartPulse,
+	Shield,
+	ShieldCheck,
+	Swords,
+	Target,
+} from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { ElementChip, PositionChip } from "@/components/team-builder/Chips";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { formatNumber, titleCase } from "@/lib/data-helpers";
-import { EQUIPMENT_CATEGORIES, EQUIPMENT_CATEGORY_LABELS, type EquipmentRecord, equipmentsByType } from "@/lib/equipments-data";
-import { BEAN_COLORS, clampBeanValue, createEmptySlotBeans, MAX_BEAN_POINTS } from "@/lib/slot-beans";
-import { applyRarityBonus, getSlotRarityDefinition, SLOT_RARITY_OPTIONS } from "@/lib/slot-rarity";
+import {
+	EQUIPMENT_CATEGORIES,
+	EQUIPMENT_CATEGORY_LABELS,
+	type EquipmentRecord,
+	equipmentsByType,
+} from "@/lib/equipments-data";
+import {
+	customPassives,
+	type PassiveRecord,
+	passivesById,
+	passivesByType,
+	playerBuildPassives,
+	playerGeneralPassives,
+} from "@/lib/passives-data";
+import {
+	BEAN_COLORS,
+	clampBeanValue,
+	createEmptySlotBeans,
+	MAX_BEAN_POINTS,
+} from "@/lib/slot-beans";
+import {
+	clampPassiveValue,
+	createEmptySlotPassives,
+	PASSIVE_PRESET_SLOTS,
+} from "@/lib/slot-passives";
+import {
+	applyRarityBonus,
+	getSlotRarityDefinition,
+	SLOT_RARITY_OPTIONS,
+} from "@/lib/slot-rarity";
 import { createEmptySlotEquipments } from "@/store/team-builder";
 import type {
 	BaseAttributeKey,
@@ -22,11 +70,19 @@ import type {
 	SlotBeans,
 	SlotConfig,
 	SlotEquipments,
+	SlotPassives,
 	SlotRarity,
 	TeamBuilderSlot,
 } from "@/types/team-builder";
 
-type StatKey = "shootAT" | "focusAT" | "focusDF" | "wallDF" | "scrambleAT" | "scrambleDF" | "kp";
+type StatKey =
+	| "shootAT"
+	| "focusAT"
+	| "focusDF"
+	| "wallDF"
+	| "scrambleAT"
+	| "scrambleDF"
+	| "kp";
 
 type StatDefinition = {
 	label: string;
@@ -63,16 +119,38 @@ export type SlotDetailsDrawerProps = {
 	assignment: SlotAssignment | null;
 	onAssign: (slot: TeamBuilderSlot) => void;
 	onClearSlot: (slotId: string) => void;
-	onUpdateSlotConfig: (slotId: string, partialConfig: Partial<SlotConfig>) => void;
+	onUpdateSlotConfig: (
+		slotId: string,
+		partialConfig: Partial<SlotConfig>,
+	) => void;
 	onOpenChange: (open: boolean) => void;
 };
 
-export function SlotDetailsDrawer({ open, slot, assignment, onAssign, onClearSlot, onUpdateSlotConfig, onOpenChange }: SlotDetailsDrawerProps) {
+export function SlotDetailsDrawer(
+	{
+		open,
+		slot,
+		assignment,
+		onAssign,
+		onClearSlot,
+		onUpdateSlotConfig,
+		onOpenChange,
+	}: SlotDetailsDrawerProps,
+) {
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent side="left" className="w-full !max-w-2xl border-l p-0 sm:max-w-md">
+			<SheetContent
+				side="left"
+				className="w-full !max-w-2xl border-l p-0 sm:max-w-md hm-scrollbar"
+			>
 				<div className="h-full overflow-y-auto p-3">
-					<SlotDetailsPanel slot={slot} assignment={assignment} onAssign={onAssign} onClearSlot={onClearSlot} onUpdateSlotConfig={onUpdateSlotConfig} />
+					<SlotDetailsPanel
+						slot={slot}
+						assignment={assignment}
+						onAssign={onAssign}
+						onClearSlot={onClearSlot}
+						onUpdateSlotConfig={onUpdateSlotConfig}
+					/>
 				</div>
 			</SheetContent>
 		</Sheet>
@@ -84,19 +162,29 @@ type SlotDetailsPanelProps = {
 	assignment: SlotAssignment | null;
 	onAssign: (slot: TeamBuilderSlot) => void;
 	onClearSlot: (slotId: string) => void;
-	onUpdateSlotConfig: (slotId: string, partialConfig: Partial<SlotConfig>) => void;
+	onUpdateSlotConfig: (
+		slotId: string,
+		partialConfig: Partial<SlotConfig>,
+	) => void;
 };
 
-function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlotConfig }: SlotDetailsPanelProps) {
+function SlotDetailsPanel(
+	{ slot, assignment, onAssign, onClearSlot, onUpdateSlotConfig }:
+		SlotDetailsPanelProps,
+) {
 	const [clearDialogOpen, setClearDialogOpen] = useState(false);
 	const player = assignment?.player ?? null;
 	const rarity = assignment?.config.rarity ?? "normal";
 	const rarityDefinition = getSlotRarityDefinition(rarity);
 	const computedStats = assignment?.computed ?? null;
-	const currentEquipments = assignment?.config.equipments ?? createEmptySlotEquipments();
+	const currentEquipments = assignment?.config.equipments ??
+		createEmptySlotEquipments();
 	const currentBeans = assignment?.config.beans ?? createEmptySlotBeans();
+	const currentPassives = assignment?.config.passives ??
+		createEmptySlotPassives();
 	const allowsEquipmentConfig = slot?.configScope !== "rarity-only";
 	const allowsBeanConfig = slot?.configScope !== "rarity-only";
+	const allowsPassiveConfig = Boolean(slot && player);
 
 	useEffect(() => {
 		if (!player || !slot) {
@@ -109,9 +197,13 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 		onUpdateSlotConfig(slot.id, { rarity: value });
 	};
 
-	const handleEquipmentChange = (category: EquipmentCategory, equipmentId: string | null) => {
+	const handleEquipmentChange = (
+		category: EquipmentCategory,
+		equipmentId: string | null,
+	) => {
 		if (!slot) return;
-		const baseEquipments = assignment?.config.equipments ?? createEmptySlotEquipments();
+		const baseEquipments = assignment?.config.equipments ??
+			createEmptySlotEquipments();
 		onUpdateSlotConfig(slot.id, {
 			equipments: {
 				...baseEquipments,
@@ -123,11 +215,16 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 	const handleBeanChange = (index: number, bean: SlotBean) => {
 		if (!slot) return;
 		const baseBeans = assignment?.config.beans ?? createEmptySlotBeans();
-		const nextBeans = baseBeans.map((entry, idx) => (idx === index ? bean : entry)) as SlotBeans;
+		const nextBeans = baseBeans.map((
+			entry,
+			idx,
+		) => (idx === index ? bean : entry)) as SlotBeans;
 		onUpdateSlotConfig(slot.id, { beans: nextBeans });
 	};
 
-	const showCustomBoosts = Boolean(slot && player) && (allowsBeanConfig || allowsEquipmentConfig);
+	const showEquipableBoosts = Boolean(slot && player) &&
+		(allowsBeanConfig || allowsEquipmentConfig);
+	const showPassivesConfig = Boolean(slot && player) && allowsPassiveConfig;
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -136,78 +233,118 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 					<div>
 						<p className="text-sm font-semibold">Slot details</p>
 					</div>
-					{slot ? <PositionChip label={slot.displayLabel ?? slot.label} /> : null}
+					{slot
+						? <PositionChip label={slot.displayLabel ?? slot.label} />
+						: null}
 				</header>
 				<div className="mt-4 space-y-4">
-					{!slot ? (
-						<div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No slot selected. Tap a position on the pitch to focus it.</div>
-					) : !player ? (
-						<div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center">
-							<div className="flex size-32 items-center justify-center rounded-2xl border border-dashed text-xl font-semibold">
-								{slot.displayLabel ?? slot.label}
+					{!slot
+						? (
+							<div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+								No slot selected. Tap a position on the pitch to focus it.
 							</div>
-							<p className="text-sm text-muted-foreground">This slot is empty. Choose a player to assign.</p>
-							<Button onClick={() => onAssign(slot)}>Assign player</Button>
-						</div>
-					) : (
-						<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-							<div className="flex flex-col items-center gap-3">
-								<img
-									src={player.safeImage}
-									alt={player.name}
-									className="w-full max-w-[220px] rounded-2xl border object-cover shadow-lg"
-									loading="lazy"
-									crossOrigin="anonymous"
-									referrerPolicy="no-referrer"
-								/>
-								<div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-									<ElementChip element={player.element} />
-									<PositionChip label={player.position} />
+						)
+						: !player
+						? (
+							<div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center">
+								<div className="flex size-32 items-center justify-center rounded-2xl border border-dashed text-xl font-semibold">
+									{slot.displayLabel ?? slot.label}
 								</div>
-								<div className="text-center">
-									<p className="text-lg font-semibold">{player.name}</p>
-									<p className="text-sm text-muted-foreground">{player.nickname}</p>
-								</div>
-								<div className="flex flex-wrap gap-2">
-									<Button onClick={() => onAssign(slot)} className="flex-1 min-w-[140px]">
-										Replace player
-									</Button>
-									<Button variant="destructive" onClick={() => setClearDialogOpen(true)} className="flex-1 min-w-[140px]">
-										Remove from slot
-									</Button>
-								</div>
+								<p className="text-sm text-muted-foreground">
+									This slot is empty. Choose a player to assign.
+								</p>
+								<Button onClick={() => onAssign(slot)}>Assign player</Button>
 							</div>
-							<div className="space-y-3">
-								<RarityConfig value={rarity} onChange={handleRarityChange} accent={rarityDefinition.accent} />
-								<div className="space-y-2">
-									{BOOSTED_STATS.map((stat) => {
-										const rawValue = player.power[stat.key] ?? 0;
-										const boostedValue = computedStats?.power[stat.key] ?? applyRarityBonus(typeof rawValue === "number" ? rawValue : Number(rawValue), rarity);
-										const Icon = stat.icon;
-										return (
-											<div key={stat.label} className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
-												<div className="flex items-center gap-2 text-sm font-medium">
-													<Icon className="size-4 text-emerald-600" />
-													{stat.label}
+						)
+						: (
+							<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+								<div className="flex flex-col items-center gap-4 rounded-2xl bg-muted/10 p-4 text-center">
+									<img
+										src={player.safeImage}
+										alt={player.name}
+										className="w-full max-w-[220px] rounded-2xl object-cover"
+										loading="lazy"
+										crossOrigin="anonymous"
+										referrerPolicy="no-referrer"
+									/>
+									<div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+										<ElementChip element={player.element} />
+										<PositionChip label={player.position} />
+									</div>
+									<div>
+										<p className="text-lg font-semibold">{player.name}</p>
+										<p className="text-sm text-muted-foreground">
+											{player.nickname}
+										</p>
+									</div>
+									<div className="flex w-full flex-col gap-2">
+										<Button
+											onClick={() => onAssign(slot)}
+											className="w-full"
+										>
+											Replace player
+										</Button>
+										<Button
+											variant="destructive"
+											onClick={() => setClearDialogOpen(true)}
+											className="w-full"
+										>
+											Remove from slot
+										</Button>
+									</div>
+								</div>
+								<div className="space-y-3">
+									<RarityConfig
+										value={rarity}
+										onChange={handleRarityChange}
+										accent={rarityDefinition.accent}
+									/>
+									<div className="space-y-2">
+										{BOOSTED_STATS.map((stat) => {
+											const rawValue = player.power[stat.key] ?? 0;
+											const boostedValue = computedStats?.power[stat.key] ??
+												applyRarityBonus(
+													typeof rawValue === "number"
+														? rawValue
+														: Number(rawValue),
+													rarity,
+												);
+											const Icon = stat.icon;
+											return (
+												<div
+													key={stat.label}
+													className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
+												>
+													<div className="flex items-center gap-2 text-sm font-medium">
+														<Icon className="size-4 text-emerald-600" />
+														{stat.label}
+													</div>
+													<span className="text-base font-semibold">
+														{formatNumber(boostedValue)}
+													</span>
 												</div>
-												<span className="text-base font-semibold">{formatNumber(boostedValue)}</span>
-											</div>
-										);
-									})}
+											);
+										})}
+									</div>
 								</div>
 							</div>
-						</div>
-					)}
+						)}
 				</div>
 
 				<Dialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
 					<DialogContent>
 						<DialogHeader>
 							<DialogTitle>Remove player from slot?</DialogTitle>
-							<DialogDescription>This will clear the assignment and reset custom settings for this slot.</DialogDescription>
+							<DialogDescription>
+								This will clear the assignment and reset custom settings for
+								this slot.
+							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setClearDialogOpen(false)}>
+							<Button
+								variant="outline"
+								onClick={() => setClearDialogOpen(false)}
+							>
 								Keep player
 							</Button>
 							<Button
@@ -226,19 +363,53 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 				</Dialog>
 			</section>
 
-			{showCustomBoosts ? (
-				<section className="rounded-xl border bg-card p-4 shadow-sm">
-					<header className="flex items-center justify-between">
-						<p className="text-sm font-semibold">Equipable Boosts</p>
-					</header>
-					<div className="mt-4">
-						<div className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
-							{allowsBeanConfig ? <BeansConfig value={currentBeans} onChange={handleBeanChange} /> : null}
-							{allowsEquipmentConfig ? <EquipmentLoadoutConfig value={currentEquipments} onChange={handleEquipmentChange} /> : null}
+			{showEquipableBoosts
+				? (
+					<section className="rounded-xl border bg-card p-4 shadow-sm">
+						<header className="flex items-center justify-between">
+							<p className="text-sm font-semibold">Equipable Boosts</p>
+						</header>
+						<div className="mt-4">
+							<div className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
+								{allowsBeanConfig
+									? (
+										<BeansConfig
+											value={currentBeans}
+											onChange={handleBeanChange}
+										/>
+									)
+									: null}
+								{allowsEquipmentConfig
+									? (
+										<EquipmentLoadoutConfig
+											value={currentEquipments}
+											onChange={handleEquipmentChange}
+										/>
+									)
+									: null}
+							</div>
 						</div>
-					</div>
-				</section>
-			) : null}
+					</section>
+				)
+				: null}
+			{showPassivesConfig && slot
+				? (
+					<section className="rounded-xl border bg-card p-4 shadow-sm">
+						<header className="flex items-center justify-between">
+							<p className="text-sm font-semibold">Passives</p>
+						</header>
+						<PassivesConfig
+							className="mt-4"
+							slot={slot}
+							value={currentPassives}
+							onChange={(next) => {
+								if (!slot) return;
+								onUpdateSlotConfig(slot.id, { passives: next });
+							}}
+						/>
+					</section>
+				)
+				: null}
 		</div>
 	);
 }
@@ -250,7 +421,9 @@ type RarityConfigProps = {
 };
 
 function RarityConfig({ value, onChange, accent }: RarityConfigProps) {
-	const selectedDefinition = SLOT_RARITY_OPTIONS.find((option) => option.value === value);
+	const selectedDefinition = SLOT_RARITY_OPTIONS.find((option) =>
+		option.value === value
+	);
 
 	return (
 		<div className="space-y-2 rounded-lg border bg-background/80 p-3">
@@ -264,7 +437,10 @@ function RarityConfig({ value, onChange, accent }: RarityConfigProps) {
 					{selectedDefinition?.boostLabel}
 				</Badge>
 			</div>
-			<Select value={value} onValueChange={(next) => onChange(next as SlotRarity)}>
+			<Select
+				value={value}
+				onValueChange={(next) => onChange(next as SlotRarity)}
+			>
 				<SelectTrigger className="bg-background/90 w-full">
 					<SelectValue placeholder="Select rarity" />
 				</SelectTrigger>
@@ -273,8 +449,13 @@ function RarityConfig({ value, onChange, accent }: RarityConfigProps) {
 						<SelectItem key={option.value} value={option.value}>
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-2">
-									<span className="size-3 rounded-full" style={{ background: option.cardBackground }} />
-									<span className="text-sm font-semibold">{option.label} Player</span>
+									<span
+										className="size-3 rounded-full"
+										style={{ background: option.cardBackground }}
+									/>
+									<span className="text-sm font-semibold">
+										{option.label} Player
+									</span>
 								</div>
 							</div>
 						</SelectItem>
@@ -290,13 +471,22 @@ type EquipmentLoadoutConfigProps = {
 	onChange: (category: EquipmentCategory, equipmentId: string | null) => void;
 };
 
-function EquipmentLoadoutConfig({ value, onChange }: EquipmentLoadoutConfigProps) {
+function EquipmentLoadoutConfig(
+	{ value, onChange }: EquipmentLoadoutConfigProps,
+) {
 	return (
 		<div className="space-y-2 rounded-lg border bg-background/80 p-3">
-			<div className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Equipments</div>
+			<div className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+				Equipments
+			</div>
 			<div className="space-y-3">
 				{EQUIPMENT_CATEGORIES.map((category) => (
-					<EquipmentSelectRow key={category} category={category} selectedId={value[category] ?? null} onChange={onChange} />
+					<EquipmentSelectRow
+						key={category}
+						category={category}
+						selectedId={value[category] ?? null}
+						onChange={onChange}
+					/>
 				))}
 			</div>
 		</div>
@@ -309,11 +499,15 @@ type EquipmentSelectRowProps = {
 	onChange: (category: EquipmentCategory, equipmentId: string | null) => void;
 };
 
-function EquipmentSelectRow({ category, selectedId, onChange }: EquipmentSelectRowProps) {
+function EquipmentSelectRow(
+	{ category, selectedId, onChange }: EquipmentSelectRowProps,
+) {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
 	const equipments = equipmentsByType[category] ?? [];
-	const selectedEquipment = selectedId ? equipments.find((item) => item.id === selectedId) : null;
+	const selectedEquipment = selectedId
+		? equipments.find((item) => item.id === selectedId)
+		: null;
 
 	const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === "Escape" || event.key === "Tab") {
@@ -326,24 +520,33 @@ function EquipmentSelectRow({ category, selectedId, onChange }: EquipmentSelectR
 	const filteredEquipments = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 		if (!normalizedQuery) return equipments;
-		return equipments.filter((equipment) => equipment.name.toLowerCase().includes(normalizedQuery));
+		return equipments.filter((equipment) =>
+			equipment.name.toLowerCase().includes(normalizedQuery)
+		);
 	}, [equipments, query]);
+
+	const isEmptySelection = !selectedEquipment;
 
 	return (
 		<div className="space-y-1">
 			<div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
 				<span>{EQUIPMENT_CATEGORY_LABELS[category]}</span>
-				{selectedEquipment ? (
-					<div className="flex flex-wrap justify-end gap-1">
-						{getEquipmentHighlights(selectedEquipment).map((highlight) => (
-							<Badge key={`${selectedEquipment.id}-${highlight.key}`} variant="outline" className="text-[10px] uppercase tracking-[0.2em]">
-								{ATTRIBUTE_LABELS[highlight.key].slice(0, 4)} +{formatNumber(highlight.value)}
-							</Badge>
-						))}
-					</div>
-				) : (
-					<span className="text-muted-foreground/70">None</span>
-				)}
+				{selectedEquipment
+					? (
+						<div className="flex flex-wrap justify-end gap-1">
+							{getEquipmentHighlights(selectedEquipment).map((highlight) => (
+								<Badge
+									key={`${selectedEquipment.id}-${highlight.key}`}
+									variant="outline"
+									className="text-[10px] uppercase tracking-[0.2em]"
+								>
+									{ATTRIBUTE_LABELS[highlight.key].slice(0, 4)}{" "}
+									+{formatNumber(highlight.value)}
+								</Badge>
+							))}
+						</div>
+					)
+					: <span className="text-muted-foreground/70">None</span>}
 			</div>
 			<Select
 				value={selectedId ?? "none"}
@@ -354,21 +557,21 @@ function EquipmentSelectRow({ category, selectedId, onChange }: EquipmentSelectR
 						setQuery("");
 					}
 				}}
-				onValueChange={(next) => onChange(category, next === "none" ? null : (next as string))}
+				onValueChange={(next) =>
+					onChange(category, next === "none" ? null : (next as string))}
 			>
-				<SelectTrigger className="bg-background/90 w-full">
+				<SelectTrigger
+					className={`bg-background/90 w-full ${isEmptySelection ? "text-muted-foreground/70" : ""}`}
+				>
 					<SelectValue placeholder={`Select ${titleCase(category)}`} />
 				</SelectTrigger>
-				<SelectContent className="max-h-80 space-y-1">
-					<div className="px-3 pt-3">
-						<Input
-							value={query}
-							onChange={(event) => setQuery(event.currentTarget.value)}
-							placeholder="Search equipment..."
-							className="h-8"
-							onKeyDown={handleSearchKeyDown}
-						/>
-					</div>
+				<SelectContent
+					className="max-h-80 space-y-1"
+					searchValue={query}
+					onSearchValueChange={setQuery}
+					searchPlaceholder="Search equipment..."
+					onSearchKeyDown={handleSearchKeyDown}
+				>
 					<SelectItem value="none">Empty</SelectItem>
 					{filteredEquipments.map((equipment) => (
 						<SelectItem key={equipment.id} value={equipment.id}>
@@ -377,9 +580,225 @@ function EquipmentSelectRow({ category, selectedId, onChange }: EquipmentSelectR
 							</div>
 						</SelectItem>
 					))}
-					{!filteredEquipments.length && <div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">No matches</div>}
+					{!filteredEquipments.length && (
+						<div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+							No matches
+						</div>
+					)}
 				</SelectContent>
 			</Select>
+		</div>
+	);
+}
+
+type PassivesConfigProps = {
+	slot: TeamBuilderSlot;
+	value: SlotPassives;
+	onChange: (value: SlotPassives) => void;
+	className?: string;
+};
+
+type PassivePresetRule = {
+	id: string;
+	label: string;
+	helper?: string;
+	options: PassiveRecord[];
+};
+
+function PassivesConfig(
+	{ slot, value, onChange, className }: PassivesConfigProps,
+) {
+	const presetRules = useMemo(() => getPassivePresetRules(slot.kind), [
+		slot.kind,
+	]);
+	const customRule = useMemo(() => getCustomPassiveRule(), []);
+
+	const handlePresetChange = (
+		index: number,
+		nextPreset: SlotPassives["presets"][number],
+	) => {
+		const nextPresets = value.presets.map((
+			entry,
+			idx,
+		) => (idx === index ? nextPreset : entry)) as SlotPassives["presets"];
+		onChange({ ...value, presets: nextPresets });
+	};
+
+	const handleCustomChange = (nextPreset: SlotPassives["custom"]) => {
+		onChange({
+			...value,
+			custom: nextPreset,
+		});
+	};
+
+	return (
+		<div className={`space-y-3 ${className ?? ""}`}>
+			{presetRules.map((rule, index) => (
+				<PassiveSelectRow
+					key={rule.id}
+					rule={rule}
+					preset={value.presets[index]}
+					onChange={(nextPreset) => handlePresetChange(index, nextPreset)}
+				/>
+			))}
+			<PassiveSelectRow
+				rule={customRule}
+				preset={value.custom}
+				onChange={handleCustomChange}
+			/>
+		</div>
+	);
+}
+
+type PassiveSelectRowProps = {
+	rule: PassivePresetRule;
+	preset: SlotPassives["presets"][number] | SlotPassives["custom"];
+	onChange: (
+		next: SlotPassives["presets"][number] | SlotPassives["custom"],
+	) => void;
+};
+
+function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
+	const [open, setOpen] = useState(false);
+	const [query, setQuery] = useState("");
+	const selectedPassive = preset.passiveId
+		? passivesById.get(preset.passiveId) ?? null
+		: null;
+	const filteredOptions = useMemo(() => {
+		const normalized = query.trim().toLowerCase();
+		if (!normalized) {
+			return rule.options;
+		}
+
+		const matches = rule.options.filter((option) => {
+			return option.description.toLowerCase().includes(normalized) ||
+				String(option.id).includes(normalized);
+		});
+
+		if (
+			selectedPassive &&
+			!matches.some((option) => option.id === selectedPassive.id)
+		) {
+			// Keep the currently selected passive in the list so Radix Select
+			// doesn't lose track of the active item and blur the search input.
+			return [selectedPassive, ...matches];
+		}
+
+		return matches;
+	}, [query, rule.options, selectedPassive]);
+
+	const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === "Escape" || event.key === "Tab") {
+			return;
+		}
+		event.stopPropagation();
+		event.nativeEvent.stopImmediatePropagation();
+	};
+
+	const handleSelectChange = (nextValue: string) => {
+		if (nextValue === "none") {
+			onChange({ passiveId: null, value: 0 });
+			return;
+		}
+		const passiveId = String(nextValue);
+		const passive = passivesById.get(passiveId);
+		onChange({
+			passiveId,
+			value: clampPassiveValue(passive?.strongValue ?? 0),
+		});
+	};
+
+	const handleValueChange = (eventValue: string) => {
+		if (!selectedPassive) {
+			return;
+		}
+		onChange({
+			...preset,
+			value: clampPassiveValue(Number(eventValue)),
+		});
+	};
+
+	const isEmptySelection = !selectedPassive;
+	const isPercentagePassive = Boolean(
+		selectedPassive?.description?.includes("%"),
+	);
+
+	return (
+		<div className="space-y-2">
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+				<div className="flex-1 space-y-1">
+					<Select
+						value={preset.passiveId ? String(preset.passiveId) : "none"}
+						open={open}
+						onOpenChange={(next) => {
+							setOpen(next);
+							if (!next) {
+								setQuery("");
+							}
+						}}
+						onValueChange={handleSelectChange}
+					>
+						<SelectTrigger
+							className={`bg-background/90 w-full !h-full whitespace-normal *:data-[slot=select-value]:line-clamp-none *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words ${isEmptySelection ? "text-muted-foreground/70" : ""}`}
+						>
+							{selectedPassive
+								? <PassiveSelectValue passive={selectedPassive} />
+								: <SelectValue placeholder="Select passive" />}
+						</SelectTrigger>
+						<SelectContent
+							className="max-h-80 space-y-1"
+							searchValue={query}
+							onSearchValueChange={setQuery}
+							searchPlaceholder="Search by name or ID"
+							onSearchKeyDown={handleSearchKeyDown}
+						>
+							<SelectItem value="none">Empty</SelectItem>
+							{filteredOptions.map((passive) => (
+								<SelectItem key={passive.id} value={String(passive.id)}>
+									<PassiveSelectValue passive={passive} />
+								</SelectItem>
+							))}
+							{!filteredOptions.length && (
+								<div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+									No matches
+								</div>
+							)}
+						</SelectContent>
+					</Select>
+				</div>
+				<div className="relative">
+					<Input
+						type="number"
+						step={0.1}
+						min={-999}
+						max={999}
+						value={preset.value}
+						disabled={!selectedPassive}
+						hideSpinButtons
+						className={`max-w-20 bg-background/90 sm:self-center ${isPercentagePassive ? "pr-6" : ""}`}
+						onChange={(event) => handleValueChange(event.currentTarget.value)}
+					/>
+					{isPercentagePassive
+						? (
+							<span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+								%
+							</span>
+						)
+						: null}
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function PassiveSelectValue({ passive }: { passive: PassiveRecord }) {
+	return (
+		<div className="flex flex-col text-left leading-tight break-words">
+			<span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+				{passive.buildType ? `[${passive.buildType}] ` : ""}{" "}
+				Passive #{passive.number}
+			</span>
+			<span className="text-xs">{passive.description}</span>
 		</div>
 	);
 }
@@ -398,10 +817,16 @@ function BeansConfig({ value, onChange }: BeansConfigProps) {
 
 	return (
 		<div className="space-y-2 rounded-lg border bg-background/80 p-3">
-			<div className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Beans</div>
+			<div className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+				Beans
+			</div>
 			<div className="space-y-2">
 				{slots.map(({ slotId, bean, index }) => (
-					<BeanRow key={slotId} bean={bean} onChange={(next) => onChange(index, next)} />
+					<BeanRow
+						key={slotId}
+						bean={bean}
+						onChange={(next) => onChange(index, next)}
+					/>
 				))}
 			</div>
 		</div>
@@ -430,20 +855,29 @@ function BeanRow({ bean, onChange }: BeanRowProps) {
 
 	const beanColor = bean.attribute ? BEAN_COLORS[bean.attribute] : "#9ca3af";
 
+	const isEmptyBean = !bean.attribute;
+
 	return (
 		<div className="space-y-2 rounded-lg border bg-card/30 p-2">
 			<div className="flex flex-col gap-2 sm:flex-row">
-				<Select value={bean.attribute ?? "none"} onValueChange={handleAttributeChange}>
-					<SelectTrigger className="bg-background/90 w-full">
+				<Select
+					value={bean.attribute ?? "none"}
+					onValueChange={handleAttributeChange}
+				>
+					<SelectTrigger
+						className={`bg-background/90 w-full ${isEmptyBean ? "text-muted-foreground/70" : ""}`}
+					>
 						<SelectValue placeholder="Pick attribute">
-							{bean.attribute ? (
-								<div className="flex items-center gap-2">
-									<Bean className="size-4" style={{ color: beanColor }} />
-									<span>{ATTRIBUTE_LABELS[bean.attribute]}</span>
-								</div>
-							) : (
-								"Pick attribute"
-							)}
+							{bean.attribute
+								? (
+									<div className="flex items-center gap-2">
+										<Bean className="size-4" style={{ color: beanColor }} />
+										<span>{ATTRIBUTE_LABELS[bean.attribute]}</span>
+									</div>
+								)
+								: (
+									"Pick attribute"
+								)}
 						</SelectValue>
 					</SelectTrigger>
 					<SelectContent>
@@ -456,7 +890,10 @@ function BeanRow({ bean, onChange }: BeanRowProps) {
 						{ATTRIBUTE_KEYS.map((key) => (
 							<SelectItem key={key} value={key}>
 								<div className="flex items-center gap-2">
-									<Bean className="size-4" style={{ color: BEAN_COLORS[key] }} />
+									<Bean
+										className="size-4"
+										style={{ color: BEAN_COLORS[key] }}
+									/>
 									<span>{ATTRIBUTE_LABELS[key]}</span>
 								</div>
 							</SelectItem>
@@ -464,7 +901,9 @@ function BeanRow({ bean, onChange }: BeanRowProps) {
 					</SelectContent>
 				</Select>
 				<div className="relative flex items-center w-[150px]">
-					<span className="absolute left-2 text-emerald-600 font-bold select-none pointer-events-none">+</span>
+					<span className="absolute left-2 text-emerald-600 font-bold select-none pointer-events-none">
+						+
+					</span>
 					<Input
 						type="number"
 						min={0}
@@ -495,4 +934,66 @@ function getEquipmentHighlights(equipment: EquipmentRecord) {
 			return a.key.localeCompare(b.key);
 		})
 		.slice(0, 2);
+}
+
+function getPassivePresetRules(
+	slotKind: TeamBuilderSlot["kind"],
+): PassivePresetRule[] {
+	if (slotKind === "manager") {
+		return createUniformPassiveRules("Manager Passive", passivesByType.manager);
+	}
+	if (slotKind === "coordinator") {
+		return createUniformPassiveRules(
+			"Support Passive",
+			passivesByType.coordinator,
+		);
+	}
+	return [
+		{
+			id: "general-1",
+			label: "General Passive 1",
+			helper: "Player Passive",
+			options: playerGeneralPassives,
+		},
+		{
+			id: "general-2",
+			label: "General Passive 2",
+			options: playerGeneralPassives,
+		},
+		{
+			id: "general-3",
+			label: "General Passive 3",
+			options: playerGeneralPassives,
+		},
+		{
+			id: "build-1",
+			label: "Build Passive 1",
+			options: playerBuildPassives,
+		},
+		{
+			id: "build-2",
+			label: "Build Passive 2",
+			options: playerBuildPassives,
+		},
+	];
+}
+
+function getCustomPassiveRule(): PassivePresetRule {
+	return {
+		id: "custom-passive",
+		label: "Custom Passive",
+		helper: "Custom Passive",
+		options: customPassives,
+	};
+}
+
+function createUniformPassiveRules(
+	label: string,
+	options: PassiveRecord[],
+): PassivePresetRule[] {
+	return Array.from({ length: PASSIVE_PRESET_SLOTS }, (_, index) => ({
+		id: `${label}-${index + 1}`,
+		label: `${label} ${index + 1}`,
+		options,
+	}));
 }

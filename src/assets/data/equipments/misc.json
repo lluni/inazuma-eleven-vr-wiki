@@ -8,7 +8,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M1"
   },
   {
     "Name": "Penguin Charm",
@@ -19,7 +20,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M2"
   },
   {
     "Name": "Sleek Glasses",
@@ -30,7 +32,8 @@
     "Physical": 4,
     "Intelligence": 5,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M3"
   },
   {
     "Name": "Cooling Brace",
@@ -41,7 +44,8 @@
     "Physical": "",
     "Intelligence": 6,
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M4"
   },
   {
     "Name": "Sports Glasses",
@@ -52,7 +56,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 3,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M5"
   },
   {
     "Name": "Fiery Keychain",
@@ -63,7 +68,8 @@
     "Physical": 5,
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M6"
   },
   {
     "Name": "Headband of Motivation",
@@ -74,7 +80,8 @@
     "Physical": 6,
     "Intelligence": "",
     "Agility": 4,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M7"
   },
   {
     "Name": "Dragon Sticker",
@@ -85,7 +92,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M8"
   },
   {
     "Name": "Dragon Keychain",
@@ -96,7 +104,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M9"
   },
   {
     "Name": "Sports Goggles",
@@ -107,7 +116,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M10"
   },
   {
     "Name": "Metal Ring",
@@ -118,7 +128,8 @@
     "Physical": 13,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M11"
   },
   {
     "Name": "Defiance Headband",
@@ -129,7 +140,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 13,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M12"
   },
   {
     "Name": "Wonderbot Keychain",
@@ -140,7 +152,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M13"
   },
   {
     "Name": "Omega Bangle",
@@ -151,7 +164,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M14"
   },
   {
     "Name": "Deluxe Oden Charm",
@@ -162,7 +176,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M15"
   },
   {
     "Name": "Ambrosia Replica",
@@ -173,7 +188,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M16"
   },
   {
     "Name": "Gutsy Headband",
@@ -184,7 +200,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 17,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M17"
   },
   {
     "Name": "Supreme Brace",
@@ -195,7 +212,8 @@
     "Physical": 21,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M18"
   },
   {
     "Name": "Caravan Keychain",
@@ -206,7 +224,8 @@
     "Physical": 20,
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M19"
   },
   {
     "Name": "Endo's Headband",
@@ -217,7 +236,8 @@
     "Physical": 21,
     "Intelligence": "",
     "Agility": 20,
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M20"
   },
   {
     "Name": "Kido's Goggles",
@@ -228,7 +248,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Chronicle"
+    "Shop": "Chronicle",
+    "id": "M21"
   },
   {
     "Name": "Simple Headband",
@@ -239,7 +260,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M22"
   },
   {
     "Name": "Rebel Sunglasses",
@@ -250,7 +272,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M23"
   },
   {
     "Name": "Cat-Ear Headband",
@@ -261,7 +284,8 @@
     "Physical": "",
     "Intelligence": 4,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M24"
   },
   {
     "Name": "Rusted Ring",
@@ -272,7 +296,8 @@
     "Physical": 6,
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M25"
   },
   {
     "Name": "Simple Wristband",
@@ -283,7 +308,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 6,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M26"
   },
   {
     "Name": "Comfy Socks",
@@ -294,7 +320,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M27"
   },
   {
     "Name": "Exotic Goggles",
@@ -305,7 +332,8 @@
     "Physical": 10,
     "Intelligence": 11,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M28"
   },
   {
     "Name": "Scholar's Glasses",
@@ -316,7 +344,8 @@
     "Physical": "",
     "Intelligence": 13,
     "Agility": "",
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M29"
   },
   {
     "Name": "Rose Sticker",
@@ -327,7 +356,8 @@
     "Physical": "",
     "Intelligence": 12,
     "Agility": 10,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M30"
   },
   {
     "Name": "Wristband of Victory",
@@ -338,7 +368,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 12,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M31"
   },
   {
     "Name": "Sports Bandage",
@@ -349,7 +380,8 @@
     "Physical": 13,
     "Intelligence": "",
     "Agility": 11,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M32"
   },
   {
     "Name": "Neo Sports Glasses",
@@ -360,7 +392,8 @@
     "Physical": "",
     "Intelligence": 21,
     "Agility": 17,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M33"
   },
   {
     "Name": "Speed Glasses",
@@ -371,7 +404,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 21,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M34"
   },
   {
     "Name": "Penguin Snow Dome",
@@ -382,7 +416,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 22,
-    "Shop": "VS"
+    "Shop": "VS",
+    "id": "M35"
   },
   {
     "Name": "Endo Talisman",
@@ -393,7 +428,8 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": 35,
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "M36"
   },
   {
     "Name": "Pegasus Sticker",
@@ -404,6 +440,7 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Bond"
+    "Shop": "Bond",
+    "id": "M37"
   }
 ]
