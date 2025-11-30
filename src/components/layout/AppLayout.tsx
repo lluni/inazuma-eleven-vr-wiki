@@ -1,26 +1,10 @@
-import {
-	Github,
-	Languages,
-	Moon,
-	Shirt,
-	Sparkles,
-	Sun,
-	Swords,
-	Users,
-	Wind,
-} from "lucide-react";
 import { useAtom } from "jotai";
+import { Github, Languages, Moon, Shirt, Sparkles, Sun, Swords, Users, Wind } from "lucide-react";
 import { useEffect } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { ChangelogNoticeboard } from "@/components/changelog/ChangelogNoticeboard";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
 	Sidebar,
 	SidebarContent,
@@ -37,8 +21,8 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { themePreferenceAtom } from "@/store/theme";
 import { playerNamePreferenceAtom } from "@/store/name-preference";
+import { themePreferenceAtom } from "@/store/theme";
 
 // Helper function to get page title based on current route
 function getPageTitle(pathname: string): string {
@@ -54,7 +38,7 @@ function getPageTitle(pathname: string): string {
 	if (pathname.startsWith("/team-builder")) {
 		return "Team Builder";
 	}
-	return "Inazuma Eleven Guide";
+	return "StatFrame - Inazuma Eleven VC";
 }
 
 export default function AppLayout() {
@@ -74,20 +58,14 @@ export default function AppLayout() {
 		root.style.setProperty("color-scheme", isDarkMode ? "dark" : "light");
 		const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 		if (themeColorMeta) {
-			themeColorMeta.setAttribute(
-				"content",
-				isDarkMode ? "#0b1017" : "#f4f1ec",
-			);
+			themeColorMeta.setAttribute("content", isDarkMode ? "#0b1017" : "#f4f1ec");
 		}
 	}, [isDarkMode, theme]);
-	const handleThemeToggle = () =>
-		setTheme((current) => (current === "dark" ? "light" : "dark"));
-	const handleNamePreferenceToggle = () =>
-		setNamePreference((current) => (current === "romaji" ? "dub" : "romaji"));
+	const handleThemeToggle = () => setTheme((current) => (current === "dark" ? "light" : "dark"));
+	const handleNamePreferenceToggle = () => setNamePreference((current) => (current === "romaji" ? "dub" : "romaji"));
 	const faviconUrl = `${import.meta.env.BASE_URL}favicon/favicon.svg`;
 	const elementsSheetUrl = `${import.meta.env.BASE_URL}assets/elements-table.jpg`;
-	const playersActive =
-		location.pathname === "/" || location.pathname.startsWith("/players");
+	const playersActive = location.pathname === "/" || location.pathname.startsWith("/players");
 	const equipmentsActive = location.pathname.startsWith("/equipments");
 	const hissatsuActive = location.pathname.startsWith("/hissatsu");
 	const teamBuilderActive = location.pathname.startsWith("/team-builder");
@@ -97,16 +75,10 @@ export default function AppLayout() {
 				<SidebarHeader>
 					<div className="flex items-center gap-2 px-2 py-1.5">
 						<div className="flex aspect-square size-7 items-center justify-center">
-							<img
-								src={faviconUrl}
-								alt="Inazuma Eleven Guide"
-								className="size-7"
-							/>
+							<img src={faviconUrl} alt="StatFrame - Inazuma Eleven VC" className="size-7" />
 						</div>
 						<div className="grid flex-1 text-left text-sm leading-tight">
-							<span className="truncate font-semibold">
-								Inazuma Eleven Guide
-							</span>
+							<span className="truncate font-semibold">StatFrame - Inazuma Eleven</span>
 							<span className="truncate text-xs">Reference Sheets</span>
 						</div>
 					</div>
@@ -155,23 +127,14 @@ export default function AppLayout() {
 				<SidebarFooter>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton
-								type="button"
-								onClick={handleThemeToggle}
-								aria-pressed={isDarkMode}
-								title={`Switch to ${nextThemeLabel} theme`}
-							>
+							<SidebarMenuButton type="button" onClick={handleThemeToggle} aria-pressed={isDarkMode} title={`Switch to ${nextThemeLabel} theme`}>
 								{isDarkMode ? <Moon /> : <Sun />}
 								<span>{isDarkMode ? "Dark theme" : "Light theme"}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 						<SidebarMenuItem>
 							<SidebarMenuButton asChild>
-								<a
-									href="https://github.com/vitorfdl/game-inazuma-eleven"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
+								<a href="https://github.com/vitorfdl/game-inazuma-eleven" target="_blank" rel="noopener noreferrer">
 									<Github />
 									<span>Contribute on GitHub</span>
 								</a>
@@ -185,9 +148,7 @@ export default function AppLayout() {
 					<SidebarTrigger className="-ml-1" />
 					<div className="h-10 w-px bg-border/70" />
 					<div className="flex flex-1 flex-col justify-center">
-						<span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground/80">
-							{getPageTitle(location.pathname)}
-						</span>
+						<span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground/80">{getPageTitle(location.pathname)}</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<Skeleton className="hidden h-11 w-full max-w-xl rounded-full lg:block" />
@@ -198,32 +159,17 @@ export default function AppLayout() {
 							className="h-10 gap-2 px-3"
 							onClick={handleNamePreferenceToggle}
 							aria-pressed={isRomajiEnabled}
-							title={
-								isRomajiEnabled
-									? "Switch to English dub names"
-									: "Switch to JP romaji names"
-							}
+							title={isRomajiEnabled ? "Switch to English dub names" : "Switch to JP romaji names"}
 						>
 							<Languages className="size-4" />
-							<span className="text-xs font-semibold uppercase tracking-wide">
-								JP Names
-							</span>
-							<span className="text-[10px] font-bold tracking-wide">
-								{isRomajiEnabled ? "ON" : "OFF"}
-							</span>
+							<span className="text-xs font-semibold uppercase tracking-wide">JP Names</span>
+							<span className="text-[10px] font-bold tracking-wide">{isRomajiEnabled ? "ON" : "OFF"}</span>
 						</Button>
 						<Dialog>
 							<DialogTrigger asChild>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									className="h-10 gap-2 px-3"
-								>
+								<Button type="button" variant="outline" size="sm" className="h-10 gap-2 px-3">
 									<Wind className="size-4" />
-									<span className="text-xs font-semibold uppercase tracking-wide">
-										Elements Sheet
-									</span>
+									<span className="text-xs font-semibold uppercase tracking-wide">Elements Sheet</span>
 								</Button>
 							</DialogTrigger>
 							<DialogContent className="!max-w-3xl">
@@ -231,11 +177,7 @@ export default function AppLayout() {
 									<DialogTitle>Elements Interaction Sheet</DialogTitle>
 								</DialogHeader>
 								<div className="">
-									<img
-										src={elementsSheetUrl}
-										alt="Elements interaction sheet"
-										className="h-auto w-full rounded-md shadow-sm"
-									/>
+									<img src={elementsSheetUrl} alt="Elements interaction sheet" className="h-auto w-full rounded-md shadow-sm" />
 								</div>
 							</DialogContent>
 						</Dialog>
