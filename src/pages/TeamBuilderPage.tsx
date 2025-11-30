@@ -960,15 +960,7 @@ function PassiveOptionsPanel(
 
 	return (
 		<div className="space-y-3 rounded-lg border border-border/70 bg-card/60 p-3">
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div className="space-y-1">
-					<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-						Passive calculations
-					</p>
-					<p className="text-xs text-muted-foreground">
-						Apply configured passives and optional conditions to slot stats.
-					</p>
-				</div>
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 				<button
 					type="button"
 					role="switch"
@@ -992,6 +984,14 @@ function PassiveOptionsPanel(
 						{options.enabled ? "ON" : "OFF"}
 					</span>
 				</button>
+				<div className="space-y-1">
+					<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+						Passive calculations
+					</p>
+					<p className="text-xs text-muted-foreground">
+						Apply configured passives and optional conditions to slot stats.
+					</p>
+				</div>
 			</div>
 			{options.enabled
 				? PASSIVE_CONDITION_OPTIONS.length
