@@ -5,6 +5,7 @@
   - Fixed an issue where exporting an image of the team would generate an image that was cut in half or sometimes had repeated player images.
   - Added a dropdown that supports six-team slot formations.
   - Shared Teams can now be imported into a chosen team slot.
+  - Redesign the pitch to be more cell-shaded and to match Inazuma Eleven style.
 
 # Version 1.3.3 - 2025-11-30
 - Players Page:
