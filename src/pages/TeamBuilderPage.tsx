@@ -1,9 +1,9 @@
 import { DndContext, type DragCancelEvent, type DragEndEvent, DragOverlay, type DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { toPng } from "html-to-image";
 import { useAtom, useAtomValue } from "jotai";
-import { Activity, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Activity, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FormationPitch, ReservesRail, SlotCard } from "@/components/team-builder/FormationPitch";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
@@ -11,26 +11,20 @@ import { SlotDetailsDrawer } from "@/components/team-builder/SlotDetailsDrawer";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { formatNumber } from "@/lib/data-helpers";
 import { FORMATIONS, type FormationDefinition, formationsMap } from "@/data/formations";
 import { EXTRA_SLOT_IDS, EXTRA_TEAM_SLOTS } from "@/data/team-builder-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getPlayersById, getPlayersDataset, type PlayerRecord } from "@/lib/players-data";
-import { PASSIVE_CONDITION_OPTIONS, type PassiveConditionOption, computePassiveImpacts } from "@/lib/passive-calculations";
+import { formatNumber } from "@/lib/data-helpers";
+import { computePassiveImpacts, PASSIVE_CONDITION_OPTIONS, type PassiveConditionOption } from "@/lib/passive-calculations";
 import { passivesById } from "@/lib/passives-data";
+import { getPlayersById, getPlayersDataset, type PlayerRecord } from "@/lib/players-data";
 import { addPowerStats, clonePowerStats } from "@/lib/power-utils";
 import { computeSlotComputedStats } from "@/lib/team-builder-calculations";
 import { DISPLAY_MODE_OPTIONS } from "@/lib/team-builder-display";
-import {
-	countAssignedPlayers,
-	DEFAULT_FILTERS,
-	extendFormationSlot,
-	getPositionSortValue,
-	pickExtraAssignments,
-	pickExtraSlotConfigs,
-} from "@/lib/team-builder-ui";
+import { countAssignedPlayers, extendFormationSlot, getPositionSortValue, pickExtraAssignments, pickExtraSlotConfigs } from "@/lib/team-builder-ui";
 import { decodeTeamShareState, encodeTeamShareState, TEAM_SHARE_QUERY_KEY } from "@/lib/team-share";
 import { favoritePlayersAtom } from "@/store/favorites";
+import { playerNamePreferenceAtom } from "@/store/name-preference";
 import {
 	DEFAULT_PASSIVE_OPTIONS,
 	type DisplayMode,
@@ -42,8 +36,7 @@ import {
 	type TeamBuilderState,
 	teamBuilderAtom,
 } from "@/store/team-builder";
-import { playerNamePreferenceAtom } from "@/store/name-preference";
-import type { FiltersState, SlotAssignment, SlotConfig, TeamBuilderSlot } from "@/types/team-builder";
+import type { SlotAssignment, SlotConfig, TeamBuilderSlot } from "@/types/team-builder";
 
 type ShareCopyState = "idle" | "copied" | "error";
 
@@ -121,15 +114,8 @@ export default function TeamBuilderPage() {
 	const [teamState, setTeamState] = useAtom(teamBuilderAtom);
 	const favoritePlayerIds = useAtomValue(favoritePlayersAtom);
 	const namePreference = useAtomValue(playerNamePreferenceAtom);
-	const playersDataset = useMemo(
-		() => getPlayersDataset(namePreference),
-		[namePreference],
-	);
-	const playersById = useMemo(
-		() => getPlayersById(namePreference),
-		[namePreference],
-	);
-	const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
+	const playersDataset = useMemo(() => getPlayersDataset(namePreference), [namePreference]);
+	const playersById = useMemo(() => getPlayersById(namePreference), [namePreference]);
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const [detailsOpen, setDetailsOpen] = useState(false);
 	const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
@@ -281,13 +267,7 @@ export default function TeamBuilderPage() {
 				},
 			};
 		});
-	}, [
-		allSlots,
-		effectiveState.assignments,
-		effectiveState.slotConfigs,
-		passiveOptions,
-		playersById,
-	]);
+	}, [allSlots, effectiveState.assignments, effectiveState.slotConfigs, passiveOptions, playersById]);
 	const assignmentsById = useMemo(() => new Map(allAssignments.map((entry) => [entry.slot.id, entry])), [allAssignments]);
 	const starterAssignments = allAssignments.filter((entry) => entry.slot.kind === "starter");
 	const reserveAssignments = allAssignments.filter((entry) => entry.slot.kind === "reserve");
@@ -307,40 +287,16 @@ export default function TeamBuilderPage() {
 	const activeDragEntry = activeDragSlotId ? (assignmentsById.get(activeDragSlotId) ?? null) : null;
 	const isDragActive = Boolean(activeDragSlotId);
 
-	const matchesActiveFilters = useCallback(
-		(player: PlayerRecord) => {
-			if (!activeSlot) return false;
-			const query = filters.search.trim().toLowerCase();
-			if (filters.position !== "all" && player.position !== filters.position) return false;
-			if (filters.element !== "all" && player.element !== filters.element) {
-				return false;
-			}
-			if (filters.role !== "all" && player.role !== filters.role) {
-				return false;
-			}
-			if (query && !player.name.toLowerCase().includes(query) && !player.nickname.toLowerCase().includes(query)) {
-				return false;
-			}
-			return true;
-		},
-		[activeSlot, filters.element, filters.position, filters.role, filters.search],
-	);
-
-	const filteredPlayers = useMemo(() => {
+	const favoritePlayersList = useMemo(() => {
 		return playersDataset
-			.filter((player) => matchesActiveFilters(player))
+			.filter((player) => favoriteSet.has(player.id))
 			.slice()
 			.sort((a, b) => {
 				const byPosition = getPositionSortValue(a.position) - getPositionSortValue(b.position);
 				if (byPosition !== 0) return byPosition;
 				return b.stats.total - a.stats.total;
 			});
-	}, [matchesActiveFilters, playersDataset]);
-
-	const favoriteOptions = useMemo(() => {
-		if (!activeSlot) return [];
-		return playersDataset.filter((player) => favoriteSet.has(player.id) && matchesActiveFilters(player));
-	}, [activeSlot, favoriteSet, matchesActiveFilters, playersDataset]);
+	}, [favoriteSet, playersDataset]);
 
 	const handleFormationChange = (formationId: FormationDefinition["id"]) => {
 		if (isPreviewingSharedTeam) return;
@@ -471,10 +427,6 @@ export default function TeamBuilderPage() {
 		setDetailsOpen(false);
 	};
 
-	const handleResetFilters = () => {
-		setFilters(DEFAULT_FILTERS);
-	};
-
 	const handlePassiveEnabledChange = (enabled: boolean) => {
 		if (isPreviewingSharedTeam) return;
 		setTeamState((prev) => {
@@ -489,16 +441,12 @@ export default function TeamBuilderPage() {
 		});
 	};
 
-	const handlePassiveConditionToggle = (
-		condition: PassiveConditionOption["type"],
-	) => {
+	const handlePassiveConditionToggle = (condition: PassiveConditionOption["type"]) => {
 		if (isPreviewingSharedTeam) return;
 		setTeamState((prev) => {
 			const prevOptions = prev.passiveOptions ?? DEFAULT_PASSIVE_OPTIONS;
 			const hasCondition = prevOptions.activeConditions.includes(condition);
-			const nextConditions = hasCondition
-				? prevOptions.activeConditions.filter((entry) => entry !== condition)
-				: [...prevOptions.activeConditions, condition];
+			const nextConditions = hasCondition ? prevOptions.activeConditions.filter((entry) => entry !== condition) : [...prevOptions.activeConditions, condition];
 			return {
 				...prev,
 				passiveOptions: {
@@ -806,15 +754,12 @@ export default function TeamBuilderPage() {
 				open={pickerOpen && !isPreviewingSharedTeam}
 				activeSlot={activeSlot}
 				favoriteSet={favoriteSet}
-				favoritePlayers={favoriteOptions}
+				favoritePlayers={favoritePlayersList}
 				onOpenChange={(open) => {
 					setPickerOpen(open);
 				}}
 				assignedIds={assignedPlayerIds}
-				filteredPlayers={filteredPlayers}
-				filters={filters}
-				onFiltersChange={setFilters}
-				onResetFilters={handleResetFilters}
+				playersDataset={playersDataset}
 				onSelectPlayer={handleAssignPlayer}
 				onClearSlot={() => {
 					if (activeSlot) {
@@ -837,8 +782,7 @@ export default function TeamBuilderPage() {
 									const highlight = getPassiveHighlight(entry.description);
 									const HighlightIcon = highlight.Icon;
 									const formattedValue = formatSignedPercent(entry.totalValue);
-									const valueColor =
-										entry.totalValue >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300";
+									const valueColor = entry.totalValue >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300";
 
 									return (
 										<div
@@ -855,9 +799,7 @@ export default function TeamBuilderPage() {
 													</div>
 													<div className="flex-1 space-y-1">
 														<div className="flex items-center justify-between gap-3">
-															<span className={`text-[10px] font-semibold uppercase tracking-[0.35em] ${highlight.colorClass}`}>
-																{highlight.label}
-															</span>
+															<span className={`text-[10px] font-semibold uppercase tracking-[0.35em] ${highlight.colorClass}`}>{highlight.label}</span>
 															<span className={`text-sm font-semibold ${valueColor}`}>{formattedValue}</span>
 														</div>
 														<p className="text-sm font-semibold leading-snug text-foreground">{entry.renderedDescription}</p>
@@ -956,9 +898,7 @@ type PassiveOptionsPanelProps = {
 	onToggleCondition: (condition: PassiveConditionOption["type"]) => void;
 };
 
-function PassiveOptionsPanel(
-	{ options, disabled, onToggleEnabled, onToggleCondition }: PassiveOptionsPanelProps,
-) {
+function PassiveOptionsPanel({ options, disabled, onToggleEnabled, onToggleCondition }: PassiveOptionsPanelProps) {
 	const handleSwitchClick = () => {
 		if (disabled) return;
 		onToggleEnabled(!options.enabled);
@@ -987,84 +927,59 @@ function PassiveOptionsPanel(
 				>
 					<span
 						className={`inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white text-[10px] font-bold transition-all dark:bg-slate-950 ${
-							options.enabled
-								? "translate-x-7 text-emerald-800 dark:text-emerald-200"
-								: "translate-x-1 text-slate-500 dark:text-slate-400"
+							options.enabled ? "translate-x-7 text-emerald-800 dark:text-emerald-200" : "translate-x-1 text-slate-500 dark:text-slate-400"
 						}`}
 					>
 						{options.enabled ? "ON" : "OFF"}
 					</span>
 				</button>
 				<div className="space-y-1">
-					<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-						Passive calculations
-					</p>
-					<p className="text-xs text-muted-foreground">
-						Apply configured passives and optional conditions to slot stats.
-					</p>
+					<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Passive calculations</p>
+					<p className="text-xs text-muted-foreground">Apply configured passives and optional conditions to slot stats.</p>
 				</div>
 			</div>
-			{options.enabled
-				? PASSIVE_CONDITION_OPTIONS.length
-					? (
-						<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-							{PASSIVE_CONDITION_OPTIONS.map((condition) => {
-								const checked = options.activeConditions.includes(condition.type);
-								return (
-									<label
-										key={condition.type}
-										className={`flex items-start gap-2 rounded-md border px-2 py-1.5 transition ${
+			{options.enabled ? (
+				PASSIVE_CONDITION_OPTIONS.length ? (
+					<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+						{PASSIVE_CONDITION_OPTIONS.map((condition) => {
+							const checked = options.activeConditions.includes(condition.type);
+							return (
+								<label
+									key={condition.type}
+									className={`flex items-start gap-2 rounded-md border px-2 py-1.5 transition ${
+										checked
+											? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-[0_8px_20px_rgba(16,185,129,0.18)] dark:border-emerald-400 dark:bg-emerald-500/10 dark:text-emerald-100"
+											: "border-slate-200 bg-white/90 text-slate-700 dark:border-slate-600/80 dark:bg-slate-900/50 dark:text-slate-200"
+									} ${disabled ? "opacity-80" : "hover:border-emerald-300/80 hover:bg-emerald-50/80 dark:hover:border-emerald-400/70"}`}
+								>
+									<input type="checkbox" className="sr-only" checked={checked} disabled={disabled} onChange={() => handleConditionClick(condition.type)} />
+									<span
+										aria-hidden
+										className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-sm border-2 text-[10px] font-bold transition ${
 											checked
-												? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-[0_8px_20px_rgba(16,185,129,0.18)] dark:border-emerald-400 dark:bg-emerald-500/10 dark:text-emerald-100"
-												: "border-slate-200 bg-white/90 text-slate-700 dark:border-slate-600/80 dark:bg-slate-900/50 dark:text-slate-200"
-										} ${disabled ? "opacity-80" : "hover:border-emerald-300/80 hover:bg-emerald-50/80 dark:hover:border-emerald-400/70"}`}
+												? "border-emerald-300 bg-emerald-400 text-white dark:border-emerald-400 dark:bg-emerald-400/90 dark:text-emerald-950"
+												: "border-slate-300 bg-white text-transparent dark:border-slate-500 dark:bg-slate-800/70"
+										} ${disabled ? "opacity-90" : ""}`}
 									>
-										<input
-											type="checkbox"
-											className="sr-only"
-											checked={checked}
-											disabled={disabled}
-											onChange={() => handleConditionClick(condition.type)}
-										/>
-										<span
-											aria-hidden
-											className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-sm border-2 text-[10px] font-bold transition ${
-												checked
-													? "border-emerald-300 bg-emerald-400 text-white dark:border-emerald-400 dark:bg-emerald-400/90 dark:text-emerald-950"
-													: "border-slate-300 bg-white text-transparent dark:border-slate-500 dark:bg-slate-800/70"
-											} ${disabled ? "opacity-90" : ""}`}
-										>
-											✓
-										</span>
-										<div className="leading-tight">
-											<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground dark:text-foreground">
-												{condition.label}
-											</p>
-											<p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
-												{condition.helper}
-											</p>
-										</div>
-									</label>
-								);
-							})}
-						</div>
-					)
-					: (
-						<p className="text-xs text-muted-foreground">
-							No conditional passives require manual enabling for this dataset.
-						</p>
-					)
-				: (
-					null
-				)}
+										✓
+									</span>
+									<div className="leading-tight">
+										<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground dark:text-foreground">{condition.label}</p>
+										<p className="text-[11px] text-muted-foreground dark:text-muted-foreground">{condition.helper}</p>
+									</div>
+								</label>
+							);
+						})}
+					</div>
+				) : (
+					<p className="text-xs text-muted-foreground">No conditional passives require manual enabling for this dataset.</p>
+				)
+			) : null}
 		</div>
 	);
 }
 
-function getPlayerById(
-	playersMap: Map<number, PlayerRecord>,
-	id: number | null | undefined,
-): PlayerRecord | null {
+function getPlayerById(playersMap: Map<number, PlayerRecord>, id: number | null | undefined): PlayerRecord | null {
 	if (typeof id !== "number") return null;
 	return playersMap.get(id) ?? null;
 }
@@ -1101,8 +1016,12 @@ function combineTeamPassives(assignments: SlotAssignment[]): CombinedPassiveEntr
 
 	assignments.forEach(({ config }) => {
 		const slotPassives = config.passives;
-		if (!slotPassives) return;
-		slotPassives.presets.forEach((preset) => pushPassive(preset.passiveId, preset.value));
+		if (!slotPassives) {
+			return;
+		}
+		slotPassives.presets.forEach((preset) => {
+			pushPassive(preset.passiveId, preset.value);
+		});
 		pushPassive(slotPassives.custom.passiveId, slotPassives.custom.value);
 	});
 

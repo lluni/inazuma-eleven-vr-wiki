@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { Filter, RotateCcw, Search } from "lucide-react";
+import { type UIEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ElementChip, PositionChip, StatChip } from "@/components/team-builder/Chips";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createSortedUniqueOptions } from "@/lib/data-helpers";
 import { type PlayerRecord, playersDataset } from "@/lib/players-data";
+import { DEFAULT_FILTERS, getPositionSortValue } from "@/lib/team-builder-ui";
 import { cn } from "@/lib/utils";
 import type { FiltersState, TeamBuilderSlot } from "@/types/team-builder";
 
 const elementOptions = createSortedUniqueOptions(playersDataset.map((player) => player.element));
 const positionOptions = createSortedUniqueOptions(playersDataset.map((player) => player.position));
 const roleOptions = createSortedUniqueOptions(playersDataset.map((player) => player.role));
+const INITIAL_VISIBLE_COUNT = 10;
+const LOAD_MORE_BATCH_SIZE = 10;
 
 type PlayerAssignmentModalProps = {
 	isMobile: boolean;
@@ -23,10 +26,7 @@ type PlayerAssignmentModalProps = {
 	favoriteSet: Set<number>;
 	favoritePlayers: PlayerRecord[];
 	assignedIds: Set<number>;
-	filteredPlayers: PlayerRecord[];
-	filters: FiltersState;
-	onFiltersChange: (next: FiltersState) => void;
-	onResetFilters: () => void;
+	playersDataset: PlayerRecord[];
 	onSelectPlayer: (playerId: number) => void;
 	onClearSlot: () => void;
 	onOpenChange: (open: boolean) => void;
@@ -39,20 +39,84 @@ export function PlayerAssignmentModal({
 	favoriteSet,
 	favoritePlayers,
 	assignedIds,
-	filteredPlayers,
-	filters,
-	onFiltersChange,
-	onResetFilters,
+	playersDataset,
 	onSelectPlayer,
 	onOpenChange,
 }: PlayerAssignmentModalProps) {
-	const hasActiveFilters =
-		Boolean(filters.search.trim()) || filters.element !== "all" || filters.position !== "all" || filters.role !== "all";
+	const [filters, setFilters] = useState<FiltersState>({ ...DEFAULT_FILTERS });
+	const hasActiveFilters = Boolean(filters.search.trim()) || filters.element !== "all" || filters.position !== "all" || filters.role !== "all";
+	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+	const matchesFilters = useCallback(
+		(player: PlayerRecord) => {
+			if (!activeSlot) return false;
+			const query = filters.search.trim().toLowerCase();
+			if (filters.position !== "all" && player.position !== filters.position) return false;
+			if (filters.element !== "all" && player.element !== filters.element) return false;
+			if (filters.role !== "all" && player.role !== filters.role) return false;
+			if (query && !player.name.toLowerCase().includes(query) && !player.nickname.toLowerCase().includes(query)) {
+				return false;
+			}
+			return true;
+		},
+		[activeSlot, filters.element, filters.position, filters.role, filters.search],
+	);
+	const filteredPlayers = useMemo(() => {
+		return playersDataset
+			.filter((player) => matchesFilters(player))
+			.sort((a, b) => {
+				const byPosition = getPositionSortValue(a.position) - getPositionSortValue(b.position);
+				if (byPosition !== 0) return byPosition;
+				return b.stats.total - a.stats.total;
+			});
+	}, [matchesFilters, playersDataset]);
+	const filteredFavorites = useMemo(() => {
+		return favoritePlayers.filter((player) => matchesFilters(player));
+	}, [favoritePlayers, matchesFilters]);
+	const availablePlayers = useMemo(() => {
+		if (!activeSlot) return [];
+		return filteredPlayers.filter((player) => !favoriteSet.has(player.id));
+	}, [activeSlot, filteredPlayers, favoriteSet]);
+	const visiblePlayers = availablePlayers.slice(0, visibleCount);
+	const hasMore = visibleCount < availablePlayers.length;
+
+	const resetFilters = useCallback(() => {
+		setFilters({ ...DEFAULT_FILTERS });
+	}, []);
+
 	useEffect(() => {
-		if (!open) {
-			onResetFilters();
+		if (open) {
+			resetFilters();
+			setVisibleCount(INITIAL_VISIBLE_COUNT);
 		}
-	}, [open, onResetFilters]);
+	}, [open, resetFilters]);
+
+	useEffect(() => {
+		if (!activeSlot) {
+			setVisibleCount(INITIAL_VISIBLE_COUNT);
+			return;
+		}
+		setVisibleCount(INITIAL_VISIBLE_COUNT);
+	}, [activeSlot?.id, filters]);
+
+	const tryLoadMore = useCallback(() => {
+		setVisibleCount((prev) => {
+			if (prev >= availablePlayers.length) return prev;
+			return Math.min(prev + LOAD_MORE_BATCH_SIZE, availablePlayers.length);
+		});
+	}, [availablePlayers.length]);
+
+	const handleScrollLoad = useCallback(
+		(event: UIEvent<HTMLDivElement>) => {
+			if (!hasMore) return;
+			const target = event.currentTarget;
+			const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+			if (distanceToBottom <= 120) {
+				tryLoadMore();
+			}
+		},
+		[hasMore, tryLoadMore],
+	);
 
 	const filtersSection = (
 		<div className="space-y-3 rounded-xl border border-border/70 bg-card/70 p-3 shadow-inner sm:p-4">
@@ -60,20 +124,18 @@ export function PlayerAssignmentModal({
 				<Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
 				<Input
 					value={filters.search}
-					onChange={(event) => onFiltersChange({ ...filters, search: event.target.value })}
+					onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
 					placeholder="Search by name or nickname"
 					className={cn(
 						"pl-9 text-sm",
-						filters.search
-							? "border-primary bg-primary/5 text-foreground shadow-[0_0_0_1px_theme(colors.primary.DEFAULT)]"
-							: "border-muted-foreground/30",
+						filters.search ? "border-primary bg-primary/5 text-foreground shadow-[0_0_0_1px_theme(colors.primary.DEFAULT)]" : "border-muted-foreground/30",
 					)}
 					type="search"
 					autoFocus={!isMobile}
 				/>
 			</div>
 			<div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
-				<Select  value={filters.element} onValueChange={(value) => onFiltersChange({ ...filters, element: value })}>
+				<Select value={filters.element} onValueChange={(value) => setFilters((prev) => ({ ...prev, element: value }))}>
 					<SelectTrigger className={cn("w-full", filters.element !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Element" />
 					</SelectTrigger>
@@ -86,7 +148,7 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Select  value={filters.position} onValueChange={(value) => onFiltersChange({ ...filters, position: value })}>
+				<Select value={filters.position} onValueChange={(value) => setFilters((prev) => ({ ...prev, position: value }))}>
 					<SelectTrigger className={cn("w-full", filters.position !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Position" />
 					</SelectTrigger>
@@ -99,7 +161,7 @@ export function PlayerAssignmentModal({
 						))}
 					</SelectContent>
 				</Select>
-				<Select  value={filters.role} onValueChange={(value) => onFiltersChange({ ...filters, role: value })}>
+				<Select value={filters.role} onValueChange={(value) => setFilters((prev) => ({ ...prev, role: value }))}>
 					<SelectTrigger className={cn("w-full", filters.role !== "all" && "border-primary bg-primary/5 text-foreground shadow-sm")}>
 						<SelectValue placeholder="Role" />
 					</SelectTrigger>
@@ -119,7 +181,7 @@ export function PlayerAssignmentModal({
 						"w-full gap-1 text-xs font-semibold uppercase tracking-[0.3em]",
 						hasActiveFilters ? "bg-primary text-primary-foreground" : "text-muted-foreground",
 					)}
-					onClick={onResetFilters}
+					onClick={resetFilters}
 					disabled={!hasActiveFilters}
 				>
 					<RotateCcw className="size-4" />
@@ -129,23 +191,17 @@ export function PlayerAssignmentModal({
 		</div>
 	);
 
-	const limitedFilteredPlayers = activeSlot && filteredPlayers.length > 0 ? filteredPlayers.filter((player) => !favoriteSet.has(player.id)).slice(0, 20) : [];
-
 	const playerList = (
-		<div
-			className={cn(
-				"mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1 hm-scrollbar",
-			)}
-		>
+		<div className={cn("mt-3 max-h-[60vh] space-y-4 overflow-y-auto pr-1 hm-scrollbar")} ref={scrollContainerRef} onScroll={handleScrollLoad}>
 			{!activeSlot ? (
 				<div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">Select a slot on the pitch first.</div>
 			) : (
 				<>
-					{favoritePlayers.length > 0 && (
+					{filteredFavorites.length > 0 && (
 						<div className="space-y-2">
 							<p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Favorites</p>
 							<div className="space-y-2">
-								{favoritePlayers.map((player) => (
+								{filteredFavorites.map((player) => (
 									<PlayerOptionCard
 										key={`favorite-${player.id}`}
 										player={player}
@@ -161,7 +217,7 @@ export function PlayerAssignmentModal({
 							<span>Filtered results</span>
 							{activeSlot && (
 								<span>
-									{limitedFilteredPlayers.length}/{Math.min(filteredPlayers.length, 20)}
+									{visiblePlayers.length}/{availablePlayers.length}
 								</span>
 							)}
 						</div>
@@ -170,16 +226,19 @@ export function PlayerAssignmentModal({
 								<Filter className="size-5" />
 								<p>No players match your filters.</p>
 							</div>
-						) : limitedFilteredPlayers.length === 0 ? (
+						) : availablePlayers.length === 0 ? (
 							<div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
 								All matching players are already in your favorites.
 							</div>
 						) : (
-							<div className="space-y-2">
-								{limitedFilteredPlayers.map((player) => (
-									<PlayerOptionCard key={player.id} player={player} alreadyAssigned={assignedIds.has(player.id)} onSelect={() => onSelectPlayer(player.id)} />
-								))}
-							</div>
+							<>
+								<div className="space-y-2">
+									{visiblePlayers.map((player) => (
+										<PlayerOptionCard key={player.id} player={player} alreadyAssigned={assignedIds.has(player.id)} onSelect={() => onSelectPlayer(player.id)} />
+									))}
+								</div>
+								{hasMore && <div className="py-3 text-center text-xs text-muted-foreground">Loading more players…</div>}
+							</>
 						)}
 					</div>
 				</>
