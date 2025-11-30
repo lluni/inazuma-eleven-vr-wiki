@@ -63,8 +63,8 @@ type TableColumn = {
 	render: (player: Player) => React.ReactNode;
 };
 
-const INITIAL_VISIBLE_COUNT = 50;
-const LOAD_MORE_BATCH_SIZE = 50;
+const INITIAL_VISIBLE_COUNT = 20;
+const LOAD_MORE_BATCH_SIZE = 20;
 
 const metricAccessors: Record<PlayersSortKey, (player: Player) => number> = {
 	total: (player) => player.stats.total,
