@@ -978,15 +978,15 @@ function PassiveOptionsPanel(
 					onClick={handleSwitchClick}
 					className={`relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-all ${
 						options.enabled
-							? "border-emerald-400 bg-emerald-500/90 shadow-[0_0_25px_rgba(16,185,129,0.35)]"
-							: "border-slate-500 bg-slate-900/70 text-slate-200"
-					} ${disabled ? "cursor-not-allowed opacity-80 ring-1 ring-white/10" : "cursor-pointer ring-1 ring-white/20"}`}
+							? "border-emerald-300 bg-emerald-400/90 shadow-[0_0_18px_rgba(16,185,129,0.35)] dark:border-emerald-400 dark:bg-emerald-500/90"
+							: "border-slate-300 bg-white/80 text-slate-500 dark:border-slate-500 dark:bg-slate-900/70"
+					} ${disabled ? "cursor-not-allowed opacity-70 ring-1 ring-white/20 dark:ring-white/5" : "cursor-pointer ring-1 ring-emerald-200/60 dark:ring-white/10"}`}
 				>
 					<span
-						className={`inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-background text-[10px] font-bold transition-all ${
+						className={`inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white text-[10px] font-bold transition-all dark:bg-slate-950 ${
 							options.enabled
-								? "translate-x-7 text-emerald-600"
-								: "translate-x-1 text-slate-400"
+								? "translate-x-7 text-emerald-800 dark:text-emerald-200"
+								: "translate-x-1 text-slate-500 dark:text-slate-400"
 						}`}
 					>
 						{options.enabled ? "ON" : "OFF"}
@@ -1004,9 +1004,9 @@ function PassiveOptionsPanel(
 										key={condition.type}
 										className={`flex items-start gap-2 rounded-md border px-2 py-1.5 transition ${
 											checked
-												? "border-emerald-400 bg-emerald-500/10 shadow-[0_10px_25px_rgba(16,185,129,0.15)]"
-												: "border-slate-600/80 bg-slate-900/50"
-										} ${disabled ? "opacity-80" : "hover:border-emerald-400/70"}`}
+												? "border-emerald-300 bg-emerald-50 text-emerald-900 shadow-[0_8px_20px_rgba(16,185,129,0.18)] dark:border-emerald-400 dark:bg-emerald-500/10 dark:text-emerald-100"
+												: "border-slate-200 bg-white/90 text-slate-700 dark:border-slate-600/80 dark:bg-slate-900/50 dark:text-slate-200"
+										} ${disabled ? "opacity-80" : "hover:border-emerald-300/80 hover:bg-emerald-50/80 dark:hover:border-emerald-400/70"}`}
 									>
 										<input
 											type="checkbox"
@@ -1019,17 +1019,17 @@ function PassiveOptionsPanel(
 											aria-hidden
 											className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-sm border-2 text-[10px] font-bold transition ${
 												checked
-													? "border-emerald-400 bg-emerald-400/90 text-emerald-950 dark:text-emerald-100"
-													: "border-slate-500 bg-slate-800/70 text-transparent"
+													? "border-emerald-300 bg-emerald-400 text-white dark:border-emerald-400 dark:bg-emerald-400/90 dark:text-emerald-950"
+													: "border-slate-300 bg-white text-transparent dark:border-slate-500 dark:bg-slate-800/70"
 											} ${disabled ? "opacity-90" : ""}`}
 										>
 											✓
 										</span>
 										<div className="leading-tight">
-											<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground">
+											<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground dark:text-foreground">
 												{condition.label}
 											</p>
-											<p className="text-[11px] text-muted-foreground">
+											<p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
 												{condition.helper}
 											</p>
 										</div>
