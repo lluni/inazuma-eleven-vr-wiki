@@ -26,11 +26,12 @@ type PlayerRecord = {
 	Image: string;
 	InazugleLink: string;
 	Description: string;
+	HowToObtainMarkdown: string;
 	Name: string;
 	Nickname: string;
 	Game: string;
 	Position: string;
-	any: string;
+	Element: string;
 	Kick: number;
 	Control: number;
 	Technique: number;
@@ -46,6 +47,16 @@ type PlayerRecord = {
 };
 
 type PlayerRecordWithoutIndex = Omit<PlayerRecord, "Nº">;
+
+type HowToObtainEntry = {
+	title?: string;
+	items: string[];
+};
+
+type HowToObtainSection = {
+	title: string;
+	entries: HowToObtainEntry[];
+};
 
 async function fetchHtml(url: string): Promise<string> {
 	const res = await fetch(url);
@@ -125,6 +136,119 @@ function extractStats(
 	return stats;
 }
 
+function extractListItems(
+	$: CheerioAPI,
+	$root: Cheerio<any>,
+): string[] {
+	const items: string[] = [];
+	$root.find("li").each((_, li) => {
+		const text = cleanText($(li).text());
+		if (text) {
+			items.push(text);
+		}
+	});
+	return items;
+}
+
+function extractParagraphItems(
+	$: CheerioAPI,
+	$root: Cheerio<any>,
+): string[] {
+	const clone = $root.clone();
+	clone.find("ul,ol").remove();
+	const text = cleanText(clone.text());
+	if (!text) return [];
+	return text
+		.split(/[\r\n]+/)
+		.map((line) => cleanText(line))
+		.filter(Boolean);
+}
+
+function extractHowToObtainEntries(
+	$: CheerioAPI,
+	$section: Cheerio<any>,
+): HowToObtainEntry[] {
+	const entries: HowToObtainEntry[] = [];
+	const $dds = $section.children("dd");
+
+	if ($dds.length === 0) {
+		const items = extractListItems($, $section);
+		if (items.length > 0) {
+			entries.push({ items });
+		}
+		return entries;
+	}
+
+	$dds.each((_, dd) => {
+		const $dd = $(dd);
+		const title = cleanText($dd.children("p").first().text());
+		const items = extractListItems($, $dd);
+		const fallbackItems =
+			items.length > 0 ? [] : extractParagraphItems($, $dd);
+		const collected = items.length > 0 ? items : fallbackItems;
+		if (collected.length === 0 && !title) {
+			return;
+		}
+		entries.push({
+			title: title || undefined,
+			items: collected,
+		});
+	});
+
+	return entries;
+}
+
+function formatHowToObtainSection(section: HowToObtainSection): string {
+	const lines: string[] = [];
+	if (section.title) {
+		lines.push(`### ${section.title}`);
+	}
+
+	section.entries.forEach((entry, index) => {
+		if (entry.title) {
+			lines.push(`#### ${entry.title}`);
+		}
+		entry.items.forEach((item) => {
+			lines.push(`- ${item}`);
+		});
+		if (index < section.entries.length - 1) {
+			lines.push("");
+		}
+	});
+
+	return lines.join("\n").trim();
+}
+
+function extractHowToObtainMarkdown(
+	$: CheerioAPI,
+	$player: Cheerio<any>,
+): string {
+	const $howToObtain = $player.find("dl.getTxt");
+	if ($howToObtain.length === 0) return "";
+
+	const $sections = $howToObtain.find("> dd.question > dl");
+	if ($sections.length === 0) return "";
+
+	const sections: string[] = [];
+	$sections.each((_, dl) => {
+		const $section = $(dl);
+		const title = cleanText($section.children("dt").first().text());
+		const entries = extractHowToObtainEntries($, $section);
+		if (!entries.length) {
+			return;
+		}
+		const formatted = formatHowToObtainSection({
+			title,
+			entries,
+		});
+		if (formatted) {
+			sections.push(formatted);
+		}
+	});
+
+	return sections.join("\n\n").trim();
+}
+
 function extractPlayers(html: string): PlayerRecordWithoutIndex[] {
 	const $ = load(html);
 	const players: PlayerRecordWithoutIndex[] = [];
@@ -154,9 +278,10 @@ function extractPlayers(html: string): PlayerRecordWithoutIndex[] {
 				.find("dd")
 				.text(),
 		);
-		const anyType = cleanText(
+		const elementType = cleanText(
 			$player.find("ul.param > li").first().find("dl.box dd").first().text(),
 		);
+		const howToObtainMarkdown = extractHowToObtainMarkdown($, $player);
 		const stats = extractStats($, $player);
 		const total = STAT_KEYS.reduce((sum, key) => sum + stats[key], 0);
 		const basicInfo = extractBasicInfo($, $player.find("ul.basic"));
@@ -170,11 +295,12 @@ function extractPlayers(html: string): PlayerRecordWithoutIndex[] {
 			Image: image,
 			InazugleLink: inazugleLink,
 			Description: description,
+			HowToObtainMarkdown: howToObtainMarkdown,
 			Name: name,
 			Nickname: nickname,
 			Game: game,
 			Position: position,
-			any: anyType,
+			Element: elementType,
 			Kick: stats.Kick,
 			Control: stats.Control,
 			Technique: stats.Technique,

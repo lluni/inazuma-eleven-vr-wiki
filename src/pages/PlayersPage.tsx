@@ -7,10 +7,17 @@ import {
 	Search,
 	Star,
 } from "lucide-react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	PlayerDetailsButton,
+	PlayerDetailsDialog,
+	type PlayerMetric,
+	PositionBadge,
+	ElementBadge,
+} from "@/components/player/PlayerDetailsDialog";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -32,16 +39,13 @@ import {
 	formatNumber,
 	titleCase,
 } from "@/lib/data-helpers";
-import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
+import { cn } from "@/lib/utils";
 import type { BaseStats, PowerStats } from "@/lib/inazuma-math";
 import {
 	getPlayersDataset,
-	mapToElementType,
-	mapToTeamPosition,
 	type PlayerRecord,
 	playersDataset as basePlayersDataset,
 } from "@/lib/players-data";
-import { cn } from "@/lib/utils";
 import { favoritePlayersAtom } from "@/store/favorites";
 import {
 	DEFAULT_PLAYERS_PREFERENCES,
@@ -65,6 +69,7 @@ type TableColumn = {
 
 const INITIAL_VISIBLE_COUNT = 20;
 const LOAD_MORE_BATCH_SIZE = 20;
+
 
 const metricAccessors: Record<PlayersSortKey, (player: Player) => number> = {
 	total: (player) => player.stats.total,
@@ -157,6 +162,25 @@ export default function PlayersPage() {
 		[favoritePlayers],
 	);
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+	const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
+	const selectedPlayer = useMemo(() => {
+		if (selectedPlayerId == null) return null;
+		return playersDataset.find((player) => player.id === selectedPlayerId) ?? null;
+	}, [playersDataset, selectedPlayerId]);
+	const statMetrics = useMemo<PlayerMetric[]>(() => {
+		if (!selectedPlayer) return [];
+		return statsMetricColumns.map((column) => ({
+			label: column.header,
+			value: formatNumber(selectedPlayer.stats[column.key as keyof BaseStats]),
+		}));
+	}, [selectedPlayer]);
+	const powerMetrics = useMemo<PlayerMetric[]>(() => {
+		if (!selectedPlayer) return [];
+		return powerMetricColumns.map((column) => ({
+			label: column.header,
+			value: formatNumber(selectedPlayer.power[column.key as keyof PowerStats]),
+		}));
+	}, [selectedPlayer]);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const highlightControl = (isActive: boolean) =>
 		isActive ? "border-primary/60 bg-primary/10 text-primary" : undefined;
@@ -263,6 +287,14 @@ export default function PlayersPage() {
 		[setPreferences],
 	);
 
+	const handleOpenDetails = useCallback((player: Player) => {
+		setSelectedPlayerId(player.id);
+	}, []);
+
+	const handleCloseDetails = useCallback(() => {
+		setSelectedPlayerId(null);
+	}, []);
+
 	const tableColumns = useMemo(() => {
 		const metricColumns =
 			preferences.viewMode === "stats"
@@ -280,6 +312,15 @@ export default function PlayersPage() {
 				/>
 			),
 		};
+		const detailsColumn: TableColumn = {
+			key: "details",
+			header: "",
+			className: "w-12",
+			align: "center",
+			render: (player: Player) => (
+				<PlayerDetailsButton onClick={() => handleOpenDetails(player)} />
+			),
+		};
 		const identityColumn: TableColumn = {
 			key: "identity",
 			header: "Player",
@@ -287,8 +328,8 @@ export default function PlayersPage() {
 			sortKey: "name",
 			render: (player: Player) => <PlayerIdentity player={player} />,
 		};
-		return [favoriteColumn, identityColumn, ...metricColumns];
-	}, [favoriteSet, handleToggleFavorite, preferences.viewMode]);
+		return [favoriteColumn, detailsColumn, identityColumn, ...metricColumns];
+	}, [favoriteSet, handleOpenDetails, handleToggleFavorite, preferences.viewMode]);
 
 	const visiblePlayers = sortedPlayers.slice(0, visibleCount);
 	const hasMore = visibleCount < sortedPlayers.length;
@@ -369,6 +410,18 @@ export default function PlayersPage() {
 		preferences.sortKey,
 		favoritePlayers.join(","),
 	]);
+
+	useEffect(() => {
+		if (selectedPlayerId == null) {
+			return;
+		}
+		const exists = playersDataset.some(
+			(playerRecord) => playerRecord.id === selectedPlayerId,
+		);
+		if (!exists) {
+			setSelectedPlayerId(null);
+		}
+	}, [playersDataset, selectedPlayerId]);
 
 	useEffect(() => {
 		if (!hasMore) return;
@@ -596,6 +649,18 @@ export default function PlayersPage() {
 					</div>
 				)}
 			</section>
+
+			<PlayerDetailsDialog
+				player={selectedPlayer}
+				open={Boolean(selectedPlayer)}
+				onOpenChange={(isOpen) => {
+					if (!isOpen) {
+						handleCloseDetails();
+					}
+				}}
+				statMetrics={statMetrics}
+				powerMetrics={powerMetrics}
+			/>
 		</div>
 	);
 }
@@ -617,9 +682,6 @@ function PlayerIdentity({ player }: PlayerIdentityProps) {
 			/>
 			<div className="flex flex-1 flex-col">
 				<span className="font-semibold leading-tight">{player.name}</span>
-				<span className="text-xs text-muted-foreground">
-					“{player.nickname}”
-				</span>
 				<div className="mt-1 flex flex-wrap gap-1 text-xs">
 					<PositionBadge position={player.position} />
 					<ElementBadge element={player.element} />
@@ -665,75 +727,4 @@ function FavoriteToggle({ isFavorite, onToggle }: FavoriteToggleProps) {
 			/>
 		</button>
 	);
-}
-
-function PositionBadge({ position }: { position: string }) {
-	const teamPosition = mapToTeamPosition(position);
-	const colors = getPositionColor(teamPosition);
-
-	const style: CSSProperties = colors.gradient
-		? {
-				backgroundImage: colors.gradient,
-				color: "#fff",
-				borderColor: "transparent",
-			}
-		: {
-				backgroundColor: addAlpha(colors.primary, "22"),
-				borderColor: addAlpha(colors.primary, "44"),
-				color: colors.secondary ?? colors.primary,
-			};
-
-	return (
-		<Badge
-			variant="outline"
-			className="gap-1 border px-2 py-0.5 font-medium uppercase tracking-wide"
-			style={style}
-		>
-			{position}
-		</Badge>
-	);
-}
-
-function ElementBadge({ element }: { element: string }) {
-	const elementType = mapToElementType(element);
-	const definition = getElementIcon(elementType);
-	const Icon = definition.icon;
-
-	return (
-		<Badge
-			variant="outline"
-			className="gap-1 border px-2 py-0.5"
-			style={{
-				color: definition.color,
-				borderColor: addAlpha(definition.color, "44"),
-				backgroundColor: addAlpha(definition.color, "1a"),
-			}}
-		>
-			{Icon ? (
-				<Icon className="size-3" aria-hidden="true" />
-			) : definition.assetPath ? (
-				<img
-					src={definition.assetPath}
-					alt=""
-					className="size-3"
-					aria-hidden="true"
-				/>
-			) : null}
-			{element}
-		</Badge>
-	);
-}
-
-function addAlpha(hex: string, alpha: string): string {
-	if (!hex.startsWith("#")) return hex;
-	if (hex.length === 4) {
-		const r = hex[1];
-		const g = hex[2];
-		const b = hex[3];
-		return `#${r}${r}${g}${g}${b}${b}${alpha}`;
-	}
-	if (hex.length === 7) {
-		return `${hex}${alpha}`;
-	}
-	return hex;
 }

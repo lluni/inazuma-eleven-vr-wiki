@@ -29,6 +29,7 @@ export type RawPlayerRecord = {
 	Year: string;
 	Gender: string;
 	Role: string;
+	HowToObtainMarkdown?: string;
 };
 
 const PLAYER_IMAGE_PROXY_ENDPOINT = "https://images.weserv.nl/?url=";
@@ -46,6 +47,7 @@ export type PlayerRecord = {
 	ageGroup: string;
 	year: string;
 	gender: string;
+	howToObtainMarkdown: string;
 	stats: BaseStats;
 	power: PowerStats;
 };
@@ -94,6 +96,10 @@ export const playersDataset: PlayerRecord[] = rawPlayers.map((player) => {
 		ageGroup: sanitizeAttribute(player["Age group"]),
 		year: sanitizeAttribute(player.Year),
 		gender: sanitizeAttribute(player.Gender),
+		howToObtainMarkdown:
+			typeof player.HowToObtainMarkdown === "string"
+				? player.HowToObtainMarkdown.trim()
+				: "",
 		stats,
 		power: computePower(stats),
 	};

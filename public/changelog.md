@@ -1,4 +1,7 @@
-# Version 1.3.2 – 2025-11-30
+# Version 1.3.3 - 2025-11-30
+- Players Page:
+  - Removed nickname from the table to save space.
+  - Added (!) button to show player details and "How to obtain" section.
 - You can now use JP names for players by switching the language at the header of the page.
   - Thanks @rikineko on Discord for the JP names data.
 - You can now switch between light and dark themes.
