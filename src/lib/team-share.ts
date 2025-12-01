@@ -5,9 +5,11 @@ import { EXTRA_SLOT_IDS } from "@/data/team-builder-slots";
 import { DISPLAY_MODE_VALUES } from "@/lib/team-builder-display";
 import {
 	DEFAULT_PASSIVE_OPTIONS,
+	DEFAULT_RANKING_OPTIONS,
 	type DisplayMode,
 	normalizeSlotConfig,
 	type PassiveCalculationOptions,
+	type RankingOptions,
 	type TeamBuilderAssignments,
 	type TeamBuilderSlotConfigs,
 	type TeamBuilderState,
@@ -63,16 +65,9 @@ export function decodeTeamShareState(payload: string): TeamBuilderState | null {
 	}
 }
 
-function sanitizeTeamState(
-	input?: Partial<TeamBuilderState> | null,
-): TeamBuilderState {
-	const formationId =
-		input?.formationId && formationsMap.has(input.formationId)
-			? input.formationId
-			: FALLBACK_FORMATION_ID;
-	const displayMode = DISPLAY_MODE_VALUES.includes(
-		(input?.displayMode as DisplayMode) ?? FALLBACK_DISPLAY_MODE,
-	)
+function sanitizeTeamState(input?: Partial<TeamBuilderState> | null): TeamBuilderState {
+	const formationId = input?.formationId && formationsMap.has(input.formationId) ? input.formationId : FALLBACK_FORMATION_ID;
+	const displayMode = DISPLAY_MODE_VALUES.includes((input?.displayMode as DisplayMode) ?? FALLBACK_DISPLAY_MODE)
 		? ((input?.displayMode as DisplayMode) ?? FALLBACK_DISPLAY_MODE)
 		: FALLBACK_DISPLAY_MODE;
 
@@ -82,6 +77,7 @@ function sanitizeTeamState(
 		assignments: sanitizeAssignments(input?.assignments),
 		slotConfigs: sanitizeSlotConfigs(input?.slotConfigs),
 		passiveOptions: sanitizePassiveOptions(input?.passiveOptions),
+		rankingOptions: sanitizeRankingOptions(input?.rankingOptions),
 	};
 }
 
@@ -120,9 +116,7 @@ function sanitizeSlotConfigs(value: unknown): TeamBuilderSlotConfigs {
 		return {};
 	}
 
-	const entries = Object.entries(
-		value as Record<string, SlotConfig | null | undefined>,
-	);
+	const entries = Object.entries(value as Record<string, SlotConfig | null | undefined>);
 	const result: TeamBuilderSlotConfigs = {};
 
 	entries.forEach(([slotId, config]) => {
@@ -135,9 +129,7 @@ function sanitizeSlotConfigs(value: unknown): TeamBuilderSlotConfigs {
 	return result;
 }
 
-function sanitizePassiveOptions(
-	value: unknown,
-): PassiveCalculationOptions {
+function sanitizePassiveOptions(value: unknown): PassiveCalculationOptions {
 	if (!value || typeof value !== "object") {
 		return {
 			enabled: DEFAULT_PASSIVE_OPTIONS.enabled,
@@ -148,9 +140,7 @@ function sanitizePassiveOptions(
 	const input = value as Partial<PassiveCalculationOptions>;
 	const enabled = Boolean(input.enabled);
 	const rawConditions = Array.isArray(input.activeConditions)
-		? input.activeConditions.filter((entry): entry is PassiveCalculationOptions["activeConditions"][number] =>
-				typeof entry === "string"
-			)
+		? input.activeConditions.filter((entry): entry is PassiveCalculationOptions["activeConditions"][number] => typeof entry === "string")
 		: [];
 	const uniqueConditions = Array.from(new Set(rawConditions));
 
@@ -160,27 +150,34 @@ function sanitizePassiveOptions(
 	};
 }
 
+function sanitizeRankingOptions(value: unknown): RankingOptions {
+	if (!value || typeof value !== "object") {
+		return {
+			ignoreHeroSlots: DEFAULT_RANKING_OPTIONS.ignoreHeroSlots,
+		};
+	}
+	const input = value as Partial<RankingOptions>;
+	return {
+		ignoreHeroSlots: Boolean(input.ignoreHeroSlots),
+	};
+}
+
 function toBase64Url(bytes: Uint8Array): string {
 	let binary = "";
 	bytes.forEach((byte) => {
 		binary += String.fromCharCode(byte);
 	});
-	const encoder =
-		typeof globalThis.btoa === "function" ? globalThis.btoa : null;
+	const encoder = typeof globalThis.btoa === "function" ? globalThis.btoa : null;
 	if (!encoder) {
 		throw new Error("Base64 encoding is not supported in this environment");
 	}
-	const base64 = encoder(binary)
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_")
-		.replace(/=+$/, "");
+	const base64 = encoder(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 	return base64;
 }
 
 function fromBase64Url(value: string): Uint8Array | null {
 	try {
-		const decoder =
-			typeof globalThis.atob === "function" ? globalThis.atob : null;
+		const decoder = typeof globalThis.atob === "function" ? globalThis.atob : null;
 		if (!decoder) {
 			throw new Error("Base64 decoding is not supported in this environment");
 		}

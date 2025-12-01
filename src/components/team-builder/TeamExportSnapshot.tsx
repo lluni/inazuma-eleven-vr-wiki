@@ -28,7 +28,7 @@ export function TeamExportSnapshot({
 
 	return (
 		<DndContext sensors={[]}>
-			<div className="rounded-xl border bg-card p-3 shadow-sm">
+			<div className="">
 				<div className="mx-auto flex w-full max-w-5xl flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-3">
 					<div className="flex-1">
 						<FormationPitch

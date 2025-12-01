@@ -3,7 +3,7 @@ import { toPng } from "html-to-image";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import type { LucideIcon } from "lucide-react";
 import { Activity, ChevronDown, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FormationPitch, ReservesRail, SlotCard, type SlotStatTrend } from "@/components/team-builder/FormationPitch";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { FORMATIONS, type FormationDefinition, formationsMap } from "@/data/formations";
 import { EXTRA_SLOT_IDS, EXTRA_TEAM_SLOTS } from "@/data/team-builder-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,6 +32,7 @@ import { favoritePlayersAtom } from "@/store/favorites";
 import { playerNamePreferenceAtom } from "@/store/name-preference";
 import {
 	DEFAULT_PASSIVE_OPTIONS,
+	DEFAULT_RANKING_OPTIONS,
 	type DisplayMode,
 	mergeSlotConfig,
 	normalizeSlotConfig,
@@ -268,9 +270,11 @@ export default function TeamBuilderPage() {
 	const effectiveState = previewState ?? teamState;
 	const isPreviewingSharedTeam = Boolean(previewState);
 	const passiveOptions = effectiveState.passiveOptions ?? DEFAULT_PASSIVE_OPTIONS;
+	const rankingOptions = effectiveState.rankingOptions ?? DEFAULT_RANKING_OPTIONS;
 
 	const formation = formationsMap.get(effectiveState.formationId) ?? FORMATIONS[0];
 	const displayMode = effectiveState.displayMode ?? "nickname";
+	const ignoreHeroSlots = rankingOptions.ignoreHeroSlots ?? false;
 	const starterSlots = useMemo(() => formation.slots.map((slot) => extendFormationSlot(slot)), [formation]);
 	const allSlots = useMemo(() => [...starterSlots, ...EXTRA_TEAM_SLOTS], [starterSlots]);
 	const slotMap = useMemo(() => new Map(allSlots.map((slot) => [slot.id, slot])), [allSlots]);
@@ -363,9 +367,14 @@ export default function TeamBuilderPage() {
 		if (displayMode === "nickname") {
 			return null;
 		}
+		const shouldIgnoreHeroSlots = ignoreHeroSlots;
 		const entries: { slotId: string; value: number }[] = [];
 		allAssignments.forEach((entry) => {
 			if (!entry.player || entry.slot.kind === "manager" || entry.slot.kind === "coordinator") {
+				return;
+			}
+			const rarity = entry.config?.rarity ?? "normal";
+			if (shouldIgnoreHeroSlots && rarity === "hero") {
 				return;
 			}
 			const statValue = entry.computed?.finalPower?.[displayMode] ?? entry.computed?.power?.[displayMode];
@@ -400,7 +409,7 @@ export default function TeamBuilderPage() {
 			trendMap.set(slotId, assignTrend(normalized));
 		});
 		return trendMap;
-	}, [allAssignments, displayMode]);
+	}, [allAssignments, displayMode, ignoreHeroSlots]);
 	const starterAssignments = allAssignments.filter((entry) => entry.slot.kind === "starter");
 	const reserveAssignments = allAssignments.filter((entry) => entry.slot.kind === "reserve");
 	const staffAssignments = allAssignments.filter((entry) => entry.slot.kind === "manager" || entry.slot.kind === "coordinator");
@@ -472,6 +481,17 @@ export default function TeamBuilderPage() {
 		setTeamState((prev) => ({
 			...prev,
 			displayMode: mode,
+		}));
+	};
+
+	const handleRankingIgnoreHeroChange = (checked: boolean) => {
+		if (isPreviewingSharedTeam) return;
+		setTeamState((prev) => ({
+			...prev,
+			rankingOptions: {
+				...(prev.rankingOptions ?? DEFAULT_RANKING_OPTIONS),
+				ignoreHeroSlots: checked,
+			},
 		}));
 	};
 
@@ -849,8 +869,10 @@ export default function TeamBuilderPage() {
 						<PassiveOptionsPanel
 							options={passiveOptions}
 							disabled={isPreviewingSharedTeam}
+							ignoreHeroSlots={ignoreHeroSlots}
 							onToggleEnabled={handlePassiveEnabledChange}
 							onToggleCondition={handlePassiveConditionToggle}
+							onToggleIgnoreHero={handleRankingIgnoreHeroChange}
 						/>
 					</div>
 				</section>
@@ -936,7 +958,7 @@ export default function TeamBuilderPage() {
 				/>
 
 				<Dialog open={teamPassivesOpen} onOpenChange={setTeamPassivesOpen}>
-					<DialogContent className="!max-w-5xl  border border-border/60 bg-[color:color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_45px_90px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-popover dark:shadow-[0_35px_75px_rgba(2,6,23,0.65)]">
+					<DialogContent className="!max-w-5xl border border-border/60 bg-[color:color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_45px_90px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-popover dark:shadow-[0_35px_75px_rgba(2,6,23,0.65)]">
 						<DialogHeader>
 							<DialogTitle>Team passives</DialogTitle>
 							<DialogDescription>Combined bonuses from every configured passive across the squad.</DialogDescription>
@@ -1197,11 +1219,13 @@ function blobToDataUrl(blob: Blob) {
 type PassiveOptionsPanelProps = {
 	options: PassiveCalculationOptions;
 	disabled: boolean;
+	ignoreHeroSlots: boolean;
 	onToggleEnabled: (enabled: boolean) => void;
 	onToggleCondition: (condition: PassiveConditionOption["type"]) => void;
+	onToggleIgnoreHero: (checked: boolean) => void;
 };
 
-function PassiveOptionsPanel({ options, disabled, onToggleEnabled, onToggleCondition }: PassiveOptionsPanelProps) {
+function PassiveOptionsPanel({ options, disabled, ignoreHeroSlots, onToggleEnabled, onToggleCondition, onToggleIgnoreHero }: PassiveOptionsPanelProps) {
 	const activeConditionsCount = options.activeConditions.length;
 	const hasConditionalPassives = PASSIVE_CONDITION_OPTIONS.length > 0;
 	const [conditionsOpen, setConditionsOpen] = useState(() => options.enabled && activeConditionsCount > 0);
@@ -1212,110 +1236,116 @@ function PassiveOptionsPanel({ options, disabled, onToggleEnabled, onToggleCondi
 			return;
 		}
 		// auto-expand when there are already active conditions after re-enabling
-		if (activeConditionsCount > 0) {
-			setConditionsOpen(true);
-		}
 	}, [options.enabled, activeConditionsCount]);
 
-	const handleSwitchClick = () => {
-		if (disabled) return;
-		onToggleEnabled(!options.enabled);
-		options.enabled = !options.enabled;
-	};
+	const passiveSwitchId = useId();
+	const passiveDescriptionId = `${passiveSwitchId}-description`;
+	const rankingSwitchId = useId();
+	const rankingLabelId = `${rankingSwitchId}-label`;
 
 	const handleConditionClick = (condition: PassiveConditionOption["type"]) => {
 		if (disabled) return;
 		onToggleCondition(condition);
 	};
 
+	const handlePassiveToggle = (checked: boolean) => {
+		if (disabled) return;
+		onToggleEnabled(checked);
+	};
+
+	const handleRankingToggle = (checked: boolean) => {
+		if (disabled) return;
+		onToggleIgnoreHero(checked);
+	};
+
 	return (
-		<Collapsible open={conditionsOpen} onOpenChange={setConditionsOpen} className="space-y-3 rounded-lg border border-border/70 bg-card/60 p-3">
-			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-					<button
-						type="button"
-						role="switch"
-						aria-checked={options.enabled}
-						aria-disabled={disabled}
-						disabled={disabled}
-						onClick={handleSwitchClick}
-						className={`relative inline-flex h-8 w-16 items-center rounded-md border-2 transition-all ${
-							options.enabled
-								? "border-primary bg-primary/90 shadow-[0_0_18px_theme(colors.primary/0.35)] dark:border-primary dark:bg-primary/90"
-								: "border-border bg-background/80 text-muted-foreground dark:border-border dark:bg-muted/70"
-						} ${disabled ? "cursor-not-allowed opacity-70 ring-1 ring-white/20 dark:ring-white/5" : "cursor-pointer ring-1 ring-primary/60 dark:ring-white/10"}`}
-					>
-						<span
-							className={`inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white text-[10px] font-bold transition-all dark:bg-background ${
-								options.enabled ? "translate-x-7 text-primary-foreground" : "translate-x-1 text-muted-foreground"
-							}`}
-						>
-							{options.enabled ? "ON" : "OFF"}
-						</span>
-					</button>
-					<div className="space-y-1">
-						<p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Passive calculations</p>
-						<p className="text-xs text-foreground">Apply configured passives and optional conditions to slot stats.</p>
+		<Collapsible open={conditionsOpen} onOpenChange={setConditionsOpen} className="space-y-4 rounded-lg border border-border/70 bg-card/60 p-2">
+			<div className="flex items-center gap-3 ">
+				<Switch
+					id={rankingSwitchId}
+					aria-labelledby={rankingLabelId}
+					checked={ignoreHeroSlots}
+					disabled={disabled}
+					onCheckedChange={handleRankingToggle}
+				/>
+				<div className="space-y-1">
+					<p id={passiveDescriptionId} className="text-xs text-foreground">
+						Ignore hero slots when calculating ranking.
+					</p>
+				</div>
+			</div>
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<div className="flex flex-col gap-2">
+					<div className="flex items-center gap-3">
+						<Switch
+							id={passiveSwitchId}
+							aria-describedby={passiveDescriptionId}
+							aria-label="Toggle team passives"
+							checked={options.enabled}
+							disabled={disabled}
+							onCheckedChange={handlePassiveToggle}
+						/>
+						<div className="space-y-1">
+							<p id={passiveDescriptionId} className="text-xs text-foreground">
+								Apply configured passives and optional conditions to slot stats.
+							</p>
+						</div>
 					</div>
 				</div>
+				{options.enabled && hasConditionalPassives ? (
+					<CollapsibleTrigger
+						disabled={!options.enabled}
+						className={`inline-flex items-center gap-2 self-start rounded-md border px-4 py-1 text-[10px] uppercase tracking-[0.35em] transition sm:self-auto ${
+							options.enabled
+								? "border-primary/70 bg-primary/40 text-foreground hover:border-primary/90 hover:bg-primary/15 dark:border-primary/60 dark:bg-primary/20 dark:text-primary-foreground dark:hover:bg-primary/30"
+								: "cursor-not-allowed border-border/70 text-muted-foreground/80 bg-muted/50 dark:bg-muted/70"
+						}`}
+					>
+						{activeConditionsCount > 0 && !conditionsOpen ? (
+							<span className="rounded bg-primary/20 px-2 text-[9px] tracking-[0.25em] text-foreground dark:text-primary-foreground">
+								{activeConditionsCount}
+							</span>
+						) : null}
+						<span>{conditionsOpen ? "Hide" : "Show"} Passive conditions</span>
+						<ChevronDown className={`h-3.5 w-3.5 transition-transform ${conditionsOpen ? "rotate-180" : ""}`} />
+					</CollapsibleTrigger>
+				) : null}
 			</div>
 			{options.enabled ? (
 				hasConditionalPassives ? (
-					<>
-						<CollapsibleContent forceMount className="space-y-2 data-[state=closed]:hidden">
-							<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-								{PASSIVE_CONDITION_OPTIONS.map((condition) => {
-									const checked = options.activeConditions.includes(condition.type);
-									return (
-										<label
-											key={condition.type}
-											className={`flex items-start gap-2 rounded-md border px-2 py-1.5 transition ${
+					<CollapsibleContent forceMount className="space-y-2 data-[state=closed]:hidden">
+						<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+							{PASSIVE_CONDITION_OPTIONS.map((condition) => {
+								const checked = options.activeConditions.includes(condition.type);
+								return (
+									<label
+										key={condition.type}
+										className={`flex items-start gap-2 rounded-md border px-2 py-1.5 transition ${
+											checked
+												? "border-primary bg-primary/10 text-primary-foreground shadow-[0_8px_20px_rgba(var(--primary-rgb),0.13)] dark:border-primary dark:bg-primary/10 dark:text-primary"
+												: "border-border bg-background text-foreground dark:border-border dark:bg-muted/50 dark:text-foreground"
+										} ${disabled ? "opacity-80" : "hover:border-primary/70 hover:bg-primary/5 dark:hover:border-primary/70 dark:hover:bg-primary/10"}`}
+									>
+										<input type="checkbox" className="sr-only" checked={checked} disabled={disabled} onChange={() => handleConditionClick(condition.type)} />
+										<span
+											aria-hidden
+											className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-sm border-2 text-[10px] font-bold transition ${
 												checked
-													? "border-primary bg-primary/10 text-primary-foreground shadow-[0_8px_20px_rgba(var(--primary-rgb),0.13)] dark:border-primary dark:bg-primary/10 dark:text-primary"
-													: "border-border bg-background text-foreground dark:border-border dark:bg-muted/50 dark:text-foreground"
-											} ${disabled ? "opacity-80" : "hover:border-primary/70 hover:bg-primary/5 dark:hover:border-primary/70 dark:hover:bg-primary/10"}`}
+													? "border-primary bg-primary text-primary-foreground dark:border-primary dark:bg-primary dark:text-background"
+													: "border-border bg-background text-transparent dark:border-border dark:bg-muted/70"
+											} ${disabled ? "opacity-90" : ""}`}
 										>
-											<input type="checkbox" className="sr-only" checked={checked} disabled={disabled} onChange={() => handleConditionClick(condition.type)} />
-											<span
-												aria-hidden
-												className={`mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-sm border-2 text-[10px] font-bold transition ${
-													checked
-														? "border-primary bg-primary text-primary-foreground dark:border-primary dark:bg-primary dark:text-background"
-														: "border-border bg-background text-transparent dark:border-border dark:bg-muted/70"
-												} ${disabled ? "opacity-90" : ""}`}
-											>
-												✓
-											</span>
-											<div className="leading-tight">
-												<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground dark:text-foreground">{condition.label}</p>
-												<p className="text-[11px] text-muted-foreground dark:text-muted-foreground">{condition.helper}</p>
-											</div>
-										</label>
-									);
-								})}
-							</div>
-						</CollapsibleContent>
-						<div className="pt-1">
-							<div className="flex justify-center">
-								<CollapsibleTrigger
-									disabled={!options.enabled}
-									className={`inline-flex items-center gap-2 rounded-md border px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] transition ${
-										options.enabled
-											? "border-primary/60 text-primary hover:border-primary hover:bg-primary/10 dark:border-primary/40 dark:text-primary dark:hover:border-primary/70 dark:hover:bg-primary/10"
-											: "cursor-not-allowed border-border/60 text-muted-foreground/80"
-									}`}
-								>
-									<span>{conditionsOpen ? "Hide" : "Show"} conditions</span>
-									{activeConditionsCount > 0 && !conditionsOpen ? (
-										<span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] tracking-[0.25em] text-primary dark:text-primary">
-											{activeConditionsCount}
+											✓
 										</span>
-									) : null}
-									<ChevronDown className={`h-3.5 w-3.5 transition-transform ${conditionsOpen ? "rotate-180" : ""}`} />
-								</CollapsibleTrigger>
-							</div>
+										<div className="leading-tight">
+											<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-foreground dark:text-foreground">{condition.label}</p>
+											<p className="text-[11px] text-muted-foreground dark:text-muted-foreground">{condition.helper}</p>
+										</div>
+									</label>
+								);
+							})}
 						</div>
-					</>
+					</CollapsibleContent>
 				) : (
 					<p className="text-xs text-muted-foreground">No conditional passives require manual enabling for this dataset.</p>
 				)

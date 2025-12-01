@@ -12,12 +12,17 @@ export type TeamBuilderSlotConfigs = Record<string, SlotConfig | undefined>;
 
 export type DisplayMode = "nickname" | "shootAT" | "focusAT" | "focusDF" | "wallDF" | "scrambleAT" | "scrambleDF" | "kp";
 
+export type RankingOptions = {
+	ignoreHeroSlots: boolean;
+};
+
 export type TeamBuilderState = {
 	formationId: FormationId;
 	assignments: TeamBuilderAssignments;
 	displayMode: DisplayMode;
 	slotConfigs: TeamBuilderSlotConfigs;
 	passiveOptions: PassiveCalculationOptions;
+	rankingOptions: RankingOptions;
 };
 
 export type PassiveCalculationOptions = {
@@ -31,6 +36,10 @@ export type TeamBuilderTeamId = (typeof TEAM_BUILDER_TEAM_IDS)[number];
 export const DEFAULT_PASSIVE_OPTIONS: PassiveCalculationOptions = Object.freeze({
 	enabled: false,
 	activeConditions: [],
+});
+
+export const DEFAULT_RANKING_OPTIONS: RankingOptions = Object.freeze({
+	ignoreHeroSlots: false,
 });
 
 const LEGACY_TEAM_STORAGE_KEY = "inazuma-guide.team-builder.v2";
@@ -103,6 +112,7 @@ const defaultState: TeamBuilderState = {
 	displayMode: "nickname",
 	slotConfigs: {},
 	passiveOptions: DEFAULT_PASSIVE_OPTIONS,
+	rankingOptions: DEFAULT_RANKING_OPTIONS,
 };
 
 const storage = typeof window === "undefined" ? undefined : createJSONStorage<TeamBuilderState>(() => window.localStorage);
