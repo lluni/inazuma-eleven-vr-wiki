@@ -388,7 +388,7 @@ function EquipmentSelectRow({ category, selectedId, onChange }: EquipmentSelectR
 					<SelectValue placeholder={`Select ${titleCase(category)}`} />
 				</SelectTrigger>
 				<SelectContent
-					className="max-h-80 space-y-1"
+					className="max-h-[30rem] space-y-1"
 					searchValue={query}
 					onSearchValueChange={setQuery}
 					searchPlaceholder="Search equipment..."
@@ -600,18 +600,20 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 							);
 						})()}
 						<SelectContent
-							className="max-h-80 space-y-1"
+							className="max-h-[40rem] space-y-1"
 							searchValue={query}
 							onSearchValueChange={setQuery}
 							searchPlaceholder="Search by name or ID"
 							onSearchKeyDown={handleSearchKeyDown}
 						>
 							<SelectItem value="none">Empty</SelectItem>
-							{filteredOptions.map((passive) => (
-								<SelectItem key={passive.id} value={String(passive.id)}>
-									<PassiveSelectValue passive={passive} />
-								</SelectItem>
-							))}
+							{filteredOptions
+								.sort((a, b) => a.buildType?.localeCompare(b.buildType ?? "") ?? 0)
+								.map((passive) => (
+									<SelectItem key={passive.id} value={String(passive.id)}>
+										<PassiveSelectValue passive={passive} />
+									</SelectItem>
+								))}
 							{!filteredOptions.length && <div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">No matches</div>}
 						</SelectContent>
 					</Select>
