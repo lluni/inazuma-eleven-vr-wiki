@@ -9,11 +9,14 @@ import { cn } from "@/lib/utils";
 import type { DisplayMode } from "@/store/team-builder";
 import type { SlotAssignment, TeamBuilderSlot } from "@/types/team-builder";
 
+export type SlotStatTrend = "apex" | "surging" | "steady" | "fading" | "dire";
+
 export type FormationPitchProps = {
 	assignments: SlotAssignment[];
 	staffEntries: SlotAssignment[];
 	activeSlotId: string | null;
 	displayMode: DisplayMode;
+	statTrendBySlotId?: Map<string, SlotStatTrend> | null;
 	onSlotSelect: (slot: TeamBuilderSlot) => void;
 	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
 	formationId: FormationDefinition["id"];
@@ -28,6 +31,7 @@ export function FormationPitch({
 	staffEntries,
 	activeSlotId,
 	displayMode,
+	statTrendBySlotId,
 	onSlotSelect,
 	onEmptySlotSelect,
 	formationId,
@@ -77,6 +81,7 @@ export function FormationPitch({
 								entry={entry}
 								isActive={entry.slot.id === activeSlotId}
 								displayMode={displayMode}
+								statTrendBySlotId={statTrendBySlotId}
 								onSelect={() => onSlotSelect(entry.slot)}
 								onEmptySelect={() => onEmptySlotSelect(entry.slot)}
 								dragDisabled={dragDisabled}
@@ -93,6 +98,7 @@ export function FormationPitch({
 							<SlotEntryButton
 								entry={managerEntry}
 								displayMode={displayMode}
+								statTrendBySlotId={statTrendBySlotId}
 								activeSlotId={activeSlotId}
 								onSlotSelect={onSlotSelect}
 								onEmptySlotSelect={onEmptySlotSelect}
@@ -109,6 +115,7 @@ export function FormationPitch({
 								key={entry.slot.id}
 								entry={entry}
 								displayMode={displayMode}
+								statTrendBySlotId={statTrendBySlotId}
 								activeSlotId={activeSlotId}
 								onSlotSelect={onSlotSelect}
 								onEmptySlotSelect={onEmptySlotSelect}
@@ -128,6 +135,7 @@ export function FormationPitch({
 export type ReservesRailProps = {
 	entries: SlotAssignment[];
 	displayMode: DisplayMode;
+	statTrendBySlotId?: Map<string, SlotStatTrend> | null;
 	activeSlotId: string | null;
 	onSlotSelect: (slot: TeamBuilderSlot) => void;
 	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
@@ -140,6 +148,7 @@ export type ReservesRailProps = {
 export function ReservesRail({
 	entries,
 	displayMode,
+	statTrendBySlotId,
 	activeSlotId,
 	onSlotSelect,
 	onEmptySlotSelect,
@@ -172,6 +181,7 @@ export function ReservesRail({
 						key={entry.slot.id}
 						entry={entry}
 						displayMode={displayMode}
+						statTrendBySlotId={statTrendBySlotId}
 						activeSlotId={activeSlotId}
 						onSlotSelect={onSlotSelect}
 						onEmptySlotSelect={onEmptySlotSelect}
@@ -190,6 +200,7 @@ export function ReservesRail({
 type SlotEntryButtonProps = {
 	entry: SlotAssignment;
 	displayMode: DisplayMode;
+	statTrendBySlotId?: Map<string, SlotStatTrend> | null;
 	activeSlotId: string | null;
 	onSlotSelect: (slot: TeamBuilderSlot) => void;
 	onEmptySlotSelect: (slot: TeamBuilderSlot) => void;
@@ -203,6 +214,7 @@ type SlotEntryButtonProps = {
 function SlotEntryButton({
 	entry,
 	displayMode,
+	statTrendBySlotId,
 	activeSlotId,
 	onSlotSelect,
 	onEmptySlotSelect,
@@ -234,6 +246,7 @@ function SlotEntryButton({
 	};
 
 	const cursorClass = isDragActive ? "cursor-grabbing" : hasPlayer ? "cursor-grab" : "cursor-pointer";
+	const statTrend = statTrendBySlotId?.get(entry.slot.id) ?? null;
 
 	return (
 		<button
@@ -252,7 +265,7 @@ function SlotEntryButton({
 			{...attributes}
 		>
 			<div className={cn(variant === "compact" ? SLOT_CARD_WIDTH_CLASS : "w-[clamp(120px,25vw,180px)]", cardWrapperClassName)}>
-				<SlotCard entry={entry} displayMode={displayMode} isActive={isActive} variant={variant} />
+				<SlotCard entry={entry} displayMode={displayMode} statTrend={statTrend} isActive={isActive} variant={variant} />
 			</div>
 		</button>
 	);
@@ -262,13 +275,23 @@ type PlayerSlotMarkerProps = {
 	entry: SlotAssignment;
 	isActive: boolean;
 	displayMode: DisplayMode;
+	statTrendBySlotId?: Map<string, SlotStatTrend> | null;
 	onSelect: () => void;
 	onEmptySelect: () => void;
 	dragDisabled?: boolean;
 	isDragActive?: boolean;
 };
 
-function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelect, dragDisabled = false, isDragActive = false }: PlayerSlotMarkerProps) {
+function PlayerSlotMarker({
+	entry,
+	isActive,
+	displayMode,
+	statTrendBySlotId,
+	onSelect,
+	onEmptySelect,
+	dragDisabled = false,
+	isDragActive = false,
+}: PlayerSlotMarkerProps) {
 	const { slot, player } = entry;
 	const positionStyle = getSlotPositionStyle(slot);
 	const handleClick = player ? onSelect : onEmptySelect;
@@ -291,6 +314,7 @@ function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelec
 	};
 
 	const cursorClass = isDragActive ? "cursor-grabbing" : player ? "cursor-grab" : "cursor-pointer";
+	const statTrend = statTrendBySlotId?.get(slot.id) ?? null;
 
 	return (
 		<button
@@ -309,7 +333,7 @@ function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelec
 			{...listeners}
 			{...attributes}
 		>
-			<SlotCard entry={entry} displayMode={displayMode} isActive={isActive} />
+			<SlotCard entry={entry} displayMode={displayMode} statTrend={statTrend} isActive={isActive} />
 		</button>
 	);
 }
@@ -317,11 +341,43 @@ function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelec
 type SlotCardProps = {
 	entry: SlotAssignment;
 	displayMode: DisplayMode;
+	statTrend?: SlotStatTrend | null;
 	isActive: boolean;
 	variant?: "default" | "compact";
 };
 
-export function SlotCard({ entry, displayMode, isActive, variant = "default" }: SlotCardProps) {
+type TrendArrowDirection = "up" | "right" | "down";
+
+const STAT_TREND_STYLES: Record<
+	SlotStatTrend,
+	{
+		colorClass: string;
+		direction: TrendArrowDirection;
+	}
+> = {
+	apex: {
+		colorClass: "text-emerald-500 drop-shadow-[0_0_10px_rgba(34,197,94,0.65)]",
+		direction: "up",
+	},
+	surging: {
+		colorClass: "text-lime-400 drop-shadow-[0_0_8px_rgba(132,204,22,0.55)]",
+		direction: "up",
+	},
+	steady: {
+		colorClass: "text-amber-300 drop-shadow-[0_0_6px_rgba(251,191,36,0.45)]",
+		direction: "right",
+	},
+	fading: {
+		colorClass: "text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.45)]",
+		direction: "down",
+	},
+	dire: {
+		colorClass: "text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.55)]",
+		direction: "down",
+	},
+};
+
+export function SlotCard({ entry, displayMode, statTrend = null, isActive, variant = "default" }: SlotCardProps) {
 	const { slot, player, config } = entry;
 	const slotLabel = slot.displayLabel ?? slot.label;
 	const badgeLabel = getSlotBadgeLabel(entry);
@@ -329,6 +385,8 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 	const rarityDefinition = getSlotRarityDefinition(config?.rarity ?? "normal");
 	const hasPlayer = Boolean(player);
 	const isCompact = variant === "compact";
+	const trendMeta = statTrend ? STAT_TREND_STYLES[statTrend] : null;
+	const shouldShowTrend = Boolean(trendMeta && displayMode !== "nickname");
 
 	return (
 		<div
@@ -366,8 +424,11 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 
 					{player && (
 						<>
-							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/75 text-center shadow-2xl backdrop-blur">
-								<span className="m-0 block text-xs font-semibold uppercase  text-white">{player ? getSlotDisplayValue(entry, displayMode) : null}</span>
+							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/75 px-2 py-1 text-center shadow-2xl backdrop-blur">
+								<span className="m-0 flex items-center justify-center gap-1 text-xs font-semibold uppercase text-white">
+									{shouldShowTrend && trendMeta ? <TrendArrow direction={trendMeta.direction} className={trendMeta.colorClass} /> : null}
+									{getSlotDisplayValue(entry, displayMode)}
+								</span>
 							</div>
 							<span
 								className="absolute left-0.5 top-0.5 inline-flex items-center justify-center rounded-sm border-[2px] border-black/70 px-2.5 py-[2px] text-xs font-semibold uppercase text-white shadow-[0_4px_0_rgba(0,0,0,0.35)]"
@@ -386,6 +447,21 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 				</div>
 			</div>
 		</div>
+	);
+}
+
+function TrendArrow({ direction, className }: { direction: TrendArrowDirection; className?: string }) {
+	const rotationClass = direction === "up" ? "" : direction === "right" ? "rotate-90" : "rotate-180";
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			className={cn("size-4 drop-shadow-[0_0_6px_rgba(0,0,0,0.45)]", rotationClass, className)}
+			role="presentation"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path d="M12 3l9 9h-5v9H8v-9H3z" fill="currentColor" />
+		</svg>
 	);
 }
 

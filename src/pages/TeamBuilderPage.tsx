@@ -5,16 +5,16 @@ import type { LucideIcon } from "lucide-react";
 import { Activity, ChevronDown, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FormationPitch, ReservesRail, SlotCard } from "@/components/team-builder/FormationPitch";
+import { FormationPitch, ReservesRail, SlotCard, type SlotStatTrend } from "@/components/team-builder/FormationPitch";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
 import { SlotDetailsDrawer } from "@/components/team-builder/SlotDetailsDrawer";
 import { TeamExportSnapshot } from "@/components/team-builder/TeamExportSnapshot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FORMATIONS, type FormationDefinition, formationsMap } from "@/data/formations";
 import { EXTRA_SLOT_IDS, EXTRA_TEAM_SLOTS } from "@/data/team-builder-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -151,7 +151,7 @@ export default function TeamBuilderPage() {
 	const teamEntry5 = useTeamBuilderEntry(TEAM_BUILDER_TEAM_IDS[4]);
 	const teamEntry6 = useTeamBuilderEntry(TEAM_BUILDER_TEAM_IDS[5]);
 	const teamEntries = [teamEntry1, teamEntry2, teamEntry3, teamEntry4, teamEntry5, teamEntry6];
-	const defaultTeamEntry = teamEntries[0]!;
+	const defaultTeamEntry = teamEntries[0] ?? teamEntry1;
 	const activeTeamEntry = teamEntries.find((entry) => entry.teamId === activeTeamId) ?? defaultTeamEntry;
 	const teamState = activeTeamEntry.state;
 	const setTeamState = activeTeamEntry.setState;
@@ -359,6 +359,48 @@ export default function TeamBuilderPage() {
 		});
 	}, [allSlots, effectiveState.assignments, effectiveState.slotConfigs, passiveOptions, playersById]);
 	const assignmentsById = useMemo(() => new Map(allAssignments.map((entry) => [entry.slot.id, entry])), [allAssignments]);
+	const statTrendBySlotId = useMemo<Map<string, SlotStatTrend> | null>(() => {
+		if (displayMode === "nickname") {
+			return null;
+		}
+		const entries: { slotId: string; value: number }[] = [];
+		allAssignments.forEach((entry) => {
+			if (!entry.player) {
+				return;
+			}
+			const statValue = entry.computed?.finalPower?.[displayMode] ?? entry.computed?.power?.[displayMode];
+			if (typeof statValue !== "number" || Number.isNaN(statValue)) {
+				return;
+			}
+			entries.push({ slotId: entry.slot.id, value: statValue });
+		});
+		if (!entries.length) {
+			return null;
+		}
+		const values = entries.map((entry) => entry.value);
+		const maxValue = Math.max(...values);
+		const minValue = Math.min(...values);
+		const spread = maxValue - minValue;
+		const trendMap = new Map<string, SlotStatTrend>();
+		const assignTrend = (normalized: number): SlotStatTrend => {
+			if (normalized >= 0.85) return "apex";
+			if (normalized >= 0.6) return "surging";
+			if (normalized >= 0.4) return "steady";
+			if (normalized >= 0.2) return "fading";
+			return "dire";
+		};
+		if (spread === 0) {
+			entries.forEach(({ slotId }) => {
+				trendMap.set(slotId, "steady");
+			});
+			return trendMap;
+		}
+		entries.forEach(({ slotId, value }) => {
+			const normalized = (value - minValue) / spread;
+			trendMap.set(slotId, assignTrend(normalized));
+		});
+		return trendMap;
+	}, [allAssignments, displayMode]);
 	const starterAssignments = allAssignments.filter((entry) => entry.slot.kind === "starter");
 	const reserveAssignments = allAssignments.filter((entry) => entry.slot.kind === "reserve");
 	const staffAssignments = allAssignments.filter((entry) => entry.slot.kind === "manager" || entry.slot.kind === "coordinator");
@@ -827,6 +869,7 @@ export default function TeamBuilderPage() {
 										staffEntries={staffAssignments}
 										activeSlotId={activeSlotId}
 										displayMode={displayMode}
+										statTrendBySlotId={statTrendBySlotId}
 										onSlotSelect={handleSelectSlot}
 										onEmptySlotSelect={handleSelectEmptySlot}
 										formationId={formation.id}
@@ -840,6 +883,7 @@ export default function TeamBuilderPage() {
 									<ReservesRail
 										entries={reserveAssignments}
 										displayMode={displayMode}
+										statTrendBySlotId={statTrendBySlotId}
 										activeSlotId={activeSlotId}
 										onSlotSelect={handleSelectSlot}
 										onEmptySlotSelect={handleSelectEmptySlot}
@@ -855,7 +899,7 @@ export default function TeamBuilderPage() {
 					<DragOverlay dropAnimation={null}>
 						{activeDragEntry ? (
 							<div className="pointer-events-none w-[clamp(120px,25vw,180px)] drop-shadow-[0_18px_25px_rgba(0,0,0,0.4)]">
-								<SlotCard entry={activeDragEntry} displayMode={displayMode} isActive />
+								<SlotCard entry={activeDragEntry} displayMode={displayMode} statTrend={statTrendBySlotId?.get(activeDragEntry.slot.id) ?? null} isActive />
 							</div>
 						) : null}
 					</DragOverlay>
@@ -1095,7 +1139,10 @@ async function inlineNodeImages(node: HTMLElement) {
 				return;
 			}
 			if (cache.has(source)) {
-				image.src = cache.get(source)!;
+				const cachedValue = cache.get(source);
+				if (cachedValue) {
+					image.src = cachedValue;
+				}
 				return;
 			}
 			try {
@@ -1182,11 +1229,7 @@ function PassiveOptionsPanel({ options, disabled, onToggleEnabled, onToggleCondi
 	};
 
 	return (
-		<Collapsible
-			open={conditionsOpen}
-			onOpenChange={setConditionsOpen}
-			className="space-y-3 rounded-lg border border-border/70 bg-card/60 p-3"
-		>
+		<Collapsible open={conditionsOpen} onOpenChange={setConditionsOpen} className="space-y-3 rounded-lg border border-border/70 bg-card/60 p-3">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
 					<button
@@ -1264,7 +1307,9 @@ function PassiveOptionsPanel({ options, disabled, onToggleEnabled, onToggleCondi
 								>
 									<span>{conditionsOpen ? "Hide" : "Show"} conditions</span>
 									{activeConditionsCount > 0 && !conditionsOpen ? (
-										<span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] tracking-[0.25em] text-primary dark:text-primary">{activeConditionsCount}</span>
+										<span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] tracking-[0.25em] text-primary dark:text-primary">
+											{activeConditionsCount}
+										</span>
 									) : null}
 									<ChevronDown className={`h-3.5 w-3.5 transition-transform ${conditionsOpen ? "rotate-180" : ""}`} />
 								</CollapsibleTrigger>

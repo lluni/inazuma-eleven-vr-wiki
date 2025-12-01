@@ -1,4 +1,9 @@
 # Version 1.4.0 - 2025-11-30
+- Team Builder Page:
+  - Added details button to the slot details drawer.
+  - Slot Display for attributes will show an arrow icon indicating which player has higher value in the team. Green > Orange > Red.
+  - Several UI improvements to passives
+  - Removed Passive ID's which descriptions looks duplicated and confusing.
 - Equipments Page:
   - Added history equipment data, useful for recruiting story scouts.
   - Equipments with 0 values are now shown as "-".
