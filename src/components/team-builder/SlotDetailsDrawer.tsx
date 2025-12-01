@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Bean, BrickWall, HeartPulse, Shield, ShieldCheck, Swords, Target } from "lucide-react";
+import { BadgeInfo, Bean, BrickWall, HeartPulse, Shield, ShieldCheck, Sparkles, Swords, Target } from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { ElementBadge, PositionBadge } from "@/components/player/PlayerDetailsDialog";
@@ -546,6 +546,8 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 		});
 	};
 
+	const indicator = getPassiveSlotIndicator(rule.id);
+	const IndicatorIcon = indicator?.icon;
 	const isEmptySelection = !selectedPassive;
 	const isPercentagePassive = Boolean(selectedPassive?.description?.includes("%"));
 
@@ -566,22 +568,34 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 					>
 						{(() => {
 							const tooltipContent = selectedPassive ? getPassiveTooltipContent(selectedPassive) : null;
+							const shouldShowTooltip = Boolean(tooltipContent && !open);
 							const trigger = (
-								<SelectTrigger
-									className={`bg-background/90 w-full !h-full whitespace-normal *:data-[slot=select-value]:line-clamp-none *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words ${isEmptySelection ? "text-muted-foreground/70" : ""}`}
-								>
-									{selectedPassive ? <PassiveSelectValue passive={selectedPassive} /> : <SelectValue placeholder="Select passive" />}
-								</SelectTrigger>
+								<div className="relative">
+									{indicator && IndicatorIcon ? (
+										<span
+											className={`pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 flex size-7 items-center justify-center rounded-lg border ${indicator.border} ${indicator.background} ${indicator.text}`}
+										>
+											<IndicatorIcon className="size-4" />
+										</span>
+									) : null}
+									<SelectTrigger
+										className={`bg-background/90 w-full !h-full whitespace-normal *:data-[slot=select-value]:line-clamp-none *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words ${isEmptySelection ? "text-muted-foreground/70" : ""} ${indicator ? "pl-12" : ""}`}
+									>
+										{selectedPassive ? <PassiveSelectValue passive={selectedPassive} /> : <SelectValue placeholder="Select passive" />}
+									</SelectTrigger>
+								</div>
 							);
 
-							if (!tooltipContent) {
+							if (!shouldShowTooltip) {
 								return trigger;
 							}
 
 							return (
 								<Tooltip>
 									<TooltipTrigger asChild>{trigger}</TooltipTrigger>
-									<TooltipContent side="top">{tooltipContent}</TooltipContent>
+									<TooltipContent side="top" variant="ghost" hideArrow className="p-0">
+										{tooltipContent}
+									</TooltipContent>
 								</Tooltip>
 							);
 						})()}
@@ -593,32 +607,16 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 							onSearchKeyDown={handleSearchKeyDown}
 						>
 							<SelectItem value="none">Empty</SelectItem>
-							{filteredOptions.map((passive) => {
-								const tooltipContent = getPassiveTooltipContent(passive);
-
-								if (!tooltipContent) {
-									return (
-										<SelectItem key={passive.id} value={String(passive.id)}>
-											<PassiveSelectValue passive={passive} />
-										</SelectItem>
-									);
-								}
-
-								return (
-									<Tooltip key={passive.id}>
-										<TooltipTrigger asChild>
-											<SelectItem value={String(passive.id)}>
-												<PassiveSelectValue passive={passive} />
-											</SelectItem>
-										</TooltipTrigger>
-										<TooltipContent side="top">{tooltipContent}</TooltipContent>
-									</Tooltip>
-								);
-							})}
+							{filteredOptions.map((passive) => (
+								<SelectItem key={passive.id} value={String(passive.id)}>
+									<PassiveSelectValue passive={passive} />
+								</SelectItem>
+							))}
 							{!filteredOptions.length && <div className="px-3 pb-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">No matches</div>}
 						</SelectContent>
 					</Select>
 				</div>
+
 				<div className="relative">
 					<Input
 						type="number"
@@ -628,7 +626,7 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 						value={draftValue}
 						disabled={!selectedPassive}
 						hideSpinButtons
-						className={`max-w-20 bg-background/90 sm:self-center ${isPercentagePassive ? "pr-6" : ""}`}
+						className={`max-w-16 bg-background/90 sm:self-center ${isPercentagePassive ? "pr-6" : ""}`}
 						onChange={(event) => handleValueChange(event.currentTarget.value)}
 						onBlur={handleValueBlur}
 					/>
@@ -642,34 +640,125 @@ function PassiveSelectRow({ rule, preset, onChange }: PassiveSelectRowProps) {
 }
 
 function PassiveSelectValue({ passive }: { passive: PassiveRecord }) {
+	const buildLabel = passive.buildType ? titleCase(passive.buildType) : "General";
+
 	return (
 		<div className="flex flex-col break-words text-left leading-tight">
-			<span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-				{passive.buildType ? `[${passive.buildType}] ` : ""} Passive #{passive.number}
-			</span>
-			<span className="text-xs">{passive.description}</span>
+			<div className="mb-1 flex flex-wrap items-center gap-1.5">
+				<PassiveMetaBadge visual={getPassiveBuildBadgeVisual(buildLabel)} label={buildLabel} />
+				<PassiveMetaBadge visual={getPassiveNumberBadgeVisual()} label={`#${passive.number}`} />
+			</div>
+			<span className="text-xs text-foreground">{passive.description}</span>
 		</div>
 	);
+}
+
+type PassiveBadgeVisual = {
+	background: string;
+	borderColor: string;
+	textColor: string;
+	shadow: string;
+};
+
+function PassiveMetaBadge({ visual, label }: { visual: PassiveBadgeVisual; label: string }) {
+	return (
+		<span
+			className="inline-flex min-w-[38px] items-center justify-center rounded-[5px] border-[1.5px] px-2 py-[1px] text-[9px] font-semibold uppercase tracking-[0.15em]"
+			style={{
+				background: visual.background,
+				borderColor: visual.borderColor,
+				color: visual.textColor,
+				boxShadow: visual.shadow,
+			}}
+		>
+			{label}
+		</span>
+	);
+}
+
+const PASSIVE_BADGE_PALETTE: Array<{ from: string; to: string; border: string; shadow: string }> = [
+	{ from: "#7c2d12", to: "#ea580c", border: "#451a03", shadow: "0 3px 0 rgba(69,26,3,0.65)" },
+	{ from: "#312e81", to: "#4338ca", border: "#1e1b4b", shadow: "0 3px 0 rgba(30,27,75,0.6)" },
+	{ from: "#0f172a", to: "#1d4ed8", border: "#0b1220", shadow: "0 3px 0 rgba(11,18,32,0.65)" },
+	{ from: "#581c87", to: "#a21caf", border: "#3b0764", shadow: "0 3px 0 rgba(59,7,100,0.6)" },
+	{ from: "#064e3b", to: "#059669", border: "#022c22", shadow: "0 3px 0 rgba(2,44,34,0.6)" },
+	{ from: "#713f12", to: "#b45309", border: "#422006", shadow: "0 3px 0 rgba(66,32,6,0.6)" },
+];
+
+function getPassiveBuildBadgeVisual(label: string): PassiveBadgeVisual {
+	const palette = PASSIVE_BADGE_PALETTE[Math.abs(hashString(label)) % PASSIVE_BADGE_PALETTE.length];
+	return {
+		background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
+		borderColor: palette.border,
+		textColor: "#ffffff",
+		shadow: palette.shadow,
+	};
+}
+
+function getPassiveNumberBadgeVisual(): PassiveBadgeVisual {
+	return {
+		background: "linear-gradient(135deg, #0f172a, #1e293b)",
+		borderColor: "rgba(255,255,255,0.35)",
+		textColor: "#f8fafc",
+		shadow: "0 3px 0 rgba(15,23,42,0.65)",
+	};
+}
+
+function hashString(value: string): number {
+	let hash = 0;
+	for (let i = 0; i < value.length; i += 1) {
+		hash = (hash << 5) - hash + value.charCodeAt(i);
+		hash |= 0;
+	}
+	return hash;
 }
 
 function getPassiveTooltipContent(passive: PassiveRecord) {
 	const strong = formatPassiveTooltipValue(passive.strongValue);
 	const weak = formatPassiveTooltipValue(passive.weakValue);
+	const badgeVisual = getPassiveBuildBadgeVisual(passive.buildType ? titleCase(passive.buildType) : "General");
 
 	if (!strong && !weak) {
 		return null;
 	}
 
-	if (weak) {
-		return (
-			<div className="flex flex-col gap-0.5 text-[11px] font-semibold">
-				<span>Strong: {strong ?? "—"}</span>
-				<span>Weak: {weak}</span>
-			</div>
-		);
-	}
-
-	return <div className="text-[11px] font-semibold">Default: {strong ?? "—"}</div>;
+	return (
+		<div
+			className="relative min-w-[190px] space-y-1 rounded-lg border px-3 py-2 text-[11px] shadow-xl"
+			style={{
+				background: badgeVisual.background,
+				borderColor: badgeVisual.borderColor,
+				boxShadow: badgeVisual.shadow,
+				color: badgeVisual.textColor,
+			}}
+		>
+			<div className="text-[9px] font-semibold uppercase tracking-[0.25em] text-white/80">Power Preview</div>
+			{weak ? (
+				<div className="space-y-0.5 font-semibold">
+					<div className="flex items-center justify-between text-white/90">
+						<span>Strong</span>
+						<span>{strong ?? "—"}</span>
+					</div>
+					<div className="flex items-center justify-between text-white/80">
+						<span>Weak</span>
+						<span>{weak}</span>
+					</div>
+				</div>
+			) : (
+				<div className="flex items-center justify-between font-semibold text-white">
+					<span>Default</span>
+					<span>{strong ?? "—"}</span>
+				</div>
+			)}
+			<span
+				className="absolute left-1/2 top-full block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2px]"
+				style={{
+					background: badgeVisual.background,
+					boxShadow: `${badgeVisual.shadow}, 0 0 0 1.5px ${badgeVisual.borderColor}`,
+				}}
+			/>
+		</div>
+	);
 }
 
 function formatPassiveTooltipValue(value: number | null) {
@@ -884,4 +973,31 @@ function createUniformPassiveRules(label: string, options: PassiveRecord[]): Pas
 		label: `${label} ${index + 1}`,
 		options,
 	}));
+}
+
+type PassiveSlotIndicator = {
+	icon: LucideIcon;
+	background: string;
+	border: string;
+	text: string;
+};
+
+function getPassiveSlotIndicator(ruleId: string): PassiveSlotIndicator | null {
+	if (ruleId.startsWith("build-")) {
+		return {
+			icon: Sparkles,
+			background: "bg-emerald-500/10",
+			border: "border-emerald-500/30",
+			text: "text-emerald-500",
+		};
+	}
+	if (ruleId === "custom-passive") {
+		return {
+			icon: BadgeInfo,
+			background: "bg-amber-500/10",
+			border: "border-amber-500/30",
+			text: "text-amber-500",
+		};
+	}
+	return null;
 }

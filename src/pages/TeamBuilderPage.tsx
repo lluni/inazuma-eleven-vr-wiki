@@ -56,7 +56,7 @@ type CombinedPassiveEntry = {
 	description: string;
 	totalValue: number;
 	count: number;
-	renderedDescription: string;
+	renderedDescriptionSegments: PassiveDescriptionSegment[];
 };
 
 type PassiveHighlightDescriptor = {
@@ -64,6 +64,11 @@ type PassiveHighlightDescriptor = {
 	label: string;
 	colorClass: string;
 	Icon: LucideIcon;
+};
+
+type PassiveDescriptionSegment = {
+	text: string;
+	highlighted: boolean;
 };
 
 const PASSIVE_HIGHLIGHTS: PassiveHighlightDescriptor[] = [
@@ -485,6 +490,8 @@ export default function TeamBuilderPage() {
 
 	const handleClearSlot = (slotId: string) => {
 		if (isPreviewingSharedTeam) return;
+		setDetailsOpen(false);
+		setActiveSlotId(null);
 		setTeamState((prev) => ({
 			...prev,
 			assignments: { ...prev.assignments, [slotId]: null },
@@ -884,52 +891,50 @@ export default function TeamBuilderPage() {
 				/>
 
 				<Dialog open={teamPassivesOpen} onOpenChange={setTeamPassivesOpen}>
-					<DialogContent className="!max-w-5xl border border-border/60 bg-[color:color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_45px_90px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-popover dark:shadow-[0_35px_75px_rgba(2,6,23,0.65)]">
+					<DialogContent className="!max-w-5xl  border border-border/60 bg-[color:color-mix(in_oklab,var(--background)_92%,white_8%)] shadow-[0_45px_90px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-popover dark:shadow-[0_35px_75px_rgba(2,6,23,0.65)]">
 						<DialogHeader>
 							<DialogTitle>Team passives</DialogTitle>
 							<DialogDescription>Combined bonuses from every configured passive across the squad.</DialogDescription>
 						</DialogHeader>
-						<div className="max-h-[60vh] overflow-y-auto pr-1">
+						<div className="max-h-[60vh] overflow-y-auto pr-1 hm-scrollbar">
 							{combinedTeamPassives.length ? (
 								<div className="grid gap-4 sm:grid-cols-2">
 									{combinedTeamPassives.map((entry) => {
 										const highlight = getPassiveHighlight(entry.description);
-										const HighlightIcon = highlight.Icon;
-										const formattedValue = formatSignedPercent(entry.totalValue);
 										const valueColor = entry.totalValue >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300";
+										const descriptionSegments =
+											entry.renderedDescriptionSegments.length > 0
+												? entry.renderedDescriptionSegments
+												: [
+														{
+															text: entry.description,
+															highlighted: false,
+														},
+													];
 
 										return (
 											<div
 												key={entry.description}
-												className="group relative overflow-hidden rounded-2xl border border-border/70 bg-[color:color-mix(in_oklab,var(--card)_88%,white_12%)] p-4 text-left shadow-md dark:border-white/5 dark:bg-gradient-to-br dark:from-background/95 dark:via-background/90 dark:to-background/80 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
+												className="rounded-2xl border-1 border-slate-900/70 bg-white p-4 text-left shadow-[3px_3px_0_rgba(15,23,42,0.25)] dark:border-slate-200/30 dark:bg-slate-950 dark:shadow-[3px_3px_0_rgba(0,0,0,0.55)]"
 											>
-												<div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100">
-													<div className="absolute inset-0 bg-[radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_25%,white_15%),transparent_65%)] dark:bg-[radial-gradient(circle_at_top,var(--primary)/20,transparent_65%)]" />
-												</div>
-												<div className="relative space-y-3">
-													<div className="flex items-start gap-3">
-														<div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-border/70 bg-white/80 text-sm font-semibold text-foreground dark:border-white/10 dark:bg-white/5 dark:text-foreground/80">
-															<HighlightIcon className={`size-5 ${highlight.colorClass}`} />
-														</div>
-														<div className="flex-1 space-y-1">
-															<div className="flex items-center justify-between gap-3">
-																<span className={`text-[10px] font-semibold uppercase tracking-[0.35em] ${highlight.colorClass}`}>{highlight.label}</span>
-																<span className={`text-sm font-semibold ${valueColor}`}>{formattedValue}</span>
-															</div>
-															<p className="text-sm font-semibold leading-snug text-foreground">{entry.renderedDescription}</p>
-														</div>
+												<div className="space-y-2">
+													<div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.35em] text-slate-700 dark:text-slate-200">
+														<span
+															className={`rounded-sm border border-slate-900/20 bg-gray-100/40 px-1.5 py-0.5 text-slate-900 shadow-[0_2px_0_rgba(15,23,42,0.2)] dark:border-white/20 dark:bg-white/10 dark:text-white/90 ${highlight.colorClass}`}
+														>
+															{highlight.label}
+														</span>
+														<span className="text-slate-500 dark:text-slate-300">
+															{entry.count} {entry.count === 1 ? "slot" : "slots"}
+														</span>
 													</div>
-													<div className="flex items-center justify-between text-[10px] uppercase tracking-[0.35em] text-muted-foreground/80">
-														<div className="flex items-center gap-1 text-muted-foreground">
-															<ClipboardList className="size-3.5 text-muted-foreground/80" />
-															<span>Sources</span>
-														</div>
-														<div className="flex items-center gap-1 font-semibold text-foreground/80">
-															<span className={entry.count ? "text-muted-foreground" : "text-muted-foreground/60"}>
-																{entry.count} {entry.count === 1 ? "slot" : "slots"}
+													<p className="text-sm leading-snug text-slate-900 dark:text-slate-50">
+														{descriptionSegments.map((segment, index) => (
+															<span key={`${entry.description}-${index}`} className={segment.highlighted ? `${valueColor} font-semibold` : undefined}>
+																{segment.text}
 															</span>
-														</div>
-													</div>
+														))}
+													</p>
 												</div>
 											</div>
 										);
@@ -1278,7 +1283,7 @@ function combineTeamPassives(assignments: SlotAssignment[]): CombinedPassiveEntr
 	return Array.from(map.values())
 		.map((entry) => ({
 			...entry,
-			renderedDescription: replacePassivePlaceholders(entry.description, entry.totalValue),
+			renderedDescriptionSegments: buildPassiveDescriptionSegments(entry.description, entry.totalValue),
 		}))
 		.sort((a, b) => {
 			const byValue = Math.abs(b.totalValue) - Math.abs(a.totalValue);
@@ -1289,14 +1294,49 @@ function combineTeamPassives(assignments: SlotAssignment[]): CombinedPassiveEntr
 		});
 }
 
-function replacePassivePlaceholders(description: string, totalValue: number): string {
-	if (!description) return "";
-	return description.replace(/\+%|-%/g, (placeholder) => {
-		if (placeholder === "+%") {
-			return formatSignedPercent(totalValue);
+function buildPassiveDescriptionSegments(description: string, totalValue: number): PassiveDescriptionSegment[] {
+	if (!description) {
+		return [];
+	}
+	const segments: PassiveDescriptionSegment[] = [];
+	const placeholderPattern = /\+%|-%/g;
+	let lastIndex = 0;
+	let match: RegExpExecArray | null = placeholderPattern.exec(description);
+
+	while (match) {
+		const preceding = description.slice(lastIndex, match.index);
+		if (preceding) {
+			segments.push({
+				text: preceding,
+				highlighted: false,
+			});
 		}
-		return formatOppositePercent(totalValue);
-	});
+		const replacement = match[0] === "+%" ? formatSignedPercent(totalValue) : formatOppositePercent(totalValue);
+		segments.push({
+			text: replacement,
+			highlighted: true,
+		});
+		lastIndex = match.index + match[0].length;
+		match = placeholderPattern.exec(description);
+	}
+
+	if (lastIndex < description.length) {
+		segments.push({
+			text: description.slice(lastIndex),
+			highlighted: false,
+		});
+	}
+
+	if (!segments.length) {
+		return [
+			{
+				text: description,
+				highlighted: false,
+			},
+		];
+	}
+
+	return segments;
 }
 
 function formatSignedPercent(value: number): string {

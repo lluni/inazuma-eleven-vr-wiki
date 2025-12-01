@@ -128,3 +128,4 @@ Pages:
 - Add search and ordering functionality when applicable.
 - Consider carefully the usability and experience of the page, knowing all content is for consultation by players that are currently playing.
 - Prioritize good design for mobile devices, considering all components must be responsive and suited to navigation by touch.
+- Strongly leans toward visual indicators through icons, colors and distribution of elements. Avoid labeling and explaining everything.

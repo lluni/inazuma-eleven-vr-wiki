@@ -285,11 +285,11 @@ function PlayerSlotMarker({ entry, isActive, displayMode, onSelect, onEmptySelec
 			onClick={handleClick}
 			style={positionStyle}
 			className={cn(
-				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-emerald-950 outline-none transition dark:text-white",
+				"absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 outline-none transition text-white",
 				SLOT_CARD_WIDTH_CLASS,
 				isActive ? "scale-105 drop-shadow-[0_12px_20px_rgba(15,118,110,0.3)] dark:drop-shadow-[0_12px_20px_rgba(0,0,0,0.35)]" : "hover:scale-105",
 				isDragging && "scale-110 opacity-80 drop-shadow-[0_12px_25px_rgba(16,185,129,0.35)] cursor-grabbing",
-				isOver && "ring-2 ring-emerald-200/80 drop-shadow-[0_0_30px_rgba(16,185,129,0.45)]",
+				isOver && "ring-2 ring-emerald-600/70 drop-shadow-[0_0_30px_rgba(15,118,110,0.55)]",
 				cursorClass,
 			)}
 			{...listeners}
@@ -318,16 +318,16 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 	return (
 		<div
 			className={cn(
-				"relative w-full rounded-lg border-2 bg-white/80 p-0.5 text-emerald-950 backdrop-blur-sm transition dark:bg-black/40 dark:text-white",
-				hasPlayer ? "border-emerald-300 shadow-xl dark:border-white/60" : "border-dashed border-emerald-200 dark:border-white/40",
-				isActive && "ring-2 ring-emerald-300 dark:ring-emerald-200",
-				isCompact && "rounded-md border-emerald-200 dark:border-white/50 text-[11px]",
+				"relative w-full rounded-lg border-2 bg-white/80 p-0.5 backdrop-blur-sm transition dark:bg-black/40 dark:text-white",
+				hasPlayer ? "border-emerald-600 shadow-xl dark:border-white/60" : "border-dashed border-emerald-700 dark:border-white/40",
+				isActive && "ring-2 ring-emerald-600 dark:ring-emerald-400",
+				isCompact && "rounded-md border-emerald-600 dark:border-white/50 text-[11px]",
 			)}
 		>
 			<div
 				className={cn(
 					"relative w-full rounded-md",
-					hasPlayer ? "p-[2px]" : "overflow-hidden border border-dashed border-emerald-200 bg-emerald-50/80 dark:border-white/30 dark:bg-black/20",
+					hasPlayer ? "p-[2px]" : "overflow-hidden border border-dashed border-emerald-700 bg-emerald-100/80 dark:border-white/30 dark:bg-black/20",
 					isCompact && "rounded-[8px]",
 				)}
 				style={hasPlayer ? { background: rarityDefinition.cardBackground } : undefined}
@@ -344,7 +344,7 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 						/>
 					) : (
 						<div className="flex aspect-[4/4] flex-col items-center justify-center gap-2 px-2 text-center">
-							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700 dark:text-white/80">{label}</span>
+							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-900 dark:text-white/80">{label}</span>
 							<span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">Tap to assign</span>
 						</div>
 					)}
