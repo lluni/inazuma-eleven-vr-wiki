@@ -424,10 +424,18 @@ export function SlotCard({ entry, displayMode, statTrend = null, isActive, varia
 
 					{player && (
 						<>
-							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/75 px-2 py-1 text-center shadow-2xl backdrop-blur">
-								<span className="m-0 flex items-center justify-center gap-1 text-xs font-semibold uppercase text-white">
-									{shouldShowTrend && trendMeta ? <TrendArrow direction={trendMeta.direction} className={trendMeta.colorClass} /> : null}
-									{getSlotDisplayValue(entry, displayMode)}
+							<div className="pointer-events-none absolute inset-x-0 bottom-0 rounded-xs bg-black/75 px-2 py-0.5 text-center shadow-2xl backdrop-blur">
+								<span className="m-0 block text-xs font-semibold uppercase leading-tight text-white">
+									{shouldShowTrend && trendMeta ? (
+										<span className="relative inline-flex items-center justify-center">
+											<span className="absolute left-0 top-1/2 -translate-y-1/2">
+												<TrendArrow direction={trendMeta.direction} className={trendMeta.colorClass} />
+											</span>
+											<span className="pl-5">{getSlotDisplayValue(entry, displayMode)}</span>
+										</span>
+									) : (
+										getSlotDisplayValue(entry, displayMode)
+									)}
 								</span>
 							</div>
 							<span
