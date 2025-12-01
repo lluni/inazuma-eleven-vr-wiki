@@ -4,7 +4,7 @@ import { FORMATIONS, type FormationDefinition } from "@/data/formations";
 import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
 import { mapToElementType, mapToTeamPosition } from "@/lib/players-data";
 import { getSlotRarityDefinition } from "@/lib/slot-rarity";
-import { getSlotDisplayValue, getSlotPositionStyle, SLOT_CARD_WIDTH_CLASS } from "@/lib/team-builder-ui";
+import { getReserveGroupLabel, getSlotBadgeLabel, getSlotDisplayValue, getSlotPositionStyle, SLOT_CARD_WIDTH_CLASS } from "@/lib/team-builder-ui";
 import { cn } from "@/lib/utils";
 import type { DisplayMode } from "@/store/team-builder";
 import type { SlotAssignment, TeamBuilderSlot } from "@/types/team-builder";
@@ -149,9 +149,23 @@ export function ReservesRail({
 	isDragActive = false,
 }: ReservesRailProps) {
 	if (!entries.length) return null;
+	const reserveHeaderLabel = getReserveGroupLabel(entries);
+	const reserveHeaderColor = getPositionColor("RESERVE");
 
 	return (
 		<div className="rounded-[28px] border-[4px] border-black/80 bg-gradient-to-b from-[#fff288] via-[#ffcf54] to-[#ffd95b] p-3 text-slate-900 shadow-[0_12px_0_rgba(0,0,0,0.35)] dark:border-white/20 dark:from-[#3a2200] dark:via-[#431100] dark:to-[#3a2200] dark:text-white xl:max-w-[280px]">
+			{reserveHeaderLabel ? (
+				<div className="flex justify-center">
+					<span
+						className="inline-flex items-center justify-center rounded-sm border-[2px] border-black/70 px-3 py-[2px] text-[11px] font-semibold uppercase tracking-[0.3em] text-white shadow-[0_4px_0_rgba(0,0,0,0.35)] dark:border-white/50"
+						style={{
+							background: reserveHeaderColor.gradient ?? reserveHeaderColor.primary,
+						}}
+					>
+						{reserveHeaderLabel}
+					</span>
+				</div>
+			) : null}
 			<div className={cn("mt-3 flex gap-2", isStackedLayout ? "flex-row overflow-x-auto pb-1" : "flex-col overflow-visible pb-0")}>
 				{entries.map((entry) => (
 					<SlotEntryButton
@@ -309,10 +323,11 @@ type SlotCardProps = {
 
 export function SlotCard({ entry, displayMode, isActive, variant = "default" }: SlotCardProps) {
 	const { slot, player, config } = entry;
-	const positionColor = getPositionColor(mapToTeamPosition(slot.label));
+	const slotLabel = slot.displayLabel ?? slot.label;
+	const badgeLabel = getSlotBadgeLabel(entry);
+	const positionColor = getPositionColor(mapToTeamPosition(badgeLabel));
 	const rarityDefinition = getSlotRarityDefinition(config?.rarity ?? "normal");
 	const hasPlayer = Boolean(player);
-	const label = slot.displayLabel ?? slot.label;
 	const isCompact = variant === "compact";
 
 	return (
@@ -344,7 +359,7 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 						/>
 					) : (
 						<div className="flex aspect-[4/4] flex-col items-center justify-center gap-2 px-2 text-center">
-							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-900 dark:text-white/80">{label}</span>
+							<span className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-900 dark:text-white/80">{slotLabel}</span>
 							<span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground">Tap to assign</span>
 						</div>
 					)}
@@ -361,7 +376,7 @@ export function SlotCard({ entry, displayMode, isActive, variant = "default" }: 
 									color: positionColor.gradient ? "#fff" : "#fff",
 								}}
 							>
-								{label}
+								{badgeLabel}
 							</span>
 							<span className="absolute right-0 top-0 drop-shadow-[0_6px_12px_rgba(0,0,0,0.4)]">
 								<ElementIcon element={player.element} />

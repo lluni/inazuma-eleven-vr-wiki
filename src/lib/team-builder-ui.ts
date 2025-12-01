@@ -62,6 +62,20 @@ export function getSlotDisplayValue(entry: SlotAssignment, mode: DisplayMode) {
 	return fallback;
 }
 
+export function getSlotBadgeLabel(entry: SlotAssignment): string {
+	const slotLabel = entry.slot.displayLabel ?? entry.slot.label;
+	const originalPosition = entry.player?.position;
+	if (entry.slot.kind === "reserve" && originalPosition) {
+		return mapToTeamPosition(originalPosition);
+	}
+	return slotLabel;
+}
+
+export function getReserveGroupLabel(entries: SlotAssignment[]): string | null {
+	const reserveEntry = entries.find((entry) => entry.slot.kind === "reserve");
+	return reserveEntry?.slot.displayLabel ?? reserveEntry?.slot.label ?? null;
+}
+
 export function extendFormationSlot(slot: FormationSlot): TeamBuilderSlot {
 	return {
 		...slot,
