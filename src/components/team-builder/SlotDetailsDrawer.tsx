@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react";
-import { BadgeInfo, Bean, BrickWall, HeartPulse, Shield, ShieldCheck, Sparkles, Swords, Target } from "lucide-react";
+import { BadgeInfo, Bean, BrickWall, HeartPulse, Info, Shield, ShieldCheck, Sparkles, Swords, Target } from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 
-import { ElementBadge, PlayerDetailsButton, PlayerDetailsDialog, type PlayerMetric, PositionBadge } from "@/components/player/PlayerDetailsDialog";
+import { ElementBadge, PlayerDetailsDialog, type PlayerMetric, PositionBadge } from "@/components/player/PlayerDetailsDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -193,7 +193,7 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 						</div>
 					) : (
 						<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-							<div className="flex flex-col items-center gap-4 rounded-2xl bg-muted/10 p-4 text-center">
+							<div className="flex flex-col items-center gap-3 rounded-2xl bg-muted/10 px-4 text-center">
 								<img
 									src={player.safeImage}
 									alt={player.name}
@@ -203,15 +203,22 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 									referrerPolicy="no-referrer"
 								/>
 								<div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-									<ElementBadge element={player.element} />
 									<PositionBadge position={player.position} />
-									<PlayerDetailsButton onClick={() => setDetailsOpen(true)} />
+									<ElementBadge element={player.element} />
 								</div>
 								<div>
 									<p className="text-lg font-semibold">{player.name}</p>
-									<p className="text-sm text-muted-foreground">{player.nickname}</p>
 								</div>
 								<div className="flex w-full flex-col gap-2">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => setDetailsOpen(true)}
+										className="w-full gap-2 text-xs font-semibold uppercase tracking-wide"
+									>
+										<Info className="size-4" aria-hidden="true" />
+										View player details
+									</Button>
 									<Button onClick={() => onAssign(slot)} className="w-full">
 										Replace player
 									</Button>
