@@ -54,7 +54,7 @@ type PlayerBaseStatKey = Exclude<keyof BaseStats, "total">;
 
 const playerBaseStatKeys: PlayerBaseStatKey[] = ["kick", "control", "technique", "pressure", "physical", "agility", "intelligence"];
 
-const rawPlayers = JSON.parse(playersJson).filter((record: RawPlayerRecord) => record.Name !== "???" && record.Position !== "?") as RawPlayerRecord[];
+const rawPlayers = JSON.parse(playersJson).filter((record: RawPlayerRecord) => record.Name !== "???") as RawPlayerRecord[];
 
 export const playersDataset: PlayerRecord[] = rawPlayers.map((player) => {
 	const baseStats: Record<PlayerBaseStatKey, number> = {
