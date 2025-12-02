@@ -76,57 +76,78 @@ export function FormationPitch({
 	const managerEntry = staffEntries.find((entry) => entry.slot.kind === "manager");
 	const coordinatorEntries = staffEntries.filter((entry) => entry.slot.kind === "coordinator");
 	const hasStaffFooter = managerEntry || coordinatorEntries.length > 0;
+	const showReserves = reserveEntries.length > 0;
+
+	const shouldShowStackedReserves = showReserves && isStackedLayout;
+	const shouldShowSideReserves = showReserves && !isStackedLayout;
 
 	return (
 		<div ref={layoutContainerRef} className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-3">
-			<div className="flex-1">
-				<div className="relative w-full">
-					<div className="pointer-events-none absolute inset-x-0 -top-3 z-20 flex justify-center sm:-top-4">
-						<div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border-[3px] border-black/80 bg-[#fff59f] px-4 py-1.5 text-slate-900 shadow-[0_10px_0_rgba(0,0,0,0.35)]">
-							<p className="text-[10px] font-black uppercase tracking-[0.45em] text-slate-900">Formation</p>
-							<Select disabled={isFormationDisabled} value={formationId} onValueChange={(value) => onFormationChange(value)}>
-								<SelectTrigger className="h-9 min-w-[200px] border-[3px] border-black/80 bg-[#fff4a6] text-xs font-semibold uppercase tracking-[0.15em] text-slate-900 shadow-[0_6px_0_rgba(0,0,0,0.35)] transition-all hover:-translate-y-0.5 hover:bg-[#ffe77a] focus-visible:ring-2 focus-visible:ring-[#ffe066] sm:min-w-[240px] dark:border-black/60 dark:bg-slate-900/80 dark:text-white dark:hover:bg-slate-900/60 dark:focus-visible:ring-slate-100/60">
-									<SelectValue placeholder="Choose formation" />
-								</SelectTrigger>
-								<SelectContent>
-									{FORMATIONS.map((item) => (
-										<SelectItem key={item.id} value={item.id}>
-											<span className="flex flex-col text-left">
-												<span className="text-xs font-semibold">{item.name}</span>
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+			<div className="flex w-full flex-1 flex-col gap-4">
+				<div className="flex-1">
+					<div className="relative w-full">
+						<div className="pointer-events-none absolute inset-x-0 -top-3 z-20 flex justify-center sm:-top-4">
+							<div className="pointer-events-auto inline-flex items-center gap-2 rounded-full border-[3px] border-black/80 bg-[#fff59f] px-4 py-1.5 text-slate-900 shadow-[0_10px_0_rgba(0,0,0,0.35)]">
+								<p className="text-[10px] font-black uppercase tracking-[0.45em] text-slate-900">Formation</p>
+								<Select disabled={isFormationDisabled} value={formationId} onValueChange={(value) => onFormationChange(value)}>
+									<SelectTrigger className="h-9 min-w-[200px] border-[3px] border-black/80 bg-[#fff4a6] text-xs font-semibold uppercase tracking-[0.15em] text-slate-900 shadow-[0_6px_0_rgba(0,0,0,0.35)] transition-all hover:-translate-y-0.5 hover:bg-[#ffe77a] focus-visible:ring-2 focus-visible:ring-[#ffe066] sm:min-w-[240px] dark:border-black/60 dark:bg-slate-900/80 dark:text-white dark:hover:bg-slate-900/60 dark:focus-visible:ring-slate-100/60">
+										<SelectValue placeholder="Choose formation" />
+									</SelectTrigger>
+									<SelectContent>
+										{FORMATIONS.map((item) => (
+											<SelectItem key={item.id} value={item.id}>
+												<span className="flex flex-col text-left">
+													<span className="text-xs font-semibold">{item.name}</span>
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
-					</div>
-					<div className="relative aspect-[4/6] w-full overflow-hidden rounded-[46px] border-[6px] border-black/80 bg-[#042a20] p-4 shadow-[0_6px_0_rgba(0,0,0,0.25)] sm:aspect-[5/6] lg:aspect-[5/5]">
-						<div className="pointer-events-none absolute inset-1 rounded-[40px] border-[3px] border-black/70 bg-[radial-gradient(circle_at_top,#e9ff7a_0%,#6eda6f_45%,#0a7b58_85%)] shadow-[inset_0_-40px_80px_rgba(0,0,0,0.35)]" />
-						<div className="pointer-events-none absolute inset-4 rounded-[32px] border-[3px] border-black/50 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_8%,transparent_8%,transparent_16%)] opacity-80" />
-						<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_60%)]" />
-						<div className="pointer-events-none absolute inset-x-10 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.6)]" />
-						<div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-56 sm:w-56" />
-						<div className="pointer-events-none absolute left-1/2 top-8 h-28 w-[60%] -translate-x-1/2 rounded-[28px] border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-32" />
-						<div className="pointer-events-none absolute left-1/2 bottom-8 h-28 w-[60%] -translate-x-1/2 rounded-[28px] border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-32" />
-						<div className="relative z-10 h-full w-full">
-							{assignments.map((entry) => (
-								<PlayerSlotMarker
-									key={entry.slot.id}
-									entry={entry}
-									isActive={entry.slot.id === activeSlotId}
-									displayMode={displayMode}
-									statTrendBySlotId={statTrendBySlotId}
-									onSelect={() => onSlotSelect(entry.slot)}
-									onEmptySelect={() => onEmptySlotSelect(entry.slot)}
-									dragDisabled={dragDisabled}
-									isDragActive={isDragActive}
-								/>
-							))}
+						<div className="relative aspect-[4/6] w-full overflow-hidden rounded-lg border-[6px] border-black/80 bg-[#042a20] p-4 shadow-[0_6px_0_rgba(0,0,0,0.25)] sm:aspect-[5/6] lg:aspect-[5/5]">
+							<div className="pointer-events-none absolute inset-1 rounded-lg border-[3px] border-black/70 bg-[radial-gradient(circle_at_top,#e9ff7a_0%,#6eda6f_45%,#0a7b58_85%)] shadow-[inset_0_-40px_80px_rgba(0,0,0,0.35)]" />
+							<div className="pointer-events-none absolute inset-4 rounded-lg border-[3px] border-black/50 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_8%,transparent_8%,transparent_16%)] opacity-80" />
+							<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_60%)]" />
+							<div className="pointer-events-none absolute inset-x-10 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.6)]" />
+							<div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-56 sm:w-56" />
+							<div className="pointer-events-none absolute left-1/2 top-8 h-28 w-[60%] -translate-x-1/2 rounded-[28px] border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-32" />
+							<div className="pointer-events-none absolute left-1/2 bottom-8 h-28 w-[60%] -translate-x-1/2 rounded-[28px] border-[3px] border-[#fffbc4] shadow-[0_0_18px_rgba(255,255,255,0.45)] sm:h-32" />
+							<div className="relative z-10 h-full w-full">
+								{assignments.map((entry) => (
+									<PlayerSlotMarker
+										key={entry.slot.id}
+										entry={entry}
+										isActive={entry.slot.id === activeSlotId}
+										displayMode={displayMode}
+										statTrendBySlotId={statTrendBySlotId}
+										onSelect={() => onSlotSelect(entry.slot)}
+										onEmptySelect={() => onEmptySlotSelect(entry.slot)}
+										dragDisabled={dragDisabled}
+										isDragActive={isDragActive}
+									/>
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
+				{shouldShowStackedReserves ? (
+					<ReservesRail
+						className="w-full"
+						entries={reserveEntries}
+						displayMode={displayMode}
+						statTrendBySlotId={statTrendBySlotId}
+						activeSlotId={activeSlotId}
+						onSlotSelect={onSlotSelect}
+						onEmptySlotSelect={onEmptySlotSelect}
+						variant="compact"
+						isStackedLayout
+						dragDisabled={dragDisabled}
+						isDragActive={isDragActive}
+					/>
+				) : null}
 				{hasStaffFooter && (
-					<div className="mt-4 flex w-full flex-wrap items-center gap-2 rounded-[30px] border-[4px] border-black/80 bg-gradient-to-r from-[#fff48a] via-[#ffd35d] to-[#fff48a] p-3 text-slate-900 shadow-[0_6px_0_rgba(0,0,0,0.35)] dark:border-white/20 dark:from-[#3c2a00] dark:via-[#4b1e00] dark:to-[#3c2a00] dark:text-white sm:gap-3 sm:justify-between">
+					<div className="flex w-full flex-wrap items-center gap-2 rounded-lg border-[4px] border-black/80 bg-gradient-to-r from-[#fff48a] via-[#ffd35d] to-[#fff48a] p-3 text-slate-900 shadow-[0_6px_0_rgba(0,0,0,0.35)] dark:border-white/20 dark:from-[#3c2a00] dark:via-[#4b1e00] dark:to-[#3c2a00] dark:text-white sm:gap-3 sm:justify-between">
 						<div className="flex flex-1 justify-start">
 							{managerEntry ? (
 								<SlotEntryButton
@@ -163,8 +184,8 @@ export function FormationPitch({
 					</div>
 				)}
 			</div>
-			{reserveEntries.length ? (
-				<div className="self-start">
+			{shouldShowSideReserves ? (
+				<div className="w-auto self-start">
 					<ReservesRail
 						entries={reserveEntries}
 						displayMode={displayMode}
@@ -194,6 +215,7 @@ export type ReservesRailProps = {
 	isStackedLayout?: boolean;
 	dragDisabled?: boolean;
 	isDragActive?: boolean;
+	className?: string;
 };
 
 export function ReservesRail({
@@ -207,13 +229,14 @@ export function ReservesRail({
 	isStackedLayout = false,
 	dragDisabled = false,
 	isDragActive = false,
+	className,
 }: ReservesRailProps) {
 	if (!entries.length) return null;
 	const reserveHeaderLabel = getReserveGroupLabel(entries);
 	const reserveHeaderColor = getPositionColor("RESERVE");
 
 	return (
-		<div className="relative">
+		<div className={cn("relative", className)}>
 			{reserveHeaderLabel ? (
 				<div className="pointer-events-none absolute inset-x-0 -top-3 z-20 flex justify-center sm:-top-4">
 					<span
@@ -226,8 +249,8 @@ export function ReservesRail({
 					</span>
 				</div>
 			) : null}
-			<div className="rounded-[28px] border-[4px] border-black/80 bg-gradient-to-b from-[#fff288] via-[#ffcf54] to-[#ffd95b] p-3 text-slate-900 shadow-[0_12px_0_rgba(0,0,0,0.35)] dark:border-white/20 dark:from-[#3a2200] dark:via-[#431100] dark:to-[#3a2200] dark:text-white xl:max-w-[280px]">
-				<div className={cn("mt-3 flex gap-2", isStackedLayout ? "flex-row overflow-x-auto pb-1" : "flex-col overflow-visible pb-0")}>
+			<div className="rounded-lg border-[4px] border-black/80 bg-gradient-to-b from-[#fff288] via-[#ffcf54] to-[#ffd95b] p-3 text-slate-900 shadow-[0_12px_0_rgba(0,0,0,0.35)] dark:border-white/20 dark:from-[#3a2200] dark:via-[#431100] dark:to-[#3a2200] dark:text-white xl:max-w-[280px]">
+				<div className={cn("mt-3 flex gap-2", isStackedLayout ? "flex-row gap-1 overflow-x-auto pb-1 hm-scrollbar" : "flex-col overflow-visible pb-0")}>
 					{entries.map((entry) => (
 						<SlotEntryButton
 							key={entry.slot.id}

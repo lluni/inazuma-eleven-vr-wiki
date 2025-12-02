@@ -1,4 +1,14 @@
-import { DndContext, type DragCancelEvent, type DragEndEvent, DragOverlay, type DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+	DndContext,
+	type DragCancelEvent,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
+	MouseSensor,
+	TouchSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
 import { toPng } from "html-to-image";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import type { LucideIcon } from "lucide-react";
@@ -175,13 +185,18 @@ export default function TeamBuilderPage() {
 	const [teamPassivesOpen, setTeamPassivesOpen] = useState(false);
 	const [isExportingImage, setIsExportingImage] = useState(false);
 	const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null);
-	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 6,
-			},
-		}),
-	);
+	const mouseSensor = useSensor(MouseSensor, {
+		activationConstraint: {
+			distance: 4,
+		},
+	});
+	const touchSensor = useSensor(TouchSensor, {
+		activationConstraint: {
+			delay: 150,
+			tolerance: 8,
+		},
+	});
+	const sensors = useSensors(mouseSensor, touchSensor);
 	const location = useLocation();
 	const navigate = useNavigate();
 	const isMobile = useIsMobile();
