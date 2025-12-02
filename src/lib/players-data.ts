@@ -149,6 +149,8 @@ export function mapToElementType(element: string): ElementType {
 			return "Wind";
 		case "mountain":
 			return "Mountain";
+		case "void":
+			return "Void";
 		case "forest":
 		default:
 			return "Forest";

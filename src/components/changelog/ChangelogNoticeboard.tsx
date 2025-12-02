@@ -241,9 +241,16 @@ export function ChangelogNoticeboard() {
 
 	return (
 		<>
-			<Button variant={hasUnseenVersion ? "default" : "outline"} size="sm" onClick={() => setOpen(true)} disabled={status === "loading"} className="relative">
+			<Button
+				variant={hasUnseenVersion ? "default" : "outline"}
+				size="sm"
+				onClick={() => setOpen(true)}
+				disabled={status === "loading"}
+				className="relative gap-1 sm:gap-2"
+				aria-label="Open changelog updates"
+			>
 				{status === "loading" ? <Loader2 className="size-4 animate-spin" /> : <History className="size-4" />}
-				<span className="ml-2">Changelog</span>
+				<span className="hidden sm:inline">Changelog</span>
 				{hasUnseenVersion ? (
 					<span className="absolute -right-1 -top-1 inline-flex items-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-sm">
 						New

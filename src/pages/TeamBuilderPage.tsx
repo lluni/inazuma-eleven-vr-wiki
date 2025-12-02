@@ -5,7 +5,7 @@ import type { LucideIcon } from "lucide-react";
 import { Activity, ChevronDown, ClipboardList, ImageDown, Share2, Shield, Sparkles, Target, UserX, Zap } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FormationPitch, ReservesRail, SlotCard, type SlotStatTrend } from "@/components/team-builder/FormationPitch";
+import { FormationPitch, SlotCard, type SlotStatTrend } from "@/components/team-builder/FormationPitch";
 import { PlayerAssignmentModal } from "@/components/team-builder/PlayerAssignmentModal";
 import { SlotDetailsDrawer } from "@/components/team-builder/SlotDetailsDrawer";
 import { TeamExportSnapshot } from "@/components/team-builder/TeamExportSnapshot";
@@ -187,7 +187,6 @@ export default function TeamBuilderPage() {
 	const isMobile = useIsMobile();
 	const layoutContainerRef = useRef<HTMLDivElement | null>(null);
 	const exportSnapshotRef = useRef<HTMLDivElement | null>(null);
-	const [isStackedLayout, setIsStackedLayout] = useState(true);
 	const favoriteSet = useMemo(() => new Set(favoritePlayerIds), [favoritePlayerIds]);
 	const teamHasPlayersMap = useMemo(() => {
 		return new Map(teamEntries.map((entry) => [entry.teamId, countAssignedPlayers(entry.state.assignments ?? {}) > 0]));
@@ -234,37 +233,6 @@ export default function TeamBuilderPage() {
 			setImportTargetTeamId(activeTeamId);
 		}
 	}, [activeTeamId, importDialogOpen]);
-
-	useEffect(() => {
-		const updateLayoutState = () => {
-			if (typeof window === "undefined") {
-				return;
-			}
-			const current = layoutContainerRef.current;
-			if (!current) {
-				return;
-			}
-			const direction = window.getComputedStyle(current).flexDirection;
-			setIsStackedLayout(direction !== "row");
-		};
-
-		updateLayoutState();
-
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		if (typeof ResizeObserver !== "undefined") {
-			const observer = new ResizeObserver(() => updateLayoutState());
-			if (layoutContainerRef.current) {
-				observer.observe(layoutContainerRef.current);
-			}
-			return () => observer.disconnect();
-		}
-
-		window.addEventListener("resize", updateLayoutState);
-		return () => window.removeEventListener("resize", updateLayoutState);
-	}, []);
 
 	const previewState = sharedCandidate?.state ?? null;
 	const effectiveState = previewState ?? teamState;
@@ -879,43 +847,26 @@ export default function TeamBuilderPage() {
 
 				<DndContext sensors={sensors} onDragStart={handleSlotDragStart} onDragEnd={handleSlotDragEnd} onDragCancel={handleSlotDragCancel}>
 					<div className="grid gap-4">
-						<div className="relative overflow-hidden rounded-[34px] border-[6px] border-black/80 bg-[radial-gradient(circle_at_top,#fff6c7_5%,#bfeeff_45%,#63c9ff_85%)] p-4 shadow-[0_32px_60px_rgba(0,0,0,0.45)] dark:bg-[radial-gradient(circle_at_top,#0d182f_10%,#042048_60%,#010511_95%)] dark:shadow-[0_32px_60px_rgba(1,6,17,0.85)]">
+						<div
+							ref={layoutContainerRef}
+							className="relative overflow-hidden rounded-sm py-5 lg:bg-[radial-gradient(circle_at_top,#fff6c7_5%,#bfeeff_45%,#63c9ff_85%)]  lg:dark:bg-[radial-gradient(circle_at_top,#0d182f_10%,#042048_60%,#010511_95%)]"
+						>
 							<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.75),transparent_60%)] opacity-70 mix-blend-screen dark:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.3),transparent_60%)] dark:opacity-60" />
-							<div
-								ref={layoutContainerRef}
-								className="relative mx-auto flex w-full max-w-5xl flex-col gap-4 lg:flex-row lg:items-start lg:justify-center lg:gap-3"
-							>
-								<div className="flex-1">
-									<FormationPitch
-										assignments={starterAssignments}
-										staffEntries={staffAssignments}
-										activeSlotId={activeSlotId}
-										displayMode={displayMode}
-										statTrendBySlotId={statTrendBySlotId}
-										onSlotSelect={handleSelectSlot}
-										onEmptySlotSelect={handleSelectEmptySlot}
-										formationId={formation.id}
-										onFormationChange={handleFormationChange}
-										isFormationDisabled={isPreviewingSharedTeam}
-										dragDisabled={isPreviewingSharedTeam}
-										isDragActive={isDragActive}
-									/>
-								</div>
-								<div className="self-start">
-									<ReservesRail
-										entries={reserveAssignments}
-										displayMode={displayMode}
-										statTrendBySlotId={statTrendBySlotId}
-										activeSlotId={activeSlotId}
-										onSlotSelect={handleSelectSlot}
-										onEmptySlotSelect={handleSelectEmptySlot}
-										isStackedLayout={isStackedLayout}
-										variant="compact"
-										dragDisabled={isPreviewingSharedTeam}
-										isDragActive={isDragActive}
-									/>
-								</div>
-							</div>
+							<FormationPitch
+								assignments={starterAssignments}
+								staffEntries={staffAssignments}
+								reserveEntries={reserveAssignments}
+								activeSlotId={activeSlotId}
+								displayMode={displayMode}
+								statTrendBySlotId={statTrendBySlotId}
+								onSlotSelect={handleSelectSlot}
+								onEmptySlotSelect={handleSelectEmptySlot}
+								formationId={formation.id}
+								onFormationChange={handleFormationChange}
+								isFormationDisabled={isPreviewingSharedTeam}
+								dragDisabled={isPreviewingSharedTeam}
+								isDragActive={isDragActive}
+							/>
 						</div>
 					</div>
 					<DragOverlay dropAnimation={null}>
@@ -1105,7 +1056,6 @@ export default function TeamBuilderPage() {
 						staffAssignments={staffAssignments}
 						displayMode={displayMode}
 						formationId={formation.id}
-						isStackedLayout={isStackedLayout}
 					/>
 				</div>
 			</div>
@@ -1261,13 +1211,7 @@ function PassiveOptionsPanel({ options, disabled, ignoreHeroSlots, onToggleEnabl
 	return (
 		<Collapsible open={conditionsOpen} onOpenChange={setConditionsOpen} className="space-y-4 rounded-lg border border-border/70 bg-card/60 p-2">
 			<div className="flex items-center gap-3 ">
-				<Switch
-					id={rankingSwitchId}
-					aria-labelledby={rankingLabelId}
-					checked={ignoreHeroSlots}
-					disabled={disabled}
-					onCheckedChange={handleRankingToggle}
-				/>
+				<Switch id={rankingSwitchId} aria-labelledby={rankingLabelId} checked={ignoreHeroSlots} disabled={disabled} onCheckedChange={handleRankingToggle} />
 				<div className="space-y-1">
 					<p id={passiveDescriptionId} className="text-xs text-foreground">
 						Ignore hero slots when calculating ranking.

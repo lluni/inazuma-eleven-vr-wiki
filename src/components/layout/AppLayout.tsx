@@ -20,7 +20,6 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { playerNamePreferenceAtom } from "@/store/name-preference";
 import { themePreferenceAtom } from "@/store/theme";
 
@@ -144,32 +143,32 @@ export default function AppLayout() {
 				</SidebarFooter>
 			</Sidebar>
 			<SidebarInset>
-				<header className="sticky top-0 z-40 flex h-15 shrink-0 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+				<header className="sticky top-0 z-40 flex min-h-14 flex-wrap items-center gap-2 border-b bg-background/95 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:h-15 sm:flex-nowrap sm:gap-4 sm:px-4">
 					<SidebarTrigger className="-ml-1" />
-					<div className="h-10 w-px bg-border/70" />
-					<div className="flex flex-1 flex-col justify-center">
+					<div className="hidden h-10 w-px bg-border/70 sm:block" />
+					<div className="flex min-w-0 flex-1 flex-col justify-center">
 						<span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground/80">{getPageTitle(location.pathname)}</span>
 					</div>
-					<div className="flex items-center gap-2">
-						<Skeleton className="hidden h-11 w-full max-w-xl rounded-full lg:block" />
+					<div className="flex flex-wrap items-center gap-2">
 						<Button
 							type="button"
 							variant={isRomajiEnabled ? "default" : "outline"}
 							size="sm"
-							className="h-10 gap-2 px-3"
+							className="h-10 gap-1 px-3 sm:gap-2"
 							onClick={handleNamePreferenceToggle}
 							aria-pressed={isRomajiEnabled}
+							aria-label="Toggle Japanese romaji names"
 							title={isRomajiEnabled ? "Switch to English dub names" : "Switch to JP romaji names"}
 						>
 							<Languages className="size-4" />
-							<span className="text-xs font-semibold uppercase tracking-wide">JP Names</span>
+							<span className="hidden text-xs font-semibold uppercase tracking-wide sm:inline">JP Names</span>
 							<span className="text-[10px] font-bold tracking-wide">{isRomajiEnabled ? "ON" : "OFF"}</span>
 						</Button>
 						<Dialog>
 							<DialogTrigger asChild>
-								<Button type="button" variant="outline" size="sm" className="h-10 gap-2 px-3">
+								<Button type="button" variant="outline" size="sm" className="h-10 gap-1 px-3 sm:gap-2" aria-label="Open elements interaction sheet">
 									<Wind className="size-4" />
-									<span className="text-xs font-semibold uppercase tracking-wide">Elements Sheet</span>
+									<span className="hidden text-xs font-semibold uppercase tracking-wide sm:inline">Elements Sheet</span>
 								</Button>
 							</DialogTrigger>
 							<DialogContent className="!max-w-3xl">
@@ -184,7 +183,7 @@ export default function AppLayout() {
 						<ChangelogNoticeboard />
 					</div>
 				</header>
-				<main className="flex-1 p-4">
+				<main className="flex-1 p-2">
 					<Outlet />
 				</main>
 			</SidebarInset>

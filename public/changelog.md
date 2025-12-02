@@ -1,3 +1,7 @@
+# Version 1.4.1 - 2025-12-02
+- Improved Team Builder Layout for Mobile screens.
+- Fixed some contrast issues in Light Theme for select buttons.
+
 # Version 1.4.0 - 2025-11-30
 - Team Builder Page:
   - Added details button to the slot details drawer.
