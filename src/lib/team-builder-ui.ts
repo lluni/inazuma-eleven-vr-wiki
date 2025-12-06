@@ -37,8 +37,8 @@ export function getPositionSortValue(position: string): number {
 export function getSlotPositionStyle(slot: TeamBuilderSlot) {
 	const columnIndex = slot.column - 1;
 	const rowIndex = slot.row - 1;
-	const left = COLUMN_STOPS[columnIndex] ?? (columnIndex / Math.max(FIELD_COLUMNS - 1, 1)) * 100;
-	const top = ROW_STOPS[rowIndex] ?? (rowIndex / Math.max(FIELD_ROWS - 1, 1)) * 100;
+	const left = (COLUMN_STOPS[columnIndex] ?? (columnIndex / Math.max(FIELD_COLUMNS - 1, 1)) * 100) + (slot.offsetLeft ?? 0);
+	const top = (ROW_STOPS[rowIndex] ?? (rowIndex / Math.max(FIELD_ROWS - 1, 1)) * 100) + (slot.offsetTop ?? 0);
 	return {
 		left: `${left}%`,
 		top: `${top}%`,

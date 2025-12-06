@@ -1,12 +1,4 @@
-import type { FormationSlot } from "@/data/formations";
 import type { TeamBuilderSlot } from "@/types/team-builder";
-
-const EXTRA_SLOT_ALLOWED_POSITIONS: FormationSlot["allowedPositions"] = [
-	"FW",
-	"MF",
-	"DF",
-	"GK",
-];
 
 const RESERVE_SLOTS: TeamBuilderSlot[] = Array.from(
 	{ length: 5 },
@@ -16,7 +8,6 @@ const RESERVE_SLOTS: TeamBuilderSlot[] = Array.from(
 		displayLabel: "Reserve",
 		column: 3,
 		row: 1,
-		allowedPositions: EXTRA_SLOT_ALLOWED_POSITIONS,
 		kind: "reserve",
 		configScope: "full",
 	}),
@@ -28,7 +19,6 @@ const MANAGER_SLOT: TeamBuilderSlot = {
 	displayLabel: "Manager",
 	column: 3,
 	row: 1,
-	allowedPositions: EXTRA_SLOT_ALLOWED_POSITIONS,
 	kind: "manager",
 	configScope: "rarity-only",
 };
@@ -41,7 +31,6 @@ const COORDINATOR_SLOTS: TeamBuilderSlot[] = Array.from(
 		displayLabel: "Support",
 		column: 3,
 		row: 1,
-		allowedPositions: EXTRA_SLOT_ALLOWED_POSITIONS,
 		kind: "coordinator",
 		configScope: "rarity-only",
 	}),
