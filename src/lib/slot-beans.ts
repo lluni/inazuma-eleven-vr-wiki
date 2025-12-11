@@ -24,7 +24,7 @@ export function clampBeanValue(value: number): number {
 export function createEmptySlotBeans(): SlotBeans {
 	return Array.from({ length: BEAN_SLOTS_COUNT }, () => ({
 		attribute: null,
-		value: 80,
+		value: 82,
 	})) as SlotBeans;
 }
 

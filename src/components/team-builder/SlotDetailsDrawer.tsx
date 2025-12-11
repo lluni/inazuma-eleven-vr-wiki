@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BadgeInfo, Bean, BrickWall, HeartPulse, Info, Shield, ShieldCheck, Sparkles, Swords, Target } from "lucide-react";
+import { BadgeInfo, Bean, BrickWall, ChevronsUp, HeartPulse, Info, Shield, ShieldCheck, Sparkles, Swords, Target } from "lucide-react";
 import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { getPassiveBuildBadgeVisual, getPassiveBuildLabel, PassiveBadge } from "@/components/passives/PassiveBadge";
@@ -170,6 +170,11 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 		onUpdateSlotConfig(slot.id, { beans: nextBeans });
 	};
 
+	const handleBatchBeanChange = (nextBeans: SlotBeans) => {
+		if (!slot) return;
+		onUpdateSlotConfig(slot.id, { beans: nextBeans });
+	};
+
 	const showEquipableBoosts = Boolean(slot && player) && (allowsBeanConfig || allowsEquipmentConfig);
 	const showPassivesConfig = Boolean(slot && player) && allowsPassiveConfig;
 
@@ -296,7 +301,7 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 					</header>
 					<div className="mt-4">
 						<div className="flex flex-col gap-3 lg:grid lg:grid-cols-2">
-							{allowsBeanConfig ? <BeansConfig value={currentBeans} onChange={handleBeanChange} /> : null}
+							{allowsBeanConfig ? <BeansConfig value={currentBeans} onChange={handleBeanChange} onBatchChange={handleBatchBeanChange} /> : null}
 							{allowsEquipmentConfig ? <EquipmentLoadoutConfig value={currentEquipments} onChange={handleEquipmentChange} /> : null}
 						</div>
 					</div>
@@ -805,18 +810,41 @@ function normalizeNumericInput(value: string) {
 type BeansConfigProps = {
 	value: SlotBeans;
 	onChange: (index: number, bean: SlotBean) => void;
+	onBatchChange?: (beans: SlotBeans) => void;
 };
 
-function BeansConfig({ value, onChange }: BeansConfigProps) {
+function BeansConfig({ value, onChange, onBatchChange }: BeansConfigProps) {
 	const slots = BEAN_SLOT_KEYS.map((slotId, index) => ({
 		slotId,
 		index,
 		bean: value[index],
 	}));
 
+	const handleSetAllMax = () => {
+		if (!onBatchChange) return;
+		const nextBeans = value.map((bean) => ({
+			...bean,
+			value: 82,
+		})) as SlotBeans;
+		onBatchChange(nextBeans);
+	};
+
 	return (
 		<div className="space-y-2 rounded-lg border bg-background/80 p-3">
-			<div className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">Beans</div>
+			<div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+				<span>Beans</span>
+				{onBatchChange ? (
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-6 gap-1.5 px-2 text-[10px] uppercase tracking-wider hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30"
+						onClick={handleSetAllMax}
+					>
+						<ChevronsUp className="size-3" />
+						Max (82)
+					</Button>
+				) : null}
+			</div>
 			<div className="space-y-2">
 				{slots.map(({ slotId, bean, index }) => (
 					<BeanRow key={slotId} bean={bean} onChange={(next) => onChange(index, next)} />
