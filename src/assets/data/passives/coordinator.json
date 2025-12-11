@@ -532,7 +532,7 @@
     "number": 27,
     "type": "coordinator",
     "buildType": "Counter",
-    "description": "After recovering the ball without a direct catch, KP (Keeper Power) increases by _% for the next 15 seconds",
+    "description": "After recovering the ball without a direct catch, KP (Keeper Power) increases by +% for the next 15 seconds",
     "strongValue": 2.5,
     "weakValue": 0,
     "effects": [
@@ -1371,7 +1371,7 @@
     "number": 67,
     "type": "coordinator",
     "buildType": "Counter",
-    "description": "After recovering the ball without a direct catch, KP (Keeper Power) increases by _% for the next 15 seconds",
+    "description": "After recovering the ball without a direct catch, KP (Keeper Power) increases by +% for the next 15 seconds",
     "strongValue": 5,
     "weakValue": 0,
     "effects": [
