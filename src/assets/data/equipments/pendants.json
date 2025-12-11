@@ -96,18 +96,6 @@
     "id": "P8"
   },
   {
-    "Name": "Jude's Mantle",
-    "Kick": "",
-    "Control": "",
-    "Technique": "",
-    "Pressure": 30,
-    "Physical": "",
-    "Intelligence": 40,
-    "Agility": "",
-    "Shop": "Spirit Market",
-    "id": "P59"
-  },
-  {
     "Name": "Alius Crystal",
     "Kick": 29,
     "Control": 29,
@@ -730,5 +718,17 @@
     "Agility": "",
     "Shop": "VS",
     "id": "P60"
+  },
+  {
+    "Name": "Jude's Mantle",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": 30,
+    "Physical": "",
+    "Intelligence": 40,
+    "Agility": "",
+    "Shop": "Spirit Market",
+    "id": "P61"
   }
 ]
