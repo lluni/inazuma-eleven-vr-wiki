@@ -92,8 +92,20 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Bond",
+    "Shop": "Spirit Market",
     "id": "P8"
+  },
+  {
+    "Name": "Jude's Mantle",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": 30,
+    "Physical": "",
+    "Intelligence": 40,
+    "Agility": "",
+    "Shop": "Spirit Market",
+    "id": "P59"
   },
   {
     "Name": "Alius Crystal",
@@ -236,7 +248,7 @@
     "Physical": 30,
     "Intelligence": 40,
     "Agility": "",
-    "Shop": "Bond",
+    "Shop": "Spirit Market",
     "id": "P20"
   },
   {
@@ -694,5 +706,29 @@
     "Agility": 6,
     "Shop": "G-Mart (Arcade Branch)",
     "id": "P58"
+  },
+  {
+    "Name": "Guardian Pendant",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": "",
+    "Physical": 27,
+    "Intelligence": 29,
+    "Agility": "",
+    "Shop": "VS",
+    "id": "P59"
+  },
+  {
+    "Name": "Goalkeeper Pendant",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": "",
+    "Physical": 23,
+    "Intelligence": 30,
+    "Agility": "",
+    "Shop": "VS",
+    "id": "P60"
   }
 ]

@@ -13,7 +13,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatNumber, titleCase } from "@/lib/data-helpers";
 import { EQUIPMENT_CATEGORIES, EQUIPMENT_CATEGORY_LABELS, type EquipmentRecord, equipmentsByType } from "@/lib/equipments-data";
-import type { BaseStats } from "@/lib/inazuma-math";
+import { type BaseStats, POWER_FORMULAS } from "@/lib/inazuma-math";
 import { customPassives, type PassiveRecord, passivesById, passivesByType, playerBuildPassives, playerGeneralPassives } from "@/lib/passives-data";
 import { BEAN_COLORS, clampBeanValue, createEmptySlotBeans, MAX_BEAN_POINTS } from "@/lib/slot-beans";
 import { clampPassiveValue, createEmptySlotPassives, PASSIVE_PRESET_SLOTS } from "@/lib/slot-passives";
@@ -143,6 +143,7 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 		return BOOSTED_STATS.map((stat) => ({
 			label: stat.label,
 			value: formatNumber(player.power[stat.key]),
+			formula: POWER_FORMULAS[stat.key],
 		}));
 	}, [player]);
 
@@ -240,13 +241,20 @@ function SlotDetailsPanel({ slot, assignment, onAssign, onClearSlot, onUpdateSlo
 											applyRarityBonus(typeof rawValue === "number" ? rawValue : Number(rawValue), rarity);
 										const Icon = stat.icon;
 										return (
-											<div key={stat.label} className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
-												<div className="flex items-center gap-2 text-sm font-medium">
-													<Icon className="size-4 text-emerald-600" />
-													{stat.label}
-												</div>
-												<span className="text-base font-semibold">{formatNumber(boostedValue)}</span>
-											</div>
+											<Tooltip key={stat.label}>
+												<TooltipTrigger asChild>
+													<div className="flex cursor-help items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 transition-colors hover:bg-muted/50">
+														<div className="flex items-center gap-2 text-sm font-medium">
+															<Icon className="size-4 text-emerald-600" />
+															{stat.label}
+														</div>
+														<span className="text-base font-semibold">{formatNumber(boostedValue)}</span>
+													</div>
+												</TooltipTrigger>
+												<TooltipContent side="left">
+													<p className="font-mono text-xs">{POWER_FORMULAS[stat.key]}</p>
+												</TooltipContent>
+											</Tooltip>
 										);
 									})}
 								</div>

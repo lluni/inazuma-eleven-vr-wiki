@@ -5,6 +5,7 @@ import { getPassiveBuildLabel, PassiveBadge } from "@/components/passives/Passiv
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getElementIcon, getPositionColor } from "@/lib/icon-picker";
 import { mapToElementType, mapToTeamPosition, type PlayerRecord } from "@/lib/players-data";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 export type PlayerMetric = {
 	label: string;
 	value: string | number;
+	formula?: string;
 };
 
 export type PlayerDetailsDialogProps = {
@@ -149,12 +151,29 @@ function MetricSection({ title, metrics }: MetricSectionProps) {
 		<div className="space-y-2">
 			<div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</div>
 			<div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-				{metrics.map((metric) => (
-					<div key={metric.label} className="rounded-md border bg-card/70 p-2 shadow-sm">
-						<div className="text-[10px] font-semibold uppercase text-muted-foreground">{metric.label}</div>
-						<div className="font-mono text-base font-semibold">{metric.value}</div>
-					</div>
-				))}
+				{metrics.map((metric) => {
+					const content = (
+						<div className="h-full rounded-md border bg-card/70 p-2 shadow-sm">
+							<div className="text-[10px] font-semibold uppercase text-muted-foreground">{metric.label}</div>
+							<div className="font-mono text-base font-semibold">{metric.value}</div>
+						</div>
+					);
+
+					if (!metric.formula) {
+						return <div key={metric.label}>{content}</div>;
+					}
+
+					return (
+						<Tooltip key={metric.label}>
+							<TooltipTrigger asChild>
+								<div className="cursor-help transition-opacity hover:opacity-80">{content}</div>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p className="font-mono text-xs">{metric.formula}</p>
+							</TooltipContent>
+						</Tooltip>
+					);
+				})}
 			</div>
 		</div>
 	);

@@ -13,7 +13,7 @@ Each character has different values for a set of attributes, which contributes t
 - Agility: determines **Focus DF** (x0.5) and **KP** (x4.0)
 
 ### BASE VALUES FORMULAS
-- Base Shoot AT formula: (Shoot x1.0) + (Control x1.0)
+- Base Shoot AT formula: (Kick x1.0) + (Control x1.0)
 This is the shooting value during the Zone, before selecting any command and while already in possession of the ball. All bonuses are excluded.
 
 - Base Wall DF formula: (Pressure x1.0) + (Physical x1.0)

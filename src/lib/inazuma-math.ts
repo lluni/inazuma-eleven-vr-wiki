@@ -1,5 +1,3 @@
-
-
 export type BaseStats = {
 	kick: number;
 	control: number;
@@ -11,7 +9,6 @@ export type BaseStats = {
 	total: number;
 };
 
-
 export type PowerStats = {
 	shootAT: number;
 	focusAT: number;
@@ -22,6 +19,15 @@ export type PowerStats = {
 	kp: number;
 };
 
+export const POWER_FORMULAS: Record<keyof PowerStats, string> = {
+	shootAT: "(Kick x1.0) + (Control x1.0)",
+	focusAT: "(Technique x1.0) + (Control x1.0) + (Kick x0.5)",
+	focusDF: "(Technique x1.0) + (Intelligence x1.0) + (Agility x0.5)",
+	wallDF: "(Pressure x1.0) + (Physical x1.0)",
+	scrambleAT: "(Intelligence x1.0) + (Physical x1.0)",
+	scrambleDF: "(Intelligence x1.0) + (Pressure x1.0)",
+	kp: "(Pressure x2.0) + (Physical x3.0) + (Agility x4.0)",
+};
 
 export function computePower(stats: BaseStats): PowerStats {
 	return {

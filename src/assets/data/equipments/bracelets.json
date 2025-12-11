@@ -428,7 +428,7 @@
     "Physical": 35,
     "Intelligence": "",
     "Agility": 35,
-    "Shop": "Bond",
+    "Shop": "Spirit Market",
     "id": "C36"
   },
   {
@@ -634,5 +634,29 @@
     "Agility": "",
     "Shop": "G-Mart (Arcade Branch)",
     "id": "C53"
+  },
+  {
+    "Name": "Solaria-Zeus Bracelet",
+    "Kick": "",
+    "Control": 12,
+    "Technique": 14,
+    "Pressure": "",
+    "Physical": "",
+    "Intelligence": "",
+    "Agility": "",
+    "Shop": "Training Shop",
+    "id": "C54"
+  },
+  {
+    "Name": "Moonlight Bracelet",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": "",
+    "Physical": 24,
+    "Intelligence": 29,
+    "Agility": "",
+    "Shop": "VS",
+    "id": "C55"
   }
 ]

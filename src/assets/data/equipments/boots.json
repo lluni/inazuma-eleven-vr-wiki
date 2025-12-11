@@ -908,7 +908,7 @@
     "Physical": "",
     "Intelligence": "",
     "Agility": "",
-    "Shop": "Bond",
+    "Shop": "Spirit Market",
     "id": "B76"
   },
   {
@@ -1270,5 +1270,17 @@
     "Agility": "",
     "Shop": "Kool Kit (Odaiba Branch)",
     "id": "B106"
+  },
+  {
+    "Name": "Solaria-Zeus Boots",
+    "Kick": "",
+    "Control": "",
+    "Technique": "",
+    "Pressure": "12",
+    "Physical": "",
+    "Intelligence": "",
+    "Agility": "14",
+    "Shop": "Tienda de entrenamientos",
+    "id": "B107"
   }
 ]

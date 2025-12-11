@@ -1,3 +1,8 @@
+# Version 1.5.1 - 2025-12-11
+- Added a few missing equipments from Spirit Shop and Story mode.
+- Added tooltip to player power metrics showing the calculation formula.
+  - Hovering over stats like Shoot AT, Focus AT, etc. now displays the base stats formula used for the calculation.
+
 # Version 1.5.0 - 2025-12-05
 - Added Match Drops Page.
   - You can now filter passive drops by game, build type, passive ID, and drop type.

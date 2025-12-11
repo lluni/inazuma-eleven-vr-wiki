@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createSortedUniqueOptions, formatNumber, titleCase } from "@/lib/data-helpers";
-import type { BaseStats, PowerStats } from "@/lib/inazuma-math";
+import { type BaseStats, POWER_FORMULAS, type PowerStats } from "@/lib/inazuma-math";
 import { playersDataset as basePlayersDataset, getPlayersDataset, type PlayerRecord } from "@/lib/players-data";
 import { cn } from "@/lib/utils";
 import { favoritePlayersAtom } from "@/store/favorites";
@@ -118,6 +118,7 @@ export default function PlayersPage() {
 		return powerMetricColumns.map((column) => ({
 			label: column.header,
 			value: formatNumber(selectedPlayer.power[column.key as keyof PowerStats]),
+			formula: POWER_FORMULAS[column.key as keyof PowerStats],
 		}));
 	}, [selectedPlayer]);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
