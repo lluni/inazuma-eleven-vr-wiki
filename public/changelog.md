@@ -1,3 +1,8 @@
+# Version 1.5.2 - 2025-12-14
+- Updated player database:
+  - Added newest players from update 1.4.0
+
+
 # Version 1.5.1 - 2025-12-11
 - Added a few missing equipments from Spirit Shop and Story mode.
 - Added tooltip to player power metrics showing the calculation formula.
